@@ -2,806 +2,304 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>⚡ Fortnite Wiki Tools</title>
+  <title>Leaderboard Generator</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #0f172a; color: #e2e8f0;
-      min-height: 100vh; padding: 28px 20px;
-    }
-    .container { max-width: 880px; margin: 0 auto; }
+    body { font-family: sans-serif; max-width: 750px; margin: 40px auto; padding: 0 20px; background: #f5f5f5; }
+    h1 { font-size: 1.4rem; }
 
-    /* ── TOPBAR ── */
-    .topbar {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 20px;
-    }
-    .topbar-left h1 {
-      font-size: 1.6rem; font-weight: 700; margin-bottom: 2px;
-      background: linear-gradient(135deg, #60a5fa, #a78bfa);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    }
-    .topbar-left .subtitle { color: #64748b; font-size: 0.88rem; }
-    .lang-btn {
-      display: flex; align-items: center; gap: 6px;
-      background: #1e293b; border: 1.5px solid #334155;
-      border-radius: 20px; padding: 6px 14px;
-      cursor: pointer; color: #e2e8f0; font-size: 0.85rem; font-weight: 600;
-      transition: .15s; user-select: none;
-    }
-    .lang-btn:hover { border-color: #3b82f6; color: #60a5fa; }
-    .lang-flag { font-size: 1.1rem; }
+    /* API Selector */
+    #api-selector { background: white; border: 2px solid #e5e7eb; border-radius: 10px; padding: 16px 20px; margin-bottom: 20px; }
+    #api-selector p { margin: 0 0 10px; font-weight: bold; font-size: 0.95rem; }
+    .api-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+    .api-btn { padding: 10px 20px; border: 2px solid #ccc; background: white; border-radius: 8px; cursor: pointer; font-size: 0.9rem; text-align: left; transition: all 0.2s; }
+    .api-btn:hover { border-color: #2563eb; }
+    .api-btn.selected-kass { border-color: #16a34a; background: #f0fdf4; }
+    .api-btn.selected-fnio { border-color: #dc2626; background: #fef2f2; }
+    .api-btn .api-name { font-weight: bold; font-size: 1rem; display: block; }
+    .api-btn .api-tag-new { font-size: 0.75rem; color: #16a34a; font-weight: bold; }
+    .api-btn .api-tag-old { font-size: 0.75rem; color: #dc2626; font-weight: bold; }
+    .api-btn .api-desc { font-size: 0.78rem; color: #666; margin-top: 2px; display: block; }
 
-    /* ── CARDS ── */
-    .card {
-      background: #1e293b; border: 1px solid #334155;
-      border-radius: 14px; padding: 24px; margin-bottom: 22px;
-    }
-    .card.done { border-color: #22c55e; }
-    .card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
-    .badge {
-      width: 34px; height: 34px; border-radius: 50%; background: #334155;
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 0.9rem; flex-shrink: 0;
-    }
-    .badge.blue  { background: #3b82f6; }
-    .badge.green { background: #22c55e; }
-    .badge.amber { background: #f59e0b; color: #1a1a1a; }
-    .card-title { font-size: 1.05rem; font-weight: 600; }
-    .tabs { display: flex; gap: 8px; margin-bottom: 18px; }
-    .tab {
-      padding: 7px 16px; border: 1.5px solid #475569;
-      background: transparent; color: #94a3b8;
-      border-radius: 7px; cursor: pointer; font-size: 0.88rem; font-weight: 500;
-    }
-    .tab:hover { border-color: #3b82f6; color: #60a5fa; }
-    .tab.active { background: #3b82f6; border-color: #3b82f6; color: white; }
-    label {
-      display: block; font-size: 0.83rem; font-weight: 600;
-      color: #94a3b8; margin: 14px 0 5px;
-    }
-    .hint { font-size: 0.77rem; color: #475569; margin-top: 3px; }
-    input[type=text] {
-      width: 100%; padding: 9px 12px; background: #0f172a;
-      border: 1px solid #334155; border-radius: 8px;
-      color: #e2e8f0; font-size: 0.92rem;
-    }
-    input[type=text]:focus { outline: none; border-color: #3b82f6; }
-    input[type=file] { font-size: 0.83rem; color: #94a3b8; margin-top: 5px; }
-    textarea {
-      width: 100%; padding: 10px 12px; background: #0f172a;
-      border: 1px solid #334155; border-radius: 8px;
-      color: #e2e8f0; font-family: 'Courier New', monospace;
-      font-size: 12px; resize: vertical;
-    }
-    textarea:focus { outline: none; border-color: #3b82f6; }
-    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    @media(max-width:580px) { .grid2 { grid-template-columns: 1fr; } }
-    .btn-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 16px; }
-    .btn {
-      padding: 9px 22px; border: none; border-radius: 8px;
-      font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: .15s;
-    }
-    .btn-blue   { background: #3b82f6; color: white; }
-    .btn-blue:hover    { background: #2563eb; }
-    .btn-blue:disabled { background: #1e3a5f; color: #64748b; cursor: not-allowed; }
-    .btn-green  { background: #22c55e; color: white; }
-    .btn-green:hover   { background: #16a34a; }
-    .btn-purple { background: #8b5cf6; color: white; }
-    .btn-purple:hover  { background: #7c3aed; }
-    .loader { display: none; font-size: 0.85rem; color: #60a5fa; }
-    .hidden { display: none !important; }
-    .divider { height: 1px; background: #334155; margin: 18px 0; }
-    .alert { padding: 10px 14px; border-radius: 8px; font-size: 0.88rem; margin: 8px 0; }
-    .ok   { background: #052e16; border: 1px solid #22c55e; color: #4ade80; }
-    .err  { background: #1f0a0a; border: 1px solid #ef4444; color: #fca5a5; }
-    .info { background: #0c1a2e; border: 1px solid #3b82f6; color: #93c5fd; }
-    .warn { background: #1c1200; border: 1px solid #f59e0b; color: #fbbf24; }
-    code  { background: #0f172a; padding: 1px 5px; border-radius: 4px; font-size: 0.85em; }
-
-    /* ── FOOTER ── */
-    .footer {
-      margin-top: 40px; padding: 24px;
-      border-top: 1px solid #1e293b;
-      display: flex; align-items: center; justify-content: center;
-      gap: 16px;
-    }
-    .footer-avatar {
-      width: 48px; height: 48px; border-radius: 50%;
-      border: 2px solid #3b82f6; object-fit: cover;
-    }
-    .footer-text { text-align: left; }
-    .footer-text .made-by { font-size: 0.78rem; color: #475569; margin-bottom: 3px; }
-    .footer-text .author-name {
-      font-size: 0.95rem; font-weight: 700; color: #e2e8f0; margin-bottom: 3px;
-    }
-    .footer-twitter {
-      display: inline-flex; align-items: center; gap: 5px;
-      font-size: 0.8rem; color: #60a5fa; text-decoration: none;
-      transition: .15s;
-    }
-    .footer-twitter:hover { color: #a78bfa; }
-    .footer-twitter svg { width: 14px; height: 14px; fill: currentColor; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+    .tab { padding: 8px 20px; border: 2px solid #2563eb; background: white; color: #2563eb; border-radius: 6px; cursor: pointer; font-size: 0.95rem; }
+    .tab.active { background: #2563eb; color: white; }
+    label { font-weight: bold; display: block; margin: 12px 0 4px; }
+    input[type=text] { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 0.95rem; box-sizing: border-box; }
+    input[type=file] { margin-top: 4px; }
+    .hint { font-size: 0.8rem; color: #666; margin-top: 3px; }
+    button.main { margin-top: 16px; padding: 12px 28px; background: #2563eb; color: white; border: none; border-radius: 6px; font-size: 1rem; cursor: pointer; }
+    button.main:hover { background: #1d4ed8; }
+    button.main:disabled { background: #93c5fd; cursor: not-allowed; }
+    #output { margin-top: 16px; display: none; }
+    #stats { background: #dcfce7; border: 1px solid #86efac; border-radius: 6px; padding: 10px 14px; margin-bottom: 10px; font-size: 0.9rem; }
+    #stats.error { background: #fee2e2; border-color: #fca5a5; }
+    textarea { width: 100%; height: 280px; font-family: monospace; font-size: 12px; box-sizing: border-box; padding: 8px; border: 1px solid #ccc; border-radius: 6px; }
+    button.copy { background: #16a34a; color: white; border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer; margin-top: 6px; }
+    .loader { display: none; margin-left: 12px; color: #2563eb; font-size: 0.9rem; }
+    #api-badge { display: inline-block; margin-left: 10px; font-size: 0.78rem; padding: 2px 8px; border-radius: 20px; vertical-align: middle; }
+    #api-badge.kass { background: #dcfce7; color: #16a34a; border: 1px solid #86efac; }
+    #api-badge.fnio { background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; }
   </style>
 </head>
 <body>
-<div class="container">
+  <h1>⚡ Leaderboard Generator</h1>
 
-  <!-- ══════════════════ TOPBAR -->
-  <div class="topbar">
-    <div class="topbar-left">
-      <h1>⚡ Fortnite Wiki Tools</h1>
-      <p class="subtitle" data-i18n="subtitle">Classement API → Équipes · Tout en 2 étapes</p>
-    </div>
-    <button class="lang-btn" onclick="toggleLang()" id="lang-toggle">
-      <span class="lang-flag">🇬🇧</span>
-      <span id="lang-label">English</span>
-    </button>
-  </div>
-
-  <div id="dict-status" class="alert info" style="margin-bottom:16px">
-    ⏳ <span data-i18n="loading">Chargement du dictionnaire...</span>
-  </div>
-
-  <!-- ══════════════════ ÉTAPE 1 -->
-  <div class="card" id="card1">
-    <div class="card-header">
-      <div class="badge blue" id="b1">1</div>
-      <div class="card-title" data-i18n="step1title">Générer le classement</div>
-    </div>
-    <div class="tabs">
-      <button class="tab active" onclick="setMode('s')" id="ts" data-i18n="tabSimple">🏆 Simple (1 event)</button>
-      <button class="tab"        onclick="setMode('c')" id="tc" data-i18n="tabCumul">📊 Cumulé (Day 1 + Day 2)</button>
-    </div>
-    <div id="ms">
-      <label data-i18n="widLabel">WindowID ou URL Fortnite Tracker</label>
-      <input type="text" id="wid1" data-i18n-placeholder="widPlaceholder" placeholder="S39_SoloSeriesCupFinal_Day1_ME">
-      <div class="hint" data-i18n="widHint">💡 Colle l'URL complète — le WindowID est extrait automatiquement</div>
-    </div>
-    <div id="mc" class="hidden">
-      <div class="grid2">
-        <div>
-          <label>Day 1</label>
-          <input type="text" id="wd1" data-i18n-placeholder="widPlaceholder" placeholder="...Day1_ME">
-        </div>
-        <div>
-          <label>Day 2</label>
-          <input type="text" id="wd2" data-i18n-placeholder="widPlaceholder" placeholder="...Day2_ME">
-        </div>
-      </div>
-    </div>
-    <div class="btn-row">
-      <button class="btn btn-blue" onclick="generate()" id="bg" data-i18n="btnGenerate">🚀 Générer</button>
-      <span class="loader" id="ld1" data-i18n="loading">⏳ Chargement...</span>
-    </div>
-    <div id="o1" class="hidden">
-      <div class="divider"></div>
-      <div id="st1" class="alert ok"></div>
-      <label data-i18n="generatedLabel">Classement généré</label>
-      <textarea id="r1" rows="12" readonly></textarea>
-      <div class="btn-row">
-        <button class="btn btn-green"  onclick="cp('r1','c1')" data-i18n="btnCopy">📋 Copier</button>
-        <button class="btn btn-purple" onclick="toStep2()"     data-i18n="btnStep2">➡️ Ajouter les équipes</button>
-        <span id="c1" style="font-size:.85rem;color:#4ade80"></span>
-      </div>
+  <!-- API SELECTOR -->
+  <div id="api-selector">
+    <p>🔌 Quelle API veux-tu utiliser ?</p>
+    <div class="api-btns">
+      <button class="api-btn selected-kass" id="btn-kass" onclick="selectApi('kass')">
+        <span class="api-name">🟢 Kass507.lat</span>
+        <span class="api-tag-new">✅ NOUVELLE MÉTHODE (recommandée)</span>
+        <span class="api-desc">API privée, plus rapide et fiable</span>
+      </button>
+      <button class="api-btn" id="btn-fnio" onclick="selectApi('fnio')">
+        <span class="api-name">🔴 FortniteAPI.io</span>
+        <span class="api-tag-old">⚠️ ANCIENNE MÉTHODE</span>
+        <span class="api-desc">API publique, peut être moins stable</span>
+      </button>
     </div>
   </div>
 
-  <!-- ══════════════════ ÉTAPE 2 -->
-  <div class="card" id="card2">
-    <div class="card-header">
-      <div class="badge" id="b2">2</div>
-      <div class="card-title" data-i18n="step2title">Ajouter les équipes</div>
-    </div>
-    <label data-i18n="step2inputLabel">Classement ou code wiki à traiter</label>
-    <textarea id="i2" rows="10" data-i18n-placeholder="step2inputPlaceholder"
-      placeholder="Colle ici le résultat de l'étape 1, ou ton code wiki {{TournamentResults/Line|...}}"></textarea>
-    <div class="hint" data-i18n="step2inputHint">Compatible avec le format classement (rank↹players↹points) ET le format wiki</div>
-    <label data-i18n="csvLabel">Équipes — CSV ou TSV</label>
-    <textarea id="tt" rows="7"
-      placeholder="DataTeam&#9;PlayerTeam&#9;DataPlayer&#9;PlayerPage&#10;BIG Clan&#9;Malibuca&#9;Malibuca"></textarea>
-    <div class="hint" data-i18n="csvHint">Ou charge un fichier :</div>
-    <input type="file" id="tf" accept=".csv,.tsv,.txt" onchange="loadTF()">
-    <div class="btn-row">
-      <button class="btn btn-blue" onclick="addTeams()" data-i18n="btnAddTeams">🏅 Ajouter les équipes</button>
-    </div>
-    <div id="o2" class="hidden">
-      <div class="divider"></div>
-      <div id="st2" class="alert ok"></div>
-      <label data-i18n="resultLabel">Résultat final</label>
-      <textarea id="r2" rows="12" readonly></textarea>
-      <div class="btn-row">
-        <button class="btn btn-green" onclick="cp('r2','c2')" data-i18n="btnCopy">📋 Copier</button>
-        <span id="c2" style="font-size:.85rem;color:#4ade80"></span>
-      </div>
-    </div>
+  <div class="tabs">
+    <button class="tab active" onclick="setMode('simple')" id="tab-simple">🏆 Simple (1 jour)</button>
+    <button class="tab" onclick="setMode('cumul')" id="tab-cumul">📊 Cumulé (2 jours)</button>
   </div>
 
-  <!-- ══════════════════ DICT EDITOR -->
-  <div class="card" id="card-dict">
-    <div class="card-header">
-      <div class="badge amber">+</div>
-      <div class="card-title" data-i18n="dictTitle">Ajouter un joueur à la database</div>
-    </div>
-    <p style="font-size:.85rem;color:#64748b;margin-bottom:14px" data-i18n="dictDesc">
-      Les entrées sont sauvegardées dans le <b>cloud partagé</b> — visibles par tout le monde instantanément.
-    </p>
-    <label data-i18n="dictLabel">Format : PseudoWiki=EpicAccountID</label>
-    <input type="text" id="dict-new" placeholder="Parz=abc123def456abc123def456abc123de">
-    <div class="hint" data-i18n="dictHint">💡 L'Epic Account ID (32 caractères) se trouve dans l'URL Fortnite Tracker du joueur</div>
-    <div class="btn-row" style="margin-top:12px">
-      <button class="btn btn-blue" onclick="dictAdd()" data-i18n="btnDictAdd">➕ Ajouter</button>
-      <span id="dict-msg" style="font-size:.85rem"></span>
-    </div>
-    <div id="dict-list" style="margin-top:16px"></div>
+  <div id="mode-simple">
+    <label>WindowID</label>
+    <input type="text" id="wid1" placeholder="S39_SoloSeriesCupFinal_Day1_ME ou URL complète">
+    <div class="hint">💡 Colle l'URL Fortnite Tracker directement, le WindowID sera extrait automatiquement</div>
   </div>
 
-  <!-- ══════════════════ FOOTER -->
-  <footer class="footer">
-    <img src="pdp-clem-twitter.jpg" alt="Clem" class="footer-avatar">
-    <div class="footer-text">
-      <div class="made-by" data-i18n="madeBy">Créé par</div>
-      <div class="author-name">Clem</div>
-      <a href="https://x.com/clemclx" target="_blank" class="footer-twitter">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.911-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-        </svg>
-        @clemclx
-      </a>
-    </div>
-  </footer>
+  <div id="mode-cumul" style="display:none">
+    <label>Day 1 – WindowID</label>
+    <input type="text" id="wid-d1" placeholder="S39_SoloSeriesCupFinal_Day1_ME ou URL">
+    <label>Day 2 – WindowID</label>
+    <input type="text" id="wid-d2" placeholder="S39_SoloSeriesCupFinal_Day2_ME ou URL">
+  </div>
 
-</div>
-<script>
-// ══════════════════════════════════════════
-// CONFIG
-// ══════════════════════════════════════════
-const GITHUB_DICT_URL = "https://raw.githubusercontent.com/Clementsly/fortnite-wiki-tools/refs/heads/main/fortnite_dict.txt";
-const JSONBIN_ID      = "699cd8d6d0ea881f40d31e4a";
-const JSONBIN_KEY     = "$2a$10$Uxd5kmWUdHQG2q40rB1m8uOe2GftztNasNvtMAHQ8m8J8OGkrMbGO";
-const API_KEY         = "kass_A3u2Fle0YACnjklJwreWylDNRp-2beDZ";
-const API_BASE        = "https://kass507.lat/api";
-const CORS_PROXY      = "https://corsproxy.io/?";
+  <label>fortnite_dict.txt <span style="font-weight:normal;color:#666">(optionnel – pour les pseudos wiki)</span></label>
+  <input type="file" id="dict-file" accept=".txt">
 
-let dict  = {};
-let _mode = 's';
-let _lang = localStorage.getItem('lang') || 'fr';
+  <br>
+  <button class="main" onclick="run()" id="run-btn">🚀 Générer</button>
+  <span id="api-badge" class="kass">Kass507.lat</span>
+  <span class="loader" id="loader">⏳ Chargement en cours...</span>
 
-// ════════════════════════════════════════
-// TRADUCTIONS
-// ════════════════════════════════════════
-const T = {
-  fr: {
-    subtitle:           "Classement API → Équipes · Tout en 2 étapes",
-    loading:            "⏳ Chargement du dictionnaire...",
-    step1title:         "Générer le classement",
-    tabSimple:          "🏆 Simple (1 event)",
-    tabCumul:           "📊 Cumulé (Day 1 + Day 2)",
-    widLabel:           "WindowID ou URL Fortnite Tracker",
-    widPlaceholder:     "S39_SoloSeriesCupFinal_Day1_ME",
-    widHint:            "💡 Colle l'URL complète — le WindowID est extrait automatiquement",
-    btnGenerate:        "🚀 Générer",
-    generatedLabel:     "Classement généré",
-    btnCopy:            "📋 Copier",
-    btnStep2:           "➡️ Ajouter les équipes",
-    step2title:         "Ajouter les équipes",
-    step2inputLabel:    "Classement ou code wiki à traiter",
-    step2inputPlaceholder: "Colle ici le résultat de l'étape 1, ou ton code wiki {{TournamentResults/Line|...}}",
-    step2inputHint:     "Compatible avec le format classement (rank↹players↹points) ET le format wiki",
-    csvLabel:           "Équipes — CSV ou TSV",
-    csvHint:            "Ou charge un fichier :",
-    btnAddTeams:        "🏅 Ajouter les équipes",
-    resultLabel:        "Résultat final",
-    dictTitle:          "Ajouter un joueur à la database",
-    dictDesc:           "Les entrées sont sauvegardées dans le <b>cloud partagé</b> — visibles par tout le monde instantanément.",
-    dictLabel:          "Format : PseudoWiki=EpicAccountID",
-    dictHint:           "💡 L'Epic Account ID (32 caractères) se trouve dans l'URL Fortnite Tracker du joueur",
-    btnDictAdd:         "➕ Ajouter",
-    madeBy:             "Créé par",
-    copiedMsg:          "✅ Copié !",
-    noResult:           "❌ Aucun résultat — vérifie le WindowID.",
-    errNoWid:           "Entre un WindowID !",
-    errNoBothWid:       "Entre les deux WindowIDs !",
-    errNoInput:         "Rien à traiter !",
-    errNoCSV:           "Ajoute le CSV des équipes !",
-    errCSVEmpty:        "CSV vide !",
-    errCols:            "Colonnes introuvables !",
-    dictErrFormat:      "❌ Format invalide — utilise Pseudo=EpicID",
-    dictErrMissing:     "❌ Pseudo ou ID manquant",
-    dictSaving:         "⏳ Sauvegarde...",
-    dictOk:             (n) => `✅ "${n}" ajouté — visible par tout le monde ! ☁️`,
-    dictWarn:           (n) => `⚠️ "${n}" sauvegardé localement — problème JSONBin`,
-    dictNone:           "Aucune entrée ajoutée pour l'instant.",
-    dictCount:          (n) => `${n} entrée(s) ajoutée(s) :`,
-    dictClearConfirm:   "Supprimer toutes les entrées locales ?",
-    dictClearBtn:       "🗑️ Tout effacer",
-    pseudosLoaded:      (t, f, c) => {
-      let m = `✅ <b>${t} pseudos chargés</b>`;
-      if (f > 0) m += ` · ${f} depuis GitHub`;
-      if (c > 0) m += ` · ${c} ajouts cloud ☁️`;
-      return m;
-    },
-    noDict:             "⚠️ Aucun pseudo chargé",
-    generatedOk:        (n, t) => `✅ <b>${n} lignes générées</b> · ${t} pseudos dans le dict`,
-    teamsOk:            (a, u, t) => `✅ <b>${a} équipes ajoutées</b>${u ? `, ${u} mises à jour` : ''} · ${t} joueurs dans le CSV`,
-    teams0:             "❌ 0 joueur trouvé — vérifie les colonnes <code>PlayerPage</code> et <code>PlayerTeam</code>",
-  },
-  en: {
-    subtitle:           "API Leaderboard → Teams · All in 2 steps",
-    loading:            "⏳ Loading dictionary...",
-    step1title:         "Generate leaderboard",
-    tabSimple:          "🏆 Simple (1 event)",
-    tabCumul:           "📊 Cumulative (Day 1 + Day 2)",
-    widLabel:           "WindowID or Fortnite Tracker URL",
-    widPlaceholder:     "S39_SoloSeriesCupFinal_Day1_ME",
-    widHint:            "💡 Paste the full URL — the WindowID is extracted automatically",
-    btnGenerate:        "🚀 Generate",
-    generatedLabel:     "Generated leaderboard",
-    btnCopy:            "📋 Copy",
-    btnStep2:           "➡️ Add teams",
-    step2title:         "Add teams",
-    step2inputLabel:    "Leaderboard or wiki code to process",
-    step2inputPlaceholder: "Paste here the result from step 1, or your wiki code {{TournamentResults/Line|...}}",
-    step2inputHint:     "Compatible with leaderboard format (rank↹players↹points) AND wiki format",
-    csvLabel:           "Teams — CSV or TSV",
-    csvHint:            "Or load a file:",
-    btnAddTeams:        "🏅 Add teams",
-    resultLabel:        "Final result",
-    dictTitle:          "Add a player to the database",
-    dictDesc:           "Entries are saved in the <b>shared cloud</b> — visible to everyone instantly.",
-    dictLabel:          "Format: WikiPseudo=EpicAccountID",
-    dictHint:           "💡 The Epic Account ID (32 chars) can be found in the player's Fortnite Tracker URL",
-    btnDictAdd:         "➕ Add",
-    madeBy:             "Created by",
-    copiedMsg:          "✅ Copied!",
-    noResult:           "❌ No results — check the WindowID.",
-    errNoWid:           "Enter a WindowID!",
-    errNoBothWid:       "Enter both WindowIDs!",
-    errNoInput:         "Nothing to process!",
-    errNoCSV:           "Add the teams CSV!",
-    errCSVEmpty:        "CSV is empty!",
-    errCols:            "Columns not found!",
-    dictErrFormat:      "❌ Invalid format — use Pseudo=EpicID",
-    dictErrMissing:     "❌ Missing pseudo or ID",
-    dictSaving:         "⏳ Saving...",
-    dictOk:             (n) => `✅ "${n}" added — visible to everyone! ☁️`,
-    dictWarn:           (n) => `⚠️ "${n}" saved locally only — JSONBin issue`,
-    dictNone:           "No entries added yet.",
-    dictCount:          (n) => `${n} entr${n > 1 ? 'ies' : 'y'} added:`,
-    dictClearConfirm:   "Delete all local entries?",
-    dictClearBtn:       "🗑️ Clear all",
-    pseudosLoaded:      (t, f, c) => {
-      let m = `✅ <b>${t} pseudos loaded</b>`;
-      if (f > 0) m += ` · ${f} from GitHub`;
-      if (c > 0) m += ` · ${c} cloud additions ☁️`;
-      return m;
-    },
-    noDict:             "⚠️ No pseudos loaded",
-    generatedOk:        (n, t) => `✅ <b>${n} lines generated</b> · ${t} pseudos in dict`,
-    teamsOk:            (a, u, t) => `✅ <b>${a} teams added</b>${u ? `, ${u} updated` : ''} · ${t} players in CSV`,
-    teams0:             "❌ 0 players found — check <code>PlayerPage</code> and <code>PlayerTeam</code> columns",
-  }
-};
+  <div id="output">
+    <div id="stats"></div>
+    <label>Résultat à copier</label>
+    <textarea id="result" readonly></textarea>
+    <button class="copy" onclick="copyResult()" id="copy-btn">📋 Copier</button>
+  </div>
 
-function t(key, ...args) {
-  const val = T[_lang][key];
-  return typeof val === 'function' ? val(...args) : val;
-}
-
-function applyTranslations() {
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    const key = el.getAttribute('data-i18n');
-    if (T[_lang][key] && typeof T[_lang][key] === 'string')
-      el.innerHTML = T[_lang][key];
-  });
-  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-    const key = el.getAttribute('data-i18n-placeholder');
-    if (T[_lang][key]) el.placeholder = T[_lang][key];
-  });
-  // loader
-  document.getElementById('ld1').textContent = t('loading');
-}
-
-function toggleLang() {
-  _lang = _lang === 'fr' ? 'en' : 'fr';
-  localStorage.setItem('lang', _lang);
-  document.getElementById('lang-label').textContent = _lang === 'fr' ? 'English' : 'Français';
-  document.querySelector('.lang-flag').textContent   = _lang === 'fr' ? '🇬🇧' : '🇫🇷';
-  applyTranslations();
-}
-
-// Init lang
-if (_lang === 'en') {
-  document.getElementById('lang-label').textContent = 'Français';
-  document.querySelector('.lang-flag').textContent   = '🇫🇷';
-  applyTranslations();
-}
-
-// ════════════════════════════════════════
-// JSONBIN
-// ════════════════════════════════════════
-async function fetchCloudDict() {
-  try {
-    const r = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}/latest`, {
-      headers: { "X-Master-Key": JSONBIN_KEY }
-    });
-    if (!r.ok) throw new Error(`JSONBin ${r.status}`);
-    const data = await r.json();
-    const rec  = data.record || {};
-    delete rec['init'];
-    return rec;
-  } catch(e) {
-    console.warn("JSONBin fetch:", e.message);
-    return {};
-  }
-}
-async function saveToCloud(newEntry) {
-  try {
-    const current = await fetchCloudDict();
-    Object.assign(current, newEntry);
-    const r = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}`, {
-      method: 'PUT',
-      headers: {
-        "Content-Type": "application/json",
-        "X-Master-Key": JSONBIN_KEY,
-        "X-Bin-Versioning": "false"
+  <script>
+    const APIS = {
+      kass: {
+        base: "https://kass507.lat/api",
+        key: "kass_A3u2Fle0YACnjklJwreWylDNRp-2beDZ",
+        header: "x-api-key",
+        successField: "success",
+        tiebreakerPath: (session) => session?.rules?.tiebreakerFormula,
       },
-      body: JSON.stringify(current)
-    });
-    return r.ok;
-  } catch(e) { return false; }
-}
+      fnio: {
+        base: "https://fortniteapi.io/v1",
+        key: "370a899b-33b3ba08-a5299259-571d2ca1",
+        header: "Authorization",
+        successField: "result",
+        tiebreakerPath: (session) => session?.rules?.tie,
+      }
+    };
 
-// ════════════════════════════════════════
-// DICT
-// ════════════════════════════════════════
-function loadDictFromText(txt) {
-  const d = {};
-  for (const rawLine of txt.split('\n')) {
-    const line = rawLine.trim();
-    if (!line || !line.includes('=')) continue;
-    const i    = line.indexOf('=');
-    const name = line.slice(0, i).trim().replace(/_/g, ' ');
-    const eid  = line.slice(i + 1).trim().toLowerCase().replace(/-/g, '');
-    if (eid && name) d[eid] = name;
-  }
-  return d;
-}
-function loadLocalDict() {
-  try { return JSON.parse(localStorage.getItem('custom_dict') || '{}'); }
-  catch { return {}; }
-}
-function saveLocalDict(d) { localStorage.setItem('custom_dict', JSON.stringify(d)); }
+    let currentApi = 'kass';
+    let currentMode = 'simple';
+    let dict = {};
 
-async function autoLoadDict() {
-  const status = document.getElementById('dict-status');
-  status.className = 'alert info';
-  status.innerHTML = t('loading');
-
-  let fileCount = 0, cloudCount = 0;
-
-  try {
-    const r = await fetch(GITHUB_DICT_URL);
-    if (r.ok) {
-      const fd  = loadDictFromText(await r.text());
-      fileCount = Object.keys(fd).length;
-      Object.assign(dict, fd);
+    function selectApi(api) {
+      currentApi = api;
+      document.getElementById('btn-kass').className = 'api-btn' + (api === 'kass' ? ' selected-kass' : '');
+      document.getElementById('btn-fnio').className = 'api-btn' + (api === 'fnio' ? ' selected-fnio' : '');
+      const badge = document.getElementById('api-badge');
+      if (api === 'kass') {
+        badge.textContent = 'Kass507.lat';
+        badge.className = 'kass';
+      } else {
+        badge.textContent = 'FortniteAPI.io';
+        badge.className = 'fnio';
+      }
+      badge.id = 'api-badge';
     }
-  } catch(e) {}
 
-  const cloud = await fetchCloudDict();
-  cloudCount  = Object.keys(cloud).length;
-  Object.assign(dict, cloud);
-  Object.assign(dict, loadLocalDict());
+    function setMode(m) {
+      currentMode = m;
+      document.getElementById('mode-simple').style.display = m === 'simple' ? 'block' : 'none';
+      document.getElementById('mode-cumul').style.display = m === 'cumul' ? 'block' : 'none';
+      document.getElementById('tab-simple').classList.toggle('active', m === 'simple');
+      document.getElementById('tab-cumul').classList.toggle('active', m === 'cumul');
+    }
 
-  const total = Object.keys(dict).length;
-  status.className = total > 0 ? 'alert ok' : 'alert warn';
-  status.innerHTML = total > 0
-    ? t('pseudosLoaded', total, fileCount, cloudCount)
-    : t('noDict');
+    function getWid(text) {
+      text = text.trim();
+      const m = text.match(/[?&]window=([a-zA-Z0-9_-]+)/);
+      return m ? m[1] : text;
+    }
 
-  renderDictList();
-}
-autoLoadDict();
+    async function fetchPage(wid, page) {
+      const api = APIS[currentApi];
+      const url = `${api.base}/events/window?windowId=${encodeURIComponent(wid)}&page=${page}`;
+      const r = await fetch(url, { headers: { [api.header]: api.key } });
+      if (!r.ok) return null;
+      return r.json();
+    }
 
-// ════════════════════════════════════════
-// UI
-// ════════════════════════════════════════
-function setMode(m) {
-  _mode = m;
-  document.getElementById('ms').classList.toggle('hidden', m !== 's');
-  document.getElementById('mc').classList.toggle('hidden', m !== 'c');
-  document.getElementById('ts').classList.toggle('active', m === 's');
-  document.getElementById('tc').classList.toggle('active', m === 'c');
-}
-function cp(id, fid) {
-  navigator.clipboard.writeText(document.getElementById(id).value);
-  const el = document.getElementById(fid);
-  el.textContent = t('copiedMsg');
-  setTimeout(() => el.textContent = '', 2000);
-}
-function toStep2() {
-  document.getElementById('i2').value = document.getElementById('r1').value;
-  document.getElementById('b2').classList.add('blue');
-  document.getElementById('card2').scrollIntoView({ behavior: 'smooth' });
-}
-function loadTF() {
-  const f = document.getElementById('tf').files[0];
-  if (f) f.text().then(txt => document.getElementById('tt').value = txt);
-}
+    async function fetchAll(wid) {
+      const api = APIS[currentApi];
+      let results = [], page = 0, tbFormula = null;
+      while (true) {
+        const data = await fetchPage(wid, page);
+        if (!data || !data[api.successField]) break;
+        if (page === 0) {
+          const tb = api.tiebreakerPath(data.session);
+          if (tb) tbFormula = tb;
+        }
+        results.push(...(data.session?.results || []));
+        if (page >= (data.totalPages || 1) - 1) break;
+        page++;
+      }
+      return { results, tbFormula };
+    }
 
-// ════════════════════════════════════════
-// LEADERBOARD
-// ════════════════════════════════════════
-function getWid(txt) {
-  txt = (txt || '').trim();
-  const m = txt.match(/[?&]window=([a-zA-Z0-9_-]+)/);
-  return m ? m[1] : txt;
-}
-async function fetchPage(wid, p) {
-  const target = `${API_BASE}/events/window?windowId=${encodeURIComponent(wid)}&page=${p}`;
-  const r = await fetch(`${CORS_PROXY}${encodeURIComponent(target)}`, {
-    headers: { "x-api-key": API_KEY, "Accept": "application/json" }
-  });
-  if (!r.ok) throw new Error(`API error ${r.status}`);
-  return r.json();
-}
-async function fetchAll(wid) {
-  let results = [], page = 0, tb = null;
-  while (true) {
-    const d = await fetchPage(wid, page);
-    if (!d?.success) break;
-    if (page === 0 && d.session?.rules?.tiebreakerFormula) tb = d.session.rules.tiebreakerFormula;
-    results.push(...(d.session?.results || []));
-    if (page >= (d.totalPages || 1) - 1) break;
-    page++;
-  }
-  return { results, tb };
-}
-function getName(m) {
-  const eid = (m.id || '').toLowerCase().replace(/-/g, '');
-  return dict[eid] || m.name || eid;
-}
-function fmtLine(rank, members, pts) {
-  const p = members.map(m => {
-    const eid = (m.id || '').toLowerCase().replace(/-/g, '');
-    return `${eid}{{!}}${getName(m)}`;
-  }).join(',');
-  return `${rank}\t${p}\t${pts}`;
-}
-async function runSimple(wid) {
-  const { results } = await fetchAll(wid);
-  if (!results.length) return null;
-  results.sort((a, b) => (a.rank||999) - (b.rank||999));
-  return results.map((r, i) => fmtLine(r.rank||i+1, r.teamAccountNames||[], r.pointsEarned||0));
-}
-async function runCumul(wids) {
-  const pl = {};
-  let tbF  = null;
-  for (const wid of wids) {
-    const { results, tb } = await fetchAll(wid);
-    if (!tbF && tb) tbF = tb;
-    for (const res of results) {
-      const mb  = res.teamAccountNames || [];
-      const key = mb.map(m => (m.id||'').toLowerCase().replace(/-/g,'')).sort().join('|');
-      if (!pl[key]) pl[key] = { pts: 0, mb, stats: {} };
-      pl[key].pts += res.pointsEarned || 0;
-      for (const s of (res.sessionHistory||[])) {
-        for (const [k, v] of Object.entries(s.trackedStats||{})) {
-          if (!pl[key].stats[k]) pl[key].stats[k] = [];
-          pl[key].stats[k].push(v);
+    function loadDict(text) {
+      const d = {};
+      for (const line of text.split('\n')) {
+        if (!line.includes('=')) continue;
+        const idx = line.indexOf('=');
+        const pseudo = line.slice(0, idx).trim().replace(/_/g, ' ');
+        const eid = line.slice(idx + 1).trim().toLowerCase();
+        if (eid) d[eid] = pseudo;
+      }
+      return d;
+    }
+
+    function getName(m) {
+      const eid = (m.id || '').toLowerCase();
+      return dict[eid] || m.name || eid;
+    }
+
+    function formatLine(rank, members, points) {
+      const parts = members.map(m => `${(m.id||'').toLowerCase()}{{!}}${getName(m)}`);
+      return `${rank}\t${parts.join(',')}\t${points}`;
+    }
+
+    async function runSimple(wid) {
+      const { results } = await fetchAll(wid);
+      if (!results.length) return null;
+      results.sort((a, b) => (a.rank || 999) - (b.rank || 999));
+      return results.map((r, i) =>
+        formatLine(r.rank || i + 1, r.teamAccountNames || [], r.pointsEarned || 0)
+      );
+    }
+
+    async function runCumul(wids) {
+      const players = {};
+      let tbFormula = null;
+
+      for (const wid of wids) {
+        const { results, tbFormula: tf } = await fetchAll(wid);
+        if (!tbFormula && tf) tbFormula = tf;
+        for (const res of results) {
+          const members = res.teamAccountNames || [];
+          const key = members.map(m => (m.id||'').toLowerCase()).sort().join('|');
+          if (!players[key]) players[key] = { points: 0, members, stats: {} };
+          players[key].points += res.pointsEarned || 0;
+          for (const session of (res.sessionHistory || [])) {
+            for (const [stat, val] of Object.entries(session.trackedStats || {})) {
+              if (!players[key].stats[stat]) players[key].stats[stat] = [];
+              players[key].stats[stat].push(val);
+            }
+          }
         }
       }
-    }
-  }
-  if (!tbF) tbF = { components: [
-    { trackedStat: 'VICTORY_ROYALE_STAT',   aggregation: 'sum', multiplier: 1 },
-    { trackedStat: 'TEAM_ELIMS_STAT_INDEX', aggregation: 'sum', multiplier: 1 },
-    { trackedStat: 'PLACEMENT_STAT_INDEX',  aggregation: 'avg', multiplier: 1 }
-  ]};
-  const list = Object.values(pl).map(p => ({
-    ...p,
-    tb: tbF.components.map(c => {
-      const vals = p.stats[c.trackedStat] || [];
-      if (!vals.length) return 0;
-      const raw  = c.aggregation === 'avg'
-        ? vals.reduce((a,b)=>a+b,0)/vals.length
-        : vals.reduce((a,b)=>a+b,0);
-      return raw * (c.multiplier||1);
-    })
-  }));
-  list.sort((a, b) => {
-    if (b.pts !== a.pts) return b.pts - a.pts;
-    for (let i = 0; i < a.tb.length; i++)
-      if (b.tb[i] !== a.tb[i]) return b.tb[i] - a.tb[i];
-    return 0;
-  });
-  return list.map((p, i) => fmtLine(i+1, p.mb, p.pts));
-}
-async function generate() {
-  const btn = document.getElementById('bg'), ldr = document.getElementById('ld1');
-  btn.disabled = true; ldr.style.display = 'inline';
-  document.getElementById('o1').classList.add('hidden');
-  try {
-    let lines;
-    if (_mode === 's') {
-      const wid = getWid(document.getElementById('wid1').value);
-      if (!wid) { alert(t('errNoWid')); return; }
-      lines = await runSimple(wid);
-    } else {
-      const d1 = getWid(document.getElementById('wd1').value);
-      const d2 = getWid(document.getElementById('wd2').value);
-      if (!d1||!d2) { alert(t('errNoBothWid')); return; }
-      lines = await runCumul([d1, d2]);
-    }
-    const st = document.getElementById('st1');
-    if (!lines) {
-      st.className = 'alert err'; st.textContent = t('noResult');
-    } else {
-      st.className = 'alert ok';
-      st.innerHTML = t('generatedOk', lines.length, Object.keys(dict).length);
-      document.getElementById('r1').value = lines.join('\n');
-      document.getElementById('b1').className = 'badge green';
-      document.getElementById('b1').textContent = '✓';
-      document.getElementById('card1').classList.add('done');
-    }
-    document.getElementById('o1').classList.remove('hidden');
-  } catch(e) {
-    document.getElementById('st1').className = 'alert err';
-    document.getElementById('st1').innerHTML = `❌ ${e.message}`;
-    document.getElementById('o1').classList.remove('hidden');
-  } finally {
-    btn.disabled = false; ldr.style.display = 'none';
-  }
-}
 
-// ════════════════════════════════════════
-// TEAMS
-// ════════════════════════════════════════
-function parseTeamsCSV(txt) {
-  const lines = txt.trim().split(/\r?\n/).filter(l => l.trim());
-  if (lines.length < 2) { alert(t('errCSVEmpty')); return null; }
-  const candidates = ['\t', ',', ';'];
-  let dlm = '\t', best = -1;
-  for (const c of candidates) {
-    const avg = lines.reduce((s, l) => s + (l.split(c).length - 1), 0) / lines.length;
-    if (avg > best) { best = avg; dlm = c; }
-  }
-  const hdrs = lines[0].split(dlm).map(h => h.trim().replace(/^\uFEFF/, ''));
-  let pi = hdrs.indexOf('PlayerPage'), ti = hdrs.indexOf('PlayerTeam');
-  if (pi < 0 || ti < 0) { alert(`${t('errCols')}\n${hdrs.join(' | ')}`); return null; }
-  const sampleCols  = lines.slice(1, Math.min(6, lines.length)).map(l => l.split(dlm).length);
-  const avgDataCols = sampleCols.reduce((a, b) => a + b, 0) / sampleCols.length;
-  const diff        = hdrs.length - Math.round(avgDataCols);
-  if (diff > 0) { pi = Math.max(0, pi - diff); ti = Math.max(0, ti - diff); }
-  const m = {};
-  for (let i = 1; i < lines.length; i++) {
-    const c = lines[i].split(dlm);
-    const p = (c[pi] || '').trim(), tt2 = (c[ti] || '').trim();
-    if (p) m[p] = tt2;
-  }
-  return m;
-}
-function extractNames(field) {
-  return [...field.matchAll(/\{\{!\}\}([^,|\n\t]+?)(?=[,|\n\t]|$)/g)]
-    .map(m => m[1].trim()).filter(Boolean);
-}
-function applyLine(line, p2t) {
-  const isWiki = line.includes('{{TournamentResults/Line|');
-  let pField;
-  if (isWiki) {
-    const m = line.match(/\|players=([^|]+)/);
-    if (!m) return line;
-    pField = m[1];
-  } else {
-    const parts = line.split('\t');
-    if (parts.length < 2) return line;
-    pField = parts[1];
-  }
-  const names = extractNames(pField);
-  if (!names.length) return line;
-  const teams = names.map(n => p2t[n] ?? '');
-  if (!teams.some(tt2 => tt2)) return line;
-  const val = teams.join(',');
-  const fn  = (names.length > 1 || (isWiki && line.includes('|teams='))) ? 'teams' : 'team';
-  if (isWiki) {
-    if (/\|teams?=/.test(line)) return line.replace(/\|teams?=[^|]*/, `|${fn}=${val}`);
-    return line.replace(/(\|prize=[^|]+)/, `$1\t|${fn}=${val}`);
-  } else {
-    const p = line.split('\t');
-    if (p.length === 3) return `${p[0]}\t${p[1]}\t${p[2]}\t${val}`;
-    if (p.length >  3) { p[3] = val; return p.join('\t'); }
-    return line + `\t${val}`;
-  }
-}
-function addTeams() {
-  const inp = document.getElementById('i2').value.trim();
-  const raw = document.getElementById('tt').value.trim();
-  if (!inp) { alert(t('errNoInput')); return; }
-  if (!raw) { alert(t('errNoCSV')); return; }
-  const p2t = parseTeamsCSV(raw);
-  if (!p2t) return;
-  if (Object.keys(p2t).length === 0) {
-    document.getElementById('st2').className = 'alert err';
-    document.getElementById('st2').innerHTML = t('teams0');
-    document.getElementById('o2').classList.remove('hidden');
-    return;
-  }
-  let added = 0, updated = 0;
-  const result = inp.split('\n').map(line => {
-    const before = line, after = applyLine(line, p2t);
-    if (after !== before) {
-      const prev = (line.match(/\|teams?=([^|]*)/) || [])[1] || '';
-      if (prev.trim()) updated++; else added++;
-    }
-    return after;
-  }).join('\n');
-  document.getElementById('r2').value = result;
-  document.getElementById('st2').className = 'alert ok';
-  document.getElementById('st2').innerHTML  = t('teamsOk', added, updated, Object.keys(p2t).length);
-  document.getElementById('o2').classList.remove('hidden');
-  document.getElementById('b2').className = 'badge green';
-  document.getElementById('b2').textContent = '✓';
-  document.getElementById('card2').classList.add('done');
-}
+      if (!tbFormula) tbFormula = { components: [
+        { trackedStat: 'VICTORY_ROYALE_STAT', aggregation: 'sum', multiplier: 1 },
+        { trackedStat: 'TEAM_ELIMS_STAT_INDEX', aggregation: 'sum', multiplier: 1 },
+        { trackedStat: 'PLACEMENT_STAT_INDEX', aggregation: 'avg', multiplier: 1 }
+      ]};
 
-// ════════════════════════════════════════
-// DICT EDITOR
-// ════════════════════════════════════════
-function renderDictList() {
-  const d       = loadLocalDict();
-  const el      = document.getElementById('dict-list');
-  const entries = Object.entries(d);
-  if (!entries.length) {
-    el.innerHTML = `<p style="font-size:.82rem;color:#475569">${t('dictNone')}</p>`;
-    return;
-  }
-  el.innerHTML = `
-    <p style="font-size:.82rem;color:#64748b;margin-bottom:8px"><b>${t('dictCount', entries.length)}</b></p>
-    <div style="background:#0f172a;border-radius:8px;padding:10px;font-family:monospace;font-size:12px;max-height:200px;overflow-y:auto">
-      ${entries.map(([eid, name]) => `
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid #1e293b">
-          <span style="color:#e2e8f0">${name} <span style="color:#475569">= ${eid}</span></span>
-          <button onclick="dictRemove('${eid}')"
-            style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:1rem;padding:0 6px">✕</button>
-        </div>
-      `).join('')}
-    </div>
-    <button onclick="dictClear()"
-      style="margin-top:8px;background:none;border:1px solid #ef4444;color:#ef4444;border-radius:6px;padding:5px 12px;font-size:.8rem;cursor:pointer">
-      ${t('dictClearBtn')}
-    </button>
-  `;
-}
-async function dictAdd() {
-  const raw = document.getElementById('dict-new').value.trim();
-  const msg = document.getElementById('dict-msg');
-  if (!raw.includes('=')) { msg.style.color = '#fca5a5'; msg.textContent = t('dictErrFormat'); return; }
-  const i    = raw.indexOf('=');
-  const name = raw.slice(0, i).trim().replace(/_/g, ' ');
-  const eid  = raw.slice(i + 1).trim().toLowerCase().replace(/-/g, '');
-  if (!name || !eid) { msg.style.color = '#fca5a5'; msg.textContent = t('dictErrMissing'); return; }
-  msg.style.color = '#60a5fa'; msg.textContent = t('dictSaving');
-  const local = loadLocalDict();
-  local[eid] = name; saveLocalDict(local); dict[eid] = name;
-  document.getElementById('dict-new').value = '';
-  renderDictList();
-  const ok = await saveToCloud({ [eid]: name });
-  msg.style.color = ok ? '#4ade80' : '#fbbf24';
-  msg.textContent  = ok ? t('dictOk', name) : t('dictWarn', name);
-  setTimeout(() => msg.textContent = '', 5000);
-}
-function dictRemove(eid) {
-  const d = loadLocalDict();
-  delete d[eid]; delete dict[eid]; saveLocalDict(d); renderDictList();
-}
-function dictClear() {
-  if (!confirm(t('dictClearConfirm'))) return;
-  localStorage.removeItem('custom_dict'); renderDictList(); autoLoadDict();
-}
-</script>
+      const list = Object.values(players).map(p => ({
+        ...p,
+        tbValues: tbFormula.components.map(comp => {
+          const vals = p.stats[comp.trackedStat] || [];
+          if (!vals.length) return 0;
+          const raw = comp.aggregation === 'avg'
+            ? vals.reduce((a, b) => a + b, 0) / vals.length
+            : vals.reduce((a, b) => a + b, 0);
+          return raw * (comp.multiplier || 1);
+        })
+      }));
+
+      list.sort((a, b) => {
+        if (b.points !== a.points) return b.points - a.points;
+        for (let i = 0; i < a.tbValues.length; i++) {
+          if (b.tbValues[i] !== a.tbValues[i]) return b.tbValues[i] - a.tbValues[i];
+        }
+        return 0;
+      });
+
+      return list.map((p, i) => formatLine(i + 1, p.members, p.points));
+    }
+
+    async function run() {
+      const file = document.getElementById('dict-file').files[0];
+      if (file) dict = loadDict(await file.text());
+
+      const btn = document.getElementById('run-btn');
+      const loader = document.getElementById('loader');
+      btn.disabled = true;
+      loader.style.display = 'inline';
+      document.getElementById('output').style.display = 'none';
+
+      try {
+        let lines;
+        if (currentMode === 'simple') {
+          const wid = getWid(document.getElementById('wid1').value);
+          if (!wid) { alert('Entre un WindowID !'); return; }
+          lines = await runSimple(wid);
+        } else {
+          const d1 = getWid(document.getElementById('wid-d1').value);
+          const d2 = getWid(document.getElementById('wid-d2').value);
+          if (!d1 || !d2) { alert('Entre les deux WindowIDs !'); return; }
+          lines = await runCumul([d1, d2]);
+        }
+
+        if (!lines) {
+          document.getElementById('stats').className = 'error';
+          document.getElementById('stats').textContent = '❌ Aucun résultat — vérifie le WindowID ou la connexion.';
+        } else {
+          const apiLabel = currentApi === 'kass' ? 'Kass507.lat' : 'FortniteAPI.io';
+          const dictInfo = Object.keys(dict).length ? ` · ${Object.keys(dict).length} pseudos chargés` : '';
+          document.getElementById('stats').className = '';
+          document.getElementById('stats').innerHTML = `✅ <b>${lines.length} lignes générées</b> via ${apiLabel}${dictInfo}`;
+          document.getElementById('result').value = lines.join('\n');
+        }
+        document.getElementById('output').style.display = 'block';
+      } catch (e) {
+        document.getElementById('stats').className = 'error';
+        document.getElementById('stats').innerHTML = `❌ Erreur : ${e.message}<br><small>Si c'est une erreur CORS, ouvre le fichier via un serveur local (ex: VS Code Live Server).</small>`;
+        document.getElementById('output').style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        loader.style.display = 'none';
+      }
+    }
+
+    function copyResult() {
+      navigator.clipboard.writeText(document.getElementById('result').value);
+      document.getElementById('copy-btn').textContent = '✅ Copié !';
+      setTimeout(() => document.getElementById('copy-btn').textContent = '📋 Copier', 2000);
+    }
+  </script>
 </body>
 </html>
-
