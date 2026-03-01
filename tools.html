@@ -257,7 +257,6 @@
     </div>
   </div>
 
-  <!-- DICT EDITOR -->
   <div class="card" id="card-dict">
     <div class="card-header">
       <div class="badge amber">+</div>
@@ -267,10 +266,9 @@
       Les entrées sont sauvegardées dans le <b>cloud partagé</b> — visibles par tout le monde instantanément.
     </p>
     <label data-i18n="dictLabel">Format : PseudoWiki=EpicAccountID (une entrée par ligne)</label>
-    <!-- ✅ CHANGEMENT : textarea multiligne au lieu de input -->
     <textarea id="dict-new" rows="5"
-      placeholder="Parz=abc123def456abc123def456abc123de&#10;Player Name=def456abc123def456abc123def456ab&#10;Another Player=aaa111bbb222ccc333ddd444eee555ff"></textarea>
-    <div class="hint" data-i18n="dictHint">💡 Les espaces dans les pseudos sont convertis en _ automatiquement. L'Epic Account ID (32 caractères) se trouve dans l'URL Fortnite Tracker.</div>
+      placeholder="Parz=abc123def456abc123def456abc123de&#10;Player Name=def456abc123def456abc123def456ab&#10;FLeder (Asiatic Player)=aaa111bbb222ccc333ddd444eee555ff"></textarea>
+    <div class="hint" data-i18n="dictHint">💡 Les espaces dans les pseudos sont convertis en _ pour le stockage, et reconvertis en espaces dans le classement généré. L'Epic Account ID (32 caractères) se trouve dans l'URL Fortnite Tracker.</div>
     <div class="btn-row" style="margin-top:12px">
       <button class="btn btn-blue" onclick="dictAdd()" data-i18n="btnDictAdd">➕ Ajouter</button>
       <span id="dict-msg" style="font-size:.85rem"></span>
@@ -376,7 +374,7 @@ const T = {
     dictTitle:             "Ajouter un joueur à la database",
     dictDesc:              "Les entrées sont sauvegardées dans le <b>cloud partagé</b> — visibles par tout le monde instantanément.",
     dictLabel:             "Format : PseudoWiki=EpicAccountID (une entrée par ligne)",
-    dictHint:              "💡 Les espaces dans les pseudos sont convertis en _ automatiquement. L'Epic Account ID (32 caractères) se trouve dans l'URL Fortnite Tracker.",
+    dictHint:              "💡 Les espaces sont convertis en _ pour le stockage, et reconvertis en espaces dans le classement généré. L'Epic Account ID (32 caractères) se trouve dans l'URL Fortnite Tracker.",
     btnDictAdd:            "➕ Ajouter",
     madeBy:                "Créé par",
     copiedMsg:             "✅ Copié !",
@@ -393,18 +391,18 @@ const T = {
     dictOk:                (n) => `✅ ${n} entrée${n>1?'s':''} ajoutée${n>1?'s':''} — visibles par tout le monde ! ☁️`,
     dictWarn:              (n) => `⚠️ ${n} entrée${n>1?'s':''} sauvegardée${n>1?'s':''} localement — problème JSONBin`,
     dictNone:              "Aucune entrée ajoutée pour l'instant.",
-    dictCount:             (n) => `${n} entrée(s) ajoutée(s) :`,
+    dictCount:             (n) => `${n} entrée(s) dans le cache local :`,
     dictClearConfirm:      "Supprimer toutes les entrées locales ?",
     dictClearBtn:          "🗑️ Tout effacer",
-    pseudosLoaded:         (t, f, c) => {
-      let m = `✅ <b>${t} pseudos chargés</b>`;
+    pseudosLoaded:         (total, f, c) => {
+      let m = `✅ <b>${total} pseudos chargés</b>`;
       if (f > 0) m += ` · ${f} depuis GitHub`;
       if (c > 0) m += ` · ${c} ajouts cloud ☁️`;
       return m;
     },
     noDict:                "⚠️ Aucun pseudo chargé",
-    generatedOk:           (n, t, api) => `✅ <b>${n} lignes générées</b> · ${t} pseudos dans le dict · via ${api}`,
-    teamsOk:               (a, u, t) => `✅ <b>${a} équipes ajoutées</b>${u ? `, ${u} mises à jour` : ''} · ${t} joueurs dans le CSV`,
+    generatedOk:           (n, total, api) => `✅ <b>${n} lignes générées</b> · ${total} pseudos dans le dict · via ${api}`,
+    teamsOk:               (a, u, total) => `✅ <b>${a} équipes ajoutées</b>${u ? `, ${u} mises à jour` : ''} · ${total} joueurs dans le CSV`,
     teams0:                "❌ 0 joueur trouvé — vérifie les colonnes <code>PlayerPage</code> et <code>PlayerTeam</code>",
     dateTitle:             "📅 Date de l'événement",
     dateDay1:              "Jour 1 :",
@@ -444,7 +442,7 @@ const T = {
     dictTitle:             "Add a player to the database",
     dictDesc:              "Entries are saved in the <b>shared cloud</b> — visible to everyone instantly.",
     dictLabel:             "Format: WikiPseudo=EpicAccountID (one entry per line)",
-    dictHint:              "💡 Spaces in names are automatically converted to _. The Epic Account ID (32 chars) is in the Fortnite Tracker URL.",
+    dictHint:              "💡 Spaces are stored as _ and converted back to spaces in the generated output. The Epic Account ID (32 chars) is in the Fortnite Tracker URL.",
     btnDictAdd:            "➕ Add",
     madeBy:                "Created by",
     copiedMsg:             "✅ Copied!",
@@ -461,18 +459,18 @@ const T = {
     dictOk:                (n) => `✅ ${n} entr${n>1?'ies':'y'} added — visible to everyone! ☁️`,
     dictWarn:              (n) => `⚠️ ${n} entr${n>1?'ies':'y'} saved locally only — JSONBin issue`,
     dictNone:              "No entries added yet.",
-    dictCount:             (n) => `${n} entr${n > 1 ? 'ies' : 'y'} added:`,
+    dictCount:             (n) => `${n} entr${n > 1 ? 'ies' : 'y'} in local cache:`,
     dictClearConfirm:      "Delete all local entries?",
     dictClearBtn:          "🗑️ Clear all",
-    pseudosLoaded:         (t, f, c) => {
-      let m = `✅ <b>${t} pseudos loaded</b>`;
+    pseudosLoaded:         (total, f, c) => {
+      let m = `✅ <b>${total} pseudos loaded</b>`;
       if (f > 0) m += ` · ${f} from GitHub`;
       if (c > 0) m += ` · ${c} cloud additions ☁️`;
       return m;
     },
     noDict:                "⚠️ No pseudos loaded",
-    generatedOk:           (n, t, api) => `✅ <b>${n} lines generated</b> · ${t} pseudos in dict · via ${api}`,
-    teamsOk:               (a, u, t) => `✅ <b>${a} teams added</b>${u ? `, ${u} updated` : ''} · ${t} players in CSV`,
+    generatedOk:           (n, total, api) => `✅ <b>${n} lines generated</b> · ${total} pseudos in dict · via ${api}`,
+    teamsOk:               (a, u, total) => `✅ <b>${a} teams added</b>${u ? `, ${u} updated` : ''} · ${total} players in CSV`,
     teams0:                "❌ 0 players found — check <code>PlayerPage</code> and <code>PlayerTeam</code> columns",
     dateTitle:             "📅 Event date",
     dateDay1:              "Day 1:",
@@ -533,14 +531,14 @@ async function saveToCloud(newEntries) {
   } catch(e) { return false; }
 }
 
-// ✅ CHANGEMENT : on ne convertit plus _ en espaces — on garde les underscores
+// Stockage avec _ (tel quel depuis le fichier GitHub ou la saisie)
 function loadDictFromText(txt) {
   const d = {};
   for (const rawLine of txt.split('\n')) {
     const line = rawLine.trim();
     if (!line || !line.includes('=')) continue;
     const i    = line.indexOf('=');
-    const name = line.slice(0, i).trim();
+    const name = line.slice(0, i).trim(); // conserve les _ existants
     const eid  = line.slice(i + 1).trim().toLowerCase().replace(/-/g, '');
     if (eid && name) d[eid] = name;
   }
@@ -570,6 +568,12 @@ async function autoLoadDict() {
   renderDictList();
 }
 autoLoadDict();
+
+// ✅ FIX PRINCIPAL : getName() convertit _ → espaces au moment de l'affichage dans le classement
+function getName(eid) {
+  const raw = dict[eid];
+  return raw ? raw.replace(/_/g, ' ') : null;
+}
 
 function setMode(m) {
   _mode = m;
@@ -624,7 +628,6 @@ async function fetchAll(wid) {
   }
   return { results, tb, begin };
 }
-function getName(eid) { return dict[eid] || null; }
 function fmtLine(rank, members, pts) {
   const p = members.map(m => {
     const eid  = (m.id || '').toLowerCase().replace(/-/g, '');
@@ -639,7 +642,7 @@ async function runSimple(wid) {
   results.sort((a, b) => (a.rank||999) - (b.rank||999));
   return {
     lines: results.map((r, i) => fmtLine(r.rank||i+1, r.teamAccountNames||[], r.pointsEarned||0)),
-    date: begin || null
+    date:  begin || null
   };
 }
 async function runCumul(wids) {
@@ -708,9 +711,9 @@ function tsToDate(ts) {
   const d = new Date(sec * 1000);
   if (isNaN(d.getTime())) return null;
   const y   = d.getUTCFullYear();
-  const m   = String(d.getUTCMonth()+1).padStart(2,'0');
+  const mo  = String(d.getUTCMonth()+1).padStart(2,'0');
   const day = String(d.getUTCDate()).padStart(2,'0');
-  return `${y}-${m}-${day}`;
+  return `${y}-${mo}-${day}`;
 }
 async function runSimpleWLS(lbId) {
   const data = await fetchWLS(lbId);
@@ -903,9 +906,6 @@ function addTeams() {
   document.getElementById('card2').classList.add('done');
 }
 
-// ══════════════════════════════════════════════════════
-// DICT EDITOR — ✅ multiligne + auto underscore
-// ══════════════════════════════════════════════════════
 function renderDictList() {
   const d       = loadLocalDict();
   const el      = document.getElementById('dict-list');
@@ -919,7 +919,7 @@ function renderDictList() {
     <div style="background:#0f172a;border-radius:8px;padding:10px;font-family:monospace;font-size:12px;max-height:200px;overflow-y:auto">
       ${entries.map(([eid, name]) => `
         <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid #1e293b">
-          <span style="color:#e2e8f0">${name} <span style="color:#475569">= ${eid}</span></span>
+          <span style="color:#e2e8f0">${name.replace(/_/g,' ')} <span style="color:#475569">= ${eid}</span></span>
           <button onclick="dictRemove('${eid}')" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:1rem;padding:0 6px">✕</button>
         </div>
       `).join('')}
@@ -935,7 +935,6 @@ async function dictAdd() {
   const msg = document.getElementById('dict-msg');
   if (!raw) return;
 
-  // ✅ Parse toutes les lignes
   const rawLines = raw.split(/\r?\n/).map(l => l.trim()).filter(l => l && l.includes('='));
   if (!rawLines.length) {
     msg.style.color = '#fca5a5';
@@ -946,7 +945,7 @@ async function dictAdd() {
   const entries = {};
   for (const line of rawLines) {
     const i    = line.indexOf('=');
-    // ✅ Remplace automatiquement les espaces par des underscores dans le pseudo
+    // Stockage avec _ à la place des espaces
     const name = line.slice(0, i).trim().replace(/ /g, '_');
     const eid  = line.slice(i + 1).trim().toLowerCase().replace(/-/g, '');
     if (name && eid) entries[eid] = name;
