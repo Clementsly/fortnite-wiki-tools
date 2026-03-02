@@ -55,13 +55,31 @@
     .tab.active { background: #3b82f6; border-color: #3b82f6; color: white; }
     label { display: block; font-size: 0.83rem; font-weight: 600; color: #94a3b8; margin: 14px 0 5px; }
     .hint { font-size: 0.77rem; color: #475569; margin-top: 3px; }
-    input[type=text] { width: 100%; padding: 9px 12px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: #e2e8f0; font-size: 0.92rem; }
-    input[type=text]:focus { outline: none; border-color: #3b82f6; }
-    input[type=file] { font-size: 0.83rem; color: #94a3b8; margin-top: 5px; }
+    input[type=text], input[type=number] {
+      width: 100%; padding: 9px 12px; background: #0f172a;
+      border: 1px solid #334155; border-radius: 8px;
+      color: #e2e8f0; font-size: 0.92rem;
+    }
+    input[type=text]:focus, input[type=number]:focus { outline: none; border-color: #3b82f6; }
+    /* ✅ Masque le file input natif */
+    input[type=file] { display: none; }
+    /* ✅ Bouton fichier custom */
+    .file-input-row { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
+    .file-btn {
+      padding: 7px 16px; background: #334155; border: 1px solid #475569;
+      border-radius: 7px; color: #e2e8f0; font-size: 0.83rem; font-weight: 600;
+      cursor: pointer; transition: .15s; white-space: nowrap;
+    }
+    .file-btn:hover { background: #475569; border-color: #64748b; }
+    .file-name { font-size: 0.8rem; color: #64748b; font-style: italic; }
     textarea { width: 100%; padding: 10px 12px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: #e2e8f0; font-family: 'Courier New', monospace; font-size: 12px; resize: vertical; }
     textarea:focus { outline: none; border-color: #3b82f6; }
     .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
     @media(max-width:580px) { .grid2 { grid-template-columns: 1fr; } }
+    /* ✅ Placement range */
+    .placement-row { display: flex; align-items: center; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
+    .placement-row span { font-size: 0.83rem; color: #64748b; }
+    .placement-row input[type=number] { width: 90px; text-align: center; }
     .btn-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 16px; }
     .btn { padding: 9px 22px; border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: .15s; }
     .btn-blue   { background: #3b82f6; color: white; }
@@ -161,6 +179,17 @@
         </div>
       </div>
     </div>
+
+    <!-- ✅ PLACEMENT RANGE -->
+    <label data-i18n="placementLabel">Placement</label>
+    <div class="placement-row">
+      <span data-i18n="placementFrom">De</span>
+      <input type="number" id="rank-from" value="1" min="1" max="9999">
+      <span data-i18n="placementTo">à</span>
+      <input type="number" id="rank-to" value="100" min="1" max="9999">
+    </div>
+    <div class="hint" data-i18n="placementHint">💡 Filtre les rangs à inclure dans le résultat (ex: 1 à 100)</div>
+
     <div class="btn-row">
       <button class="btn btn-blue" onclick="generate()" id="bg" data-i18n="btnGenerate">🚀 Générer</button>
       <span class="loader" id="ld1">⏳ Chargement...</span>
@@ -190,7 +219,11 @@
     <label data-i18n="csvLabel">Équipes — CSV ou TSV</label>
     <textarea id="tt" rows="7"
       placeholder="DataTeam&#9;PlayerTeam&#9;DataPlayer&#9;PlayerPage&#10;BIG Clan&#9;Malibuca&#9;Malibuca&#9;Malibuca"></textarea>
-    <div class="hint" data-i18n="csvHint">Ou charge un fichier :</div>
+    <!-- ✅ Bouton fichier custom traduit -->
+    <div class="file-input-row">
+      <button class="file-btn" onclick="document.getElementById('tf').click()" id="file-btn-label" data-i18n="fileBtn">📂 Choisir un fichier</button>
+      <span class="file-name" id="file-name-display" data-i18n="fileNone">Aucun fichier choisi</span>
+    </div>
     <input type="file" id="tf" accept=".csv,.tsv,.txt" onchange="loadTF()">
     <div class="btn-row">
       <button class="btn btn-blue" onclick="addTeams()" data-i18n="btnAddTeams">🏅 Ajouter les équipes</button>
@@ -227,8 +260,9 @@
     <div id="dict-list" style="margin-top:16px"></div>
   </div>
 
+  <!-- ✅ FIX PP : URL raw GitHub correcte -->
   <footer class="footer">
-    <img src="Design-sans-titre-6.jpg" alt="Clem" class="footer-avatar">
+    <img src="https://raw.githubusercontent.com/Clementsly/fortnite-wiki-tools/main/Design%20sans%20titre%20(6).png" alt="Clem" class="footer-avatar">
     <div class="footer-text">
       <div class="made-by" data-i18n="madeBy">Créé par</div>
       <div class="author-name">Clem</div>
@@ -311,6 +345,10 @@ const T = {
     wlsIdLabel:            "WLS Leaderboard ID",
     wlsIdPlaceholder:      "797505610768728064",
     wlsIdHint:             "💡 L'ID numérique du leaderboard WLS",
+    placementLabel:        "Placement",
+    placementFrom:         "De",
+    placementTo:           "à",
+    placementHint:         "💡 Filtre les rangs à inclure dans le résultat (ex: 1 à 100)",
     btnGenerate:           "🚀 Générer",
     generatedLabel:        "Classement généré",
     btnCopy:               "📋 Copier",
@@ -320,7 +358,8 @@ const T = {
     step2inputPlaceholder: "Colle ici le résultat de l'étape 1, ou ton code wiki {{TournamentResults/Line|...}}",
     step2inputHint:        "Compatible avec le format classement (rank↹players↹points) ET le format wiki",
     csvLabel:              "Équipes — CSV ou TSV",
-    csvHint:               "Ou charge un fichier :",
+    fileBtn:               "📂 Choisir un fichier",
+    fileNone:              "Aucun fichier choisi",
     btnAddTeams:           "🏅 Ajouter les équipes",
     resultLabel:           "Résultat final",
     dictTitle:             "Ajouter un joueur à la database",
@@ -381,6 +420,10 @@ const T = {
     wlsIdLabel:            "WLS Leaderboard ID",
     wlsIdPlaceholder:      "797505610768728064",
     wlsIdHint:             "💡 The numeric WLS leaderboard ID",
+    placementLabel:        "Placement",
+    placementFrom:         "From",
+    placementTo:           "to",
+    placementHint:         "💡 Filter which ranks to include in the output (e.g. 1 to 100)",
     btnGenerate:           "🚀 Generate",
     generatedLabel:        "Generated leaderboard",
     btnCopy:               "📋 Copy",
@@ -390,12 +433,13 @@ const T = {
     step2inputPlaceholder: "Paste here the result from step 1, or your wiki code {{TournamentResults/Line|...}}",
     step2inputHint:        "Compatible with leaderboard format (rank↹players↹points) AND wiki format",
     csvLabel:              "Teams — CSV or TSV",
-    csvHint:               "Or load a file:",
+    fileBtn:               "📂 Choose a file",
+    fileNone:              "No file chosen",
     btnAddTeams:           "🏅 Add teams",
     resultLabel:           "Final result",
     dictTitle:             "Add a player to the database",
     dictDesc:              "Entries are saved in the <b>shared cloud</b> — visible to everyone instantly.",
-    dictLabel:             "Format: WikiPseudo=EpicAccountID (one entry per line)",
+    dictLabel:             "Format: WikiNickname=EpicAccountID (one entry per line)",
     dictHint:              "💡 Spaces are stored as _. The Epic Account ID (32 chars) is in the Fortnite Tracker URL.",
     btnDictAdd:            "➕ Add",
     madeBy:                "Created by",
@@ -407,8 +451,8 @@ const T = {
     errNoCSV:              "Add the teams CSV!",
     errCSVEmpty:           "CSV is empty!",
     errCols:               "Columns not found!",
-    dictErrFormat:         "❌ No valid lines — use Pseudo=EpicID format",
-    dictErrMissing:        "❌ Missing pseudo or ID on a line",
+    dictErrFormat:         "❌ No valid lines — use Nickname=EpicID format",
+    dictErrMissing:        "❌ Missing nickname or ID on a line",
     dictSaving:            "⏳ Saving...",
     dictOk:                (n) => `✅ ${n} entr${n>1?'ies':'y'} added — visible to everyone! ☁️`,
     dictWarn:              (n) => `⚠️ ${n} entr${n>1?'ies':'y'} saved locally only — JSONBin issue`,
@@ -417,13 +461,13 @@ const T = {
     dictClearConfirm:      "Delete all local entries?",
     dictClearBtn:          "🗑️ Clear all",
     pseudosLoaded:         (total, f, c) => {
-      let m = `✅ <b>${total} pseudos loaded</b>`;
+      let m = `✅ <b>${total} nicknames loaded</b>`;
       if (f > 0) m += ` · ${f} from GitHub`;
       if (c > 0) m += ` · ${c} cloud additions ☁️`;
       return m;
     },
-    noDict:       "⚠️ No pseudos loaded — tool still works",
-    generatedOk:  (n, total, api) => `✅ <b>${n} lines generated</b> · ${total} pseudos in dict · via ${api}`,
+    noDict:       "⚠️ No nicknames loaded — tool still works",
+    generatedOk:  (n, total, api) => `✅ <b>${n} lines generated</b> · ${total} nicknames in dict · via ${api}`,
     teamsOk:      (added, total) => `✅ <b>${added}/${total} teams added</b> from CSV`,
     teamsMissing: (list) => `⚠️ ${list.length} player${list.length>1?'s':''} from CSV not found in code: <b>${list.join(', ')}</b>`,
     teams0:       "❌ 0 players found — check <code>PlayerPage</code> / <code>DataPlayer</code> and <code>PlayerTeam</code> columns",
@@ -490,14 +534,13 @@ function fetchWithTimeout(url, options = {}, ms = 8000) {
 }
 
 // ============================================================
-//  CLOUD DICT (JSONBin)
+//  CLOUD DICT
 // ============================================================
 async function fetchCloudDict() {
   try {
     const r = await fetchWithTimeout(
       `https://api.jsonbin.io/v3/b/${JSONBIN_ID}/latest`,
-      { headers: { "X-Master-Key": JSONBIN_KEY } },
-      8000
+      { headers: { "X-Master-Key": JSONBIN_KEY } }, 8000
     );
     if (!r.ok) throw new Error(`JSONBin ${r.status}`);
     const data = await r.json();
@@ -512,11 +555,7 @@ async function saveToCloud(newEntries) {
     Object.assign(current, newEntries);
     const r = await fetchWithTimeout(
       `https://api.jsonbin.io/v3/b/${JSONBIN_ID}`,
-      {
-        method: 'PUT',
-        headers: { "Content-Type": "application/json", "X-Master-Key": JSONBIN_KEY, "X-Bin-Versioning": "false" },
-        body: JSON.stringify(current)
-      },
+      { method: 'PUT', headers: { "Content-Type": "application/json", "X-Master-Key": JSONBIN_KEY, "X-Bin-Versioning": "false" }, body: JSON.stringify(current) },
       8000
     );
     return r.ok;
@@ -588,17 +627,13 @@ async function fetchWithRetry(url, options = {}, useProxy = false) {
       if (r.status >= 400 && r.status < 500)
         throw new Error(`_FATAL_${ERR_MSGS[r.status] || `Erreur ${r.status}`}`);
       const wait = (attempt + 1) * 2000;
-      if (useProxy && proxiesTried < CORS_PROXIES.length - 1) {
-        _proxyIndex = (_proxyIndex + 1) % CORS_PROXIES.length; proxiesTried++;
-      }
+      if (useProxy && proxiesTried < CORS_PROXIES.length - 1) { _proxyIndex = (_proxyIndex + 1) % CORS_PROXIES.length; proxiesTried++; }
       lastErr = new Error(`Erreur ${r.status} (tentative ${attempt+1}/${MAX_RETRIES})`);
       await sleep(wait);
     } catch(e) {
       if (e.message.startsWith('_FATAL_')) throw new Error(e.message.replace('_FATAL_', ''));
       const wait = (attempt + 1) * 1500;
-      if (useProxy && proxiesTried < CORS_PROXIES.length - 1) {
-        _proxyIndex = (_proxyIndex + 1) % CORS_PROXIES.length; proxiesTried++;
-      }
+      if (useProxy && proxiesTried < CORS_PROXIES.length - 1) { _proxyIndex = (_proxyIndex + 1) % CORS_PROXIES.length; proxiesTried++; }
       lastErr = new Error(`Erreur réseau (tentative ${attempt+1}/${MAX_RETRIES}) : ${e.message}`);
       await sleep(wait);
     }
@@ -819,12 +854,31 @@ function toStep2() {
 }
 function loadTF() {
   const f = document.getElementById('tf').files[0];
-  if (f) f.text().then(txt => document.getElementById('tt').value = txt);
+  if (!f) return;
+  // ✅ Affiche le nom du fichier choisi
+  document.getElementById('file-name-display').textContent = f.name;
+  f.text().then(txt => document.getElementById('tt').value = txt);
 }
 function getWid(txt) {
   txt = (txt || '').trim();
   const m = txt.match(/[?&]window=([a-zA-Z0-9_-]+)/);
   return m ? m[1] : txt;
+}
+
+// ✅ Récupère et valide le placement range
+function getPlacementRange() {
+  const from = parseInt(document.getElementById('rank-from').value, 10) || 1;
+  const to   = parseInt(document.getElementById('rank-to').value,   10) || 100;
+  return { from: Math.max(1, from), to: Math.max(from, to) };
+}
+
+// ✅ Filtre les lignes par placement range
+function filterByRank(lines) {
+  const { from, to } = getPlacementRange();
+  return lines.filter(line => {
+    const rank = parseInt(line.split('\t')[0], 10);
+    return !isNaN(rank) && rank >= from && rank <= to;
+  });
 }
 
 async function generate() {
@@ -859,12 +913,16 @@ async function generate() {
         const tmp = await runCumul([d1, d2]); res = { lines: tmp.lines }; dateInfo = tmp.dates || null;
       }
     }
-    const lines = res.lines;
-    const st    = document.getElementById('st1');
+
+    let lines = res.lines;
+    const st  = document.getElementById('st1');
+
     if (!lines) {
       st.className = 'alert err'; st.textContent = t('noResult');
       document.getElementById('date-block').classList.add('hidden');
     } else {
+      // ✅ Applique le filtre placement
+      lines = filterByRank(lines);
       st.className = 'alert ok';
       st.innerHTML = t('generatedOk', lines.length, Object.keys(dict).length, apiLabel);
       document.getElementById('r1').value = lines.join('\n');
@@ -885,67 +943,48 @@ async function generate() {
 }
 
 // ============================================================
-//  ✅ FIX STEP 2
-//  - Décalage colonnes auto quand data < headers
-//  - Warning = joueurs du CSV non trouvés dans le code
+//  STEP 2 — AJOUTER LES ÉQUIPES
 // ============================================================
 function parseTeamsCSV(txt) {
   const lines = txt.trim().split(/\r?\n/).filter(l => l.trim());
   if (lines.length < 2) { alert(t('errCSVEmpty')); return null; }
-
   const candidates = ['\t', ',', ';'];
   let dlm = '\t', best = -1;
   for (const c of candidates) {
     const avg = lines.reduce((s, l) => s + (l.split(c).length - 1), 0) / lines.length;
     if (avg > best) { best = avg; dlm = c; }
   }
-
   const hdrs = lines[0].split(dlm).map(h => h.trim().replace(/^\uFEFF/, ''));
   const ti   = hdrs.indexOf('PlayerTeam');
   const di   = hdrs.indexOf('DataPlayer');
   const pi   = hdrs.indexOf('PlayerPage');
-
   if (ti < 0) { alert(`${t('errCols')}\n${hdrs.join(' | ')}`); return null; }
   if (di < 0 && pi < 0) { alert(`${t('errCols')}\n${hdrs.join(' | ')}`); return null; }
-
-  // map[playerName] = { team, csvKey }
-  // csvKeys = set of all player names in CSV (for missing detection)
   const map     = {};
   const csvKeys = new Set();
-
   for (let i = 1; i < lines.length; i++) {
-    const c = lines[i].split(dlm);
-
-    // ✅ FIX DÉCALAGE : si la ligne a moins de colonnes que le header,
-    // on décale tous les index vers la gauche du même nombre de colonnes manquantes
-    const offset   = Math.max(0, hdrs.length - c.length);
-    const teamIdx  = Math.max(0, ti - offset);
-    const dpIdx    = di >= 0 ? Math.max(0, di - offset) : -1;
-    const ppIdx    = pi >= 0 ? Math.max(0, pi - offset) : -1;
-
+    const c      = lines[i].split(dlm);
+    const offset = Math.max(0, hdrs.length - c.length);
+    const teamIdx = Math.max(0, ti - offset);
+    const dpIdx   = di >= 0 ? Math.max(0, di - offset) : -1;
+    const ppIdx   = pi >= 0 ? Math.max(0, pi - offset) : -1;
     const team = (c[teamIdx] || '').trim();
     if (!team) continue;
-
-    // PlayerPage
     if (ppIdx >= 0 && ppIdx < c.length) {
       const pp = (c[ppIdx] || '').trim();
       if (pp) { map[pp] = team; csvKeys.add(pp); }
     }
-    // DataPlayer (peut être différent de PlayerPage)
     if (dpIdx >= 0 && dpIdx < c.length) {
       const dp = (c[dpIdx] || '').trim();
       if (dp) { map[dp] = team; csvKeys.add(dp); }
     }
   }
-
   return { map, csvKeys, total: lines.length - 1 };
 }
-
 function extractNames(field) {
   return [...field.matchAll(/\{\{!\}\}([^,|\n\t]+?)(?=[,|\n\t]|$)/g)]
     .map(m => m[1].trim()).filter(Boolean);
 }
-
 function applyLine(line, map) {
   const isWiki = line.includes('{{TournamentResults/Line|');
   let pField;
@@ -958,19 +997,15 @@ function applyLine(line, map) {
     if (parts.length < 2) return { out: line, usedKeys: [] };
     pField = parts[1];
   }
-
   const names = extractNames(pField);
   if (!names.length) return { out: line, usedKeys: [] };
-
   const usedKeys = [];
   const teams    = names.map(n => {
     const team = map[n];
     if (team) { usedKeys.push(n); return team; }
     return '';
   });
-
   if (!teams.some(v => v)) return { out: line, usedKeys: [] };
-
   const val = teams.join(',');
   const fn  = (names.length > 1 || (isWiki && line.includes('|teams='))) ? 'teams' : 'team';
   let out;
@@ -985,18 +1020,14 @@ function applyLine(line, map) {
   }
   return { out, usedKeys };
 }
-
 function addTeams() {
   const inp = document.getElementById('i2').value.trim();
   const raw = document.getElementById('tt').value.trim();
   if (!inp) { alert(t('errNoInput')); return; }
   if (!raw) { alert(t('errNoCSV'));   return; }
-
   const parsed = parseTeamsCSV(raw);
   if (!parsed) return;
-
   const { map, csvKeys, total: csvTotal } = parsed;
-
   if (Object.keys(map).length === 0) {
     document.getElementById('st2').className = 'alert err';
     document.getElementById('st2').innerHTML  = t('teams0');
@@ -1004,35 +1035,21 @@ function addTeams() {
     document.getElementById('o2').classList.remove('hidden');
     return;
   }
-
-  // On trace quels joueurs du CSV ont été utilisés
   const usedInCode = new Set();
   let teamsAdded   = 0;
-
   const result = inp.split('\n').map(line => {
     const { out, usedKeys } = applyLine(line, map);
-    if (usedKeys.length > 0) {
-      teamsAdded++;
-      usedKeys.forEach(k => usedInCode.add(k));
-    }
+    if (usedKeys.length > 0) { teamsAdded++; usedKeys.forEach(k => usedInCode.add(k)); }
     return out;
   }).join('\n');
-
-  // Joueurs du CSV jamais trouvés dans le code
-  // On déduplique : si DataPlayer = PlayerPage, on ne compte qu'une fois
   const notFound = [];
   const seen     = new Set();
   for (const k of csvKeys) {
-    if (!usedInCode.has(k) && !seen.has(k)) {
-      seen.add(k);
-      notFound.push(k);
-    }
+    if (!usedInCode.has(k) && !seen.has(k)) { seen.add(k); notFound.push(k); }
   }
-
   document.getElementById('r2').value = result;
   document.getElementById('st2').className = 'alert ok';
   document.getElementById('st2').innerHTML  = t('teamsOk', teamsAdded, csvTotal);
-
   const missingEl = document.getElementById('st2-missing');
   if (notFound.length > 0) {
     missingEl.className = 'alert warn';
@@ -1041,7 +1058,6 @@ function addTeams() {
   } else {
     missingEl.classList.add('hidden');
   }
-
   document.getElementById('o2').classList.remove('hidden');
   document.getElementById('b2').className   = 'badge green';
   document.getElementById('b2').textContent  = '✓';
@@ -1055,10 +1071,7 @@ function renderDictList() {
   const d       = loadLocalDict();
   const el      = document.getElementById('dict-list');
   const entries = Object.entries(d);
-  if (!entries.length) {
-    el.innerHTML = `<p style="font-size:.82rem;color:#475569">${t('dictNone')}</p>`;
-    return;
-  }
+  if (!entries.length) { el.innerHTML = `<p style="font-size:.82rem;color:#475569">${t('dictNone')}</p>`; return; }
   el.innerHTML = `
     <p style="font-size:.82rem;color:#64748b;margin-bottom:8px"><b>${t('dictCount', entries.length)}</b></p>
     <div style="background:#0f172a;border-radius:8px;padding:10px;font-family:monospace;font-size:12px;max-height:200px;overflow-y:auto">
