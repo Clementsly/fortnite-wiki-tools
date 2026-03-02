@@ -80,7 +80,6 @@
     .info { background: #0c1a2e; border: 1px solid #3b82f6; color: #93c5fd; }
     .warn { background: #1c1200; border: 1px solid #f59e0b; color: #fbbf24; }
     code { background: #0f172a; padding: 1px 5px; border-radius: 4px; font-size: 0.85em; }
-    /* DATE BLOCK */
     #date-block { margin-top: 10px; padding: 10px 14px; border-radius: 8px; background: #0f172a; border: 1px solid #334155; font-size: 0.82rem; color: #cbd5f5; }
     .date-row { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
     .date-label { color: #64748b; font-size: 0.78rem; min-width: 52px; }
@@ -220,7 +219,7 @@
     <label data-i18n="dictLabel">Format : PseudoWiki=EpicAccountID (une entrée par ligne)</label>
     <textarea id="dict-new" rows="5"
       placeholder="Parz=abc123def456abc123def456abc123de&#10;Player Name=def456abc123def456abc123def456ab"></textarea>
-    <div class="hint" data-i18n="dictHint">💡 Les espaces sont convertis en _ pour le stockage, et reconvertis en espaces dans le classement généré. L'Epic Account ID (32 caractères) se trouve dans l'URL Fortnite Tracker.</div>
+    <div class="hint" data-i18n="dictHint">💡 Les espaces sont convertis en _ pour le stockage. L'Epic Account ID (32 caractères) se trouve dans l'URL Fortnite Tracker.</div>
     <div class="btn-row" style="margin-top:12px">
       <button class="btn btn-blue" onclick="dictAdd()" data-i18n="btnDictAdd">➕ Ajouter</button>
       <span id="dict-msg" style="font-size:.85rem"></span>
@@ -355,8 +354,8 @@ const T = {
     },
     noDict:       "⚠️ Aucun pseudo chargé — l'outil fonctionne quand même",
     generatedOk:  (n, total, api) => `✅ <b>${n} lignes générées</b> · ${total} pseudos dans le dict · via ${api}`,
-    teamsOk:      (added, total) => `✅ <b>${added}/${total} équipes ajoutées</b>`,
-    teamsMissing: (list) => `⚠️ ${list.length} joueur${list.length>1?'s':''} sans équipe : ${list.join(', ')}`,
+    teamsOk:      (added, total) => `✅ <b>${added}/${total} équipes ajoutées</b> depuis le CSV`,
+    teamsMissing: (list) => `⚠️ ${list.length} joueur${list.length>1?'s':''} du CSV non trouvé${list.length>1?'s':''} dans le code : <b>${list.join(', ')}</b>`,
     teams0:       "❌ 0 joueur trouvé — vérifie les colonnes <code>PlayerPage</code> / <code>DataPlayer</code> et <code>PlayerTeam</code>",
     dateTitle:    "📅 Date de l'événement",
     dateDay1:     "Jour 1 :",
@@ -425,8 +424,8 @@ const T = {
     },
     noDict:       "⚠️ No pseudos loaded — tool still works",
     generatedOk:  (n, total, api) => `✅ <b>${n} lines generated</b> · ${total} pseudos in dict · via ${api}`,
-    teamsOk:      (added, total) => `✅ <b>${added}/${total} teams added</b>`,
-    teamsMissing: (list) => `⚠️ ${list.length} player${list.length>1?'s':''} without team: ${list.join(', ')}`,
+    teamsOk:      (added, total) => `✅ <b>${added}/${total} teams added</b> from CSV`,
+    teamsMissing: (list) => `⚠️ ${list.length} player${list.length>1?'s':''} from CSV not found in code: <b>${list.join(', ')}</b>`,
     teams0:       "❌ 0 players found — check <code>PlayerPage</code> / <code>DataPlayer</code> and <code>PlayerTeam</code> columns",
     dateTitle:    "📅 Event date",
     dateDay1:     "Day 1:",
@@ -481,12 +480,12 @@ function updateInputLabels() {
 }
 
 // ============================================================
-//  ✅ FIX TIMEOUT — plus de freeze infini
+//  TIMEOUT HELPER
 // ============================================================
 function fetchWithTimeout(url, options = {}, ms = 8000) {
   return Promise.race([
     fetch(url, options),
-    new Promise((_, reject) => setTimeout(() => reject(new Error(`Timeout ${ms}ms — serveur trop lent`)), ms))
+    new Promise((_, reject) => setTimeout(() => reject(new Error(`Timeout ${ms}ms`)), ms))
   ]);
 }
 
@@ -523,7 +522,6 @@ async function saveToCloud(newEntries) {
     return r.ok;
   } catch(e) { return false; }
 }
-
 function loadDictFromText(txt) {
   const d = {};
   for (const rawLine of txt.split('\n')) {
@@ -541,34 +539,25 @@ function loadLocalDict() {
 }
 function saveLocalDict(d) { localStorage.setItem('custom_dict', JSON.stringify(d)); }
 
-// ✅ FIX : timeout + cache busting sur GitHub
 async function autoLoadDict() {
   const status = document.getElementById('dict-status');
   status.className = 'alert info';
   status.innerHTML = t('loading');
   let fileCount = 0, cloudCount = 0;
-
   try {
-    const r = await fetchWithTimeout(
-      `${GITHUB_DICT_URL}?t=${Date.now()}`,
-      {},
-      8000
-    );
+    const r = await fetchWithTimeout(`${GITHUB_DICT_URL}?t=${Date.now()}`, {}, 8000);
     if (r.ok) {
       const fd = loadDictFromText(await r.text());
       fileCount = Object.keys(fd).length;
       Object.assign(dict, fd);
     }
   } catch(e) { console.warn("GitHub dict:", e.message); }
-
   try {
     const cloud = await fetchCloudDict();
     cloudCount  = Object.keys(cloud).length;
     Object.assign(dict, cloud);
   } catch(e) { console.warn("Cloud dict:", e.message); }
-
   Object.assign(dict, loadLocalDict());
-
   const total = Object.keys(dict).length;
   status.className = total > 0 ? 'alert ok' : 'alert warn';
   status.innerHTML = total > 0 ? t('pseudosLoaded', total, fileCount, cloudCount) : t('noDict');
@@ -589,7 +578,6 @@ function sleep(ms) { return new Promise(res => setTimeout(res, ms)); }
 async function fetchWithRetry(url, options = {}, useProxy = false) {
   const MAX_RETRIES = 3;
   let lastErr = null, proxiesTried = 0;
-
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     const finalUrl = useProxy
       ? `${CORS_PROXIES[_proxyIndex]}${encodeURIComponent(url)}`
@@ -597,13 +585,11 @@ async function fetchWithRetry(url, options = {}, useProxy = false) {
     try {
       const r = await fetchWithTimeout(finalUrl, options, 10000);
       if (r.ok) return r;
-      if (r.status >= 400 && r.status < 500) {
+      if (r.status >= 400 && r.status < 500)
         throw new Error(`_FATAL_${ERR_MSGS[r.status] || `Erreur ${r.status}`}`);
-      }
       const wait = (attempt + 1) * 2000;
       if (useProxy && proxiesTried < CORS_PROXIES.length - 1) {
-        _proxyIndex = (_proxyIndex + 1) % CORS_PROXIES.length;
-        proxiesTried++;
+        _proxyIndex = (_proxyIndex + 1) % CORS_PROXIES.length; proxiesTried++;
       }
       lastErr = new Error(`Erreur ${r.status} (tentative ${attempt+1}/${MAX_RETRIES})`);
       await sleep(wait);
@@ -611,8 +597,7 @@ async function fetchWithRetry(url, options = {}, useProxy = false) {
       if (e.message.startsWith('_FATAL_')) throw new Error(e.message.replace('_FATAL_', ''));
       const wait = (attempt + 1) * 1500;
       if (useProxy && proxiesTried < CORS_PROXIES.length - 1) {
-        _proxyIndex = (_proxyIndex + 1) % CORS_PROXIES.length;
-        proxiesTried++;
+        _proxyIndex = (_proxyIndex + 1) % CORS_PROXIES.length; proxiesTried++;
       }
       lastErr = new Error(`Erreur réseau (tentative ${attempt+1}/${MAX_RETRIES}) : ${e.message}`);
       await sleep(wait);
@@ -622,7 +607,7 @@ async function fetchWithRetry(url, options = {}, useProxy = false) {
 }
 
 // ============================================================
-//  FETCH PAGE / ALL (Kass + FNIO)
+//  FETCH PAGE / ALL
 // ============================================================
 async function fetchPage(wid, p) {
   const cfg    = APIS[_api];
@@ -649,10 +634,6 @@ async function fetchAll(wid) {
   }
   return { results, tb, begin };
 }
-
-// ============================================================
-//  FETCH WLS
-// ============================================================
 async function fetchWLS(lbId) {
   const target = `https://api.wls.gg/v5/leaderboards/${lbId.trim()}`;
   const r = await fetchWithRetry(target, { headers: { "Accept": "application/json" } }, true);
@@ -660,7 +641,7 @@ async function fetchWLS(lbId) {
 }
 
 // ============================================================
-//  FORMATAGE LIGNES
+//  FORMAT LIGNES
 // ============================================================
 function fmtLine(rank, members, pts) {
   const p = members.map(m => {
@@ -733,10 +714,6 @@ async function runCumul(wids) {
   });
   return { lines: list.map((p, i) => fmtLine(i+1, p.mb, p.pts)), dates };
 }
-
-// ============================================================
-//  RUN WLS
-// ============================================================
 function tsToDate(ts) {
   if (!ts) return null;
   const n = Number(ts);
@@ -756,7 +733,7 @@ async function runSimpleWLS(lbId) {
     const s0 = Object.values(teams[0].sessions)[0];
     if (s0?.start_time) date = tsToDate(s0.start_time);
   }
-  return { lines: teams.map(team => fmtLineWLS(team.place, Object.values(team.members||{}), team.points||0)), date };
+  return { lines: teams.map(t2 => fmtLineWLS(t2.place, Object.values(t2.members||{}), t2.points||0)), date };
 }
 async function runCumulWLS(ids) {
   const players = {}; const dates = [];
@@ -782,11 +759,10 @@ async function runCumulWLS(ids) {
 }
 
 // ============================================================
-//  ✅ FIX DATE — YYYY-MM-DD uniquement + bouton copier
-// ============////////////////////////////////////////////////
+//  DATE BLOCK
+// ============================================================
 function parseToYMD(raw) {
   if (!raw) return null;
-  // Extrait YYYY-MM-DD depuis n'importe quel format ISO ou timestamp
   const m = String(raw).match(/(\d{4}-\d{2}-\d{2})/);
   if (m) return m[1];
   return tsToDate(raw);
@@ -857,11 +833,9 @@ async function generate() {
   document.getElementById('o1').classList.add('hidden');
   document.getElementById('date-block').classList.add('hidden');
   _proxyIndex = 0;
-
   try {
     let res;
     const apiLabel = _api === 'kass' ? 'Kass507.lat' : _api === 'fnio' ? 'FortniteAPI.io' : 'WLS.gg';
-
     if (_api === 'wls') {
       if (_mode === 's') {
         const id = document.getElementById('wid1').value.trim();
@@ -885,7 +859,6 @@ async function generate() {
         const tmp = await runCumul([d1, d2]); res = { lines: tmp.lines }; dateInfo = tmp.dates || null;
       }
     }
-
     const lines = res.lines;
     const st    = document.getElementById('st1');
     if (!lines) {
@@ -895,8 +868,8 @@ async function generate() {
       st.className = 'alert ok';
       st.innerHTML = t('generatedOk', lines.length, Object.keys(dict).length, apiLabel);
       document.getElementById('r1').value = lines.join('\n');
-      document.getElementById('b1').className   = 'badge green';
-      document.getElementById('b1').textContent  = '✓';
+      document.getElementById('b1').className  = 'badge green';
+      document.getElementById('b1').textContent = '✓';
       document.getElementById('card1').classList.add('done');
       showDateBlock(dateInfo);
     }
@@ -912,13 +885,14 @@ async function generate() {
 }
 
 // ============================================================
-//  ✅ FIX STEP 2 — DataPlayer ET PlayerPage + stats X/Y
+//  ✅ FIX STEP 2
+//  - Décalage colonnes auto quand data < headers
+//  - Warning = joueurs du CSV non trouvés dans le code
 // ============================================================
 function parseTeamsCSV(txt) {
   const lines = txt.trim().split(/\r?\n/).filter(l => l.trim());
   if (lines.length < 2) { alert(t('errCSVEmpty')); return null; }
 
-  // Détection délimiteur
   const candidates = ['\t', ',', ';'];
   let dlm = '\t', best = -1;
   for (const c of candidates) {
@@ -928,31 +902,43 @@ function parseTeamsCSV(txt) {
 
   const hdrs = lines[0].split(dlm).map(h => h.trim().replace(/^\uFEFF/, ''));
   const ti   = hdrs.indexOf('PlayerTeam');
-  const pi   = hdrs.indexOf('PlayerPage');
   const di   = hdrs.indexOf('DataPlayer');
+  const pi   = hdrs.indexOf('PlayerPage');
 
   if (ti < 0) { alert(`${t('errCols')}\n${hdrs.join(' | ')}`); return null; }
-  if (pi < 0 && di < 0) { alert(`${t('errCols')}\n${hdrs.join(' | ')}`); return null; }
+  if (di < 0 && pi < 0) { alert(`${t('errCols')}\n${hdrs.join(' | ')}`); return null; }
 
-  // ✅ On mappe BOTH DataPlayer et PlayerPage → PlayerTeam
-  // map[pseudo] = team
-  const m = {};
+  // map[playerName] = { team, csvKey }
+  // csvKeys = set of all player names in CSV (for missing detection)
+  const map     = {};
+  const csvKeys = new Set();
+
   for (let i = 1; i < lines.length; i++) {
-    const c   = lines[i].split(dlm);
-    const team = (c[ti]||'').trim();
+    const c = lines[i].split(dlm);
+
+    // ✅ FIX DÉCALAGE : si la ligne a moins de colonnes que le header,
+    // on décale tous les index vers la gauche du même nombre de colonnes manquantes
+    const offset   = Math.max(0, hdrs.length - c.length);
+    const teamIdx  = Math.max(0, ti - offset);
+    const dpIdx    = di >= 0 ? Math.max(0, di - offset) : -1;
+    const ppIdx    = pi >= 0 ? Math.max(0, pi - offset) : -1;
+
+    const team = (c[teamIdx] || '').trim();
     if (!team) continue;
+
     // PlayerPage
-    if (pi >= 0) {
-      const pp = (c[pi]||'').trim();
-      if (pp) m[pp] = team;
+    if (ppIdx >= 0 && ppIdx < c.length) {
+      const pp = (c[ppIdx] || '').trim();
+      if (pp) { map[pp] = team; csvKeys.add(pp); }
     }
     // DataPlayer (peut être différent de PlayerPage)
-    if (di >= 0) {
-      const dp = (c[di]||'').trim();
-      if (dp) m[dp] = team;
+    if (dpIdx >= 0 && dpIdx < c.length) {
+      const dp = (c[dpIdx] || '').trim();
+      if (dp) { map[dp] = team; csvKeys.add(dp); }
     }
   }
-  return { map: m, total: lines.length - 1 };
+
+  return { map, csvKeys, total: lines.length - 1 };
 }
 
 function extractNames(field) {
@@ -960,36 +946,33 @@ function extractNames(field) {
     .map(m => m[1].trim()).filter(Boolean);
 }
 
-function applyLine(line, p2t) {
+function applyLine(line, map) {
   const isWiki = line.includes('{{TournamentResults/Line|');
   let pField;
   if (isWiki) {
     const m = line.match(/\|players=([^|]+)/);
-    if (!m) return { out: line, matched: [], unmatched: [] };
+    if (!m) return { out: line, usedKeys: [] };
     pField = m[1];
   } else {
     const parts = line.split('\t');
-    if (parts.length < 2) return { out: line, matched: [], unmatched: [] };
+    if (parts.length < 2) return { out: line, usedKeys: [] };
     pField = parts[1];
   }
 
   const names = extractNames(pField);
-  if (!names.length) return { out: line, matched: [], unmatched: [] };
+  if (!names.length) return { out: line, usedKeys: [] };
 
-  const matched   = [];
-  const unmatched = [];
-  const teams     = names.map(n => {
-    const team = p2t[n];
-    if (team) { matched.push(n); return team; }
-    unmatched.push(n);
+  const usedKeys = [];
+  const teams    = names.map(n => {
+    const team = map[n];
+    if (team) { usedKeys.push(n); return team; }
     return '';
   });
 
-  if (!teams.some(v => v)) return { out: line, matched: [], unmatched: names };
+  if (!teams.some(v => v)) return { out: line, usedKeys: [] };
 
   const val = teams.join(',');
   const fn  = (names.length > 1 || (isWiki && line.includes('|teams='))) ? 'teams' : 'team';
-
   let out;
   if (isWiki) {
     if (/\|teams?=/.test(line)) out = line.replace(/\|teams?=[^|]*/, `|${fn}=${val}`);
@@ -1000,7 +983,7 @@ function applyLine(line, p2t) {
     else if (p.length > 3) { p[3] = val; out = p.join('\t'); }
     else                     out = line + `\t${val}`;
   }
-  return { out, matched, unmatched };
+  return { out, usedKeys };
 }
 
 function addTeams() {
@@ -1012,9 +995,9 @@ function addTeams() {
   const parsed = parseTeamsCSV(raw);
   if (!parsed) return;
 
-  const { map: p2t, total: csvTotal } = parsed;
+  const { map, csvKeys, total: csvTotal } = parsed;
 
-  if (Object.keys(p2t).length === 0) {
+  if (Object.keys(map).length === 0) {
     document.getElementById('st2').className = 'alert err';
     document.getElementById('st2').innerHTML  = t('teams0');
     document.getElementById('st2-missing').classList.add('hidden');
@@ -1022,24 +1005,38 @@ function addTeams() {
     return;
   }
 
-  let teamsAdded = 0;
-  const missingPlayers = [];
+  // On trace quels joueurs du CSV ont été utilisés
+  const usedInCode = new Set();
+  let teamsAdded   = 0;
 
   const result = inp.split('\n').map(line => {
-    const { out, matched, unmatched } = applyLine(line, p2t);
-    if (matched.length > 0) teamsAdded++;
-    unmatched.forEach(u => { if (!missingPlayers.includes(u)) missingPlayers.push(u); });
+    const { out, usedKeys } = applyLine(line, map);
+    if (usedKeys.length > 0) {
+      teamsAdded++;
+      usedKeys.forEach(k => usedInCode.add(k));
+    }
     return out;
   }).join('\n');
+
+  // Joueurs du CSV jamais trouvés dans le code
+  // On déduplique : si DataPlayer = PlayerPage, on ne compte qu'une fois
+  const notFound = [];
+  const seen     = new Set();
+  for (const k of csvKeys) {
+    if (!usedInCode.has(k) && !seen.has(k)) {
+      seen.add(k);
+      notFound.push(k);
+    }
+  }
 
   document.getElementById('r2').value = result;
   document.getElementById('st2').className = 'alert ok';
   document.getElementById('st2').innerHTML  = t('teamsOk', teamsAdded, csvTotal);
 
   const missingEl = document.getElementById('st2-missing');
-  if (missingPlayers.length > 0) {
+  if (notFound.length > 0) {
     missingEl.className = 'alert warn';
-    missingEl.innerHTML = t('teamsMissing', missingPlayers);
+    missingEl.innerHTML = t('teamsMissing', notFound);
     missingEl.classList.remove('hidden');
   } else {
     missingEl.classList.add('hidden');
@@ -1077,15 +1074,12 @@ function renderDictList() {
     </button>
   `;
 }
-
 async function dictAdd() {
   const raw = document.getElementById('dict-new').value.trim();
   const msg = document.getElementById('dict-msg');
   if (!raw) return;
-
   const rawLines = raw.split(/\r?\n/).map(l => l.trim()).filter(l => l && l.includes('='));
   if (!rawLines.length) { msg.style.color = '#fca5a5'; msg.textContent = t('dictErrFormat'); return; }
-
   const entries = {};
   for (const line of rawLines) {
     const i    = line.indexOf('=');
@@ -1095,22 +1089,18 @@ async function dictAdd() {
   }
   const count = Object.keys(entries).length;
   if (!count) { msg.style.color = '#fca5a5'; msg.textContent = t('dictErrMissing'); return; }
-
   msg.style.color = '#60a5fa'; msg.textContent = t('dictSaving');
-
   const local = loadLocalDict();
   Object.assign(local, entries);
   Object.assign(dict, entries);
   saveLocalDict(local);
   document.getElementById('dict-new').value = '';
   renderDictList();
-
   const ok = await saveToCloud(entries);
   msg.style.color = ok ? '#4ade80' : '#fbbf24';
   msg.textContent  = ok ? t('dictOk', count) : t('dictWarn', count);
   setTimeout(() => msg.textContent = '', 5000);
 }
-
 function dictRemove(eid) {
   const d = loadLocalDict();
   delete d[eid]; delete dict[eid]; saveLocalDict(d); renderDictList();
