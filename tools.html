@@ -120,14 +120,24 @@
     .info { background: #0c1a2e; border: 1px solid #3b82f6; color: #93c5fd; }
     .warn { background: #1c1200; border: 1px solid #f59e0b; color: #fbbf24; }
     code  { background: #0f172a; padding: 1px 5px; border-radius: 4px; font-size: 0.85em; }
+    /* ✅ FIX DATE BLOCK */
     #date-block {
-      margin-top: 10px; padding: 8px 10px; border-radius: 8px;
+      margin-top: 10px; padding: 10px 14px; border-radius: 8px;
       background: #0f172a; border: 1px solid #334155;
-      font-size: 0.8rem; color: #cbd5f5; white-space: pre-line;
+      font-size: 0.82rem; color: #cbd5f5;
     }
+    .date-line {
+      display: flex; align-items: center; gap: 10px; margin-top: 4px;
+    }
+    .date-value { font-family: monospace; font-size: 0.9rem; font-weight: 700; color: #e2e8f0; }
+    .date-copy-btn {
+      background: #1e293b; border: 1px solid #334155; border-radius: 5px;
+      color: #94a3b8; cursor: pointer; font-size: 0.72rem; padding: 2px 8px;
+      transition: .15s;
+    }
+    .date-copy-btn:hover { border-color: #3b82f6; color: #60a5fa; }
     .proxy-indicator {
-      font-size: 0.75rem; color: #475569; margin-top: 6px;
-      font-family: monospace;
+      font-size: 0.75rem; color: #475569; margin-top: 6px; font-family: monospace;
     }
     .footer {
       margin-top: 40px; padding: 24px;
@@ -224,6 +234,7 @@
       <div id="proxy-indicator" class="proxy-indicator hidden"></div>
       <label data-i18n="generatedLabel">Classement généré</label>
       <textarea id="r1" rows="12" readonly></textarea>
+      <!-- ✅ FIX DATE : HTML structuré avec bouton copier -->
       <div id="date-block" class="hidden"></div>
       <div class="btn-row">
         <button class="btn btn-green"  onclick="cp('r1','c1')" data-i18n="btnCopy">📋 Copier</button>
@@ -244,7 +255,7 @@
     <div class="hint" data-i18n="step2inputHint">Compatible avec le format classement (rank↹players↹points) ET le format wiki</div>
     <label data-i18n="csvLabel">Équipes — CSV ou TSV</label>
     <textarea id="tt" rows="7"
-      placeholder="DataTeam&#9;PlayerTeam&#9;DataPlayer&#9;PlayerPage&#10;BIG Clan&#9;Malibuca&#9;Malibuca"></textarea>
+      placeholder="DataTeam&#9;PlayerTeam&#9;DataPlayer&#9;PlayerPage&#10;BIG Clan&#9;Malibuca&#9;Malibuca&#9;Malibuca"></textarea>
     <div class="hint" data-i18n="csvHint">Ou charge un fichier :</div>
     <input type="file" id="tf" accept=".csv,.tsv,.txt" onchange="loadTF()">
     <div class="btn-row">
@@ -253,6 +264,8 @@
     <div id="o2" class="hidden">
       <div class="divider"></div>
       <div id="st2" class="alert ok"></div>
+      <!-- ✅ FIX : bloc détail pour les joueurs non trouvés -->
+      <div id="st2-detail" class="alert warn hidden"></div>
       <label data-i18n="resultLabel">Résultat final</label>
       <textarea id="r2" rows="12" readonly></textarea>
       <div class="btn-row">
@@ -302,13 +315,12 @@ const GITHUB_DICT_URL = "https://raw.githubusercontent.com/Clementsly/fortnite-w
 const JSONBIN_ID      = "699cd8d6d0ea881f40d31e4a";
 const JSONBIN_KEY     = "$2a$10$Uxd5kmWUdHQG2q40rB1m8uOe2GftztNasNvtMAHQ8m8J8OGkrMbGO";
 
-// Liste de proxies CORS — utilisés en fallback automatique
 const CORS_PROXIES = [
   "https://corsproxy.io/?",
   "https://api.allorigins.win/raw?url=",
   "https://corsproxy.org/?"
 ];
-let _proxyIndex = 0; // proxy actif pour la session
+let _proxyIndex = 0;
 
 const APIS = {
   kass: {
@@ -407,6 +419,7 @@ const T = {
     btnDictAdd:            "➕ Ajouter",
     madeBy:                "Créé par",
     copiedMsg:             "✅ Copié !",
+    dateCopied:            "✅",
     noResult:              "❌ Aucun résultat — vérifie l'ID.",
     errNoWid:              "Entre un ID !",
     errNoBothWid:          "Entre les deux IDs !",
@@ -429,13 +442,12 @@ const T = {
       if (c > 0) m += ` · ${c} ajouts cloud ☁️`;
       return m;
     },
-    noDict:       "⚠️ Aucun pseudo chargé",
-    generatedOk:  (n, total, api, proxy) => `✅ <b>${n} lignes générées</b> · ${total} pseudos dans le dict · via ${api}${proxy ? ` · proxy: ${proxy}` : ''}`,
-    teamsOk:      (a, u, total) => `✅ <b>${a} équipes ajoutées</b>${u ? `, ${u} mises à jour` : ''} · ${total} joueurs dans le CSV`,
-    teams0:       "❌ 0 joueur trouvé — vérifie les colonnes <code>PlayerPage</code> et <code>PlayerTeam</code>",
-    dateTitle:    "📅 Date de l'événement",
-    dateDay1:     "Jour 1 :",
-    dateDay2:     "Jour 2 :"
+    noDict:      "⚠️ Aucun pseudo chargé",
+    generatedOk: (n, total, api) => `✅ <b>${n} lignes générées</b> · ${total} pseudos dans le dict · via ${api}`,
+    dateTitle:   "📅 Date de l'événement",
+    dateDay1:    "Jour 1 :",
+    dateDay2:    "Jour 2 :",
+    dateCopyBtn: "📋 Copier"
   },
   en: {
     subtitle:              "API Leaderboard → Teams · All in 2 steps",
@@ -475,6 +487,7 @@ const T = {
     btnDictAdd:            "➕ Add",
     madeBy:                "Created by",
     copiedMsg:             "✅ Copied!",
+    dateCopied:            "✅",
     noResult:              "❌ No results — check the ID.",
     errNoWid:              "Enter an ID!",
     errNoBothWid:          "Enter both IDs!",
@@ -497,13 +510,12 @@ const T = {
       if (c > 0) m += ` · ${c} cloud additions ☁️`;
       return m;
     },
-    noDict:       "⚠️ No pseudos loaded",
-    generatedOk:  (n, total, api, proxy) => `✅ <b>${n} lines generated</b> · ${total} pseudos in dict · via ${api}${proxy ? ` · proxy: ${proxy}` : ''}`,
-    teamsOk:      (a, u, total) => `✅ <b>${a} teams added</b>${u ? `, ${u} updated` : ''} · ${total} players in CSV`,
-    teams0:       "❌ 0 players found — check <code>PlayerPage</code> and <code>PlayerTeam</code> columns",
-    dateTitle:    "📅 Event date",
-    dateDay1:     "Day 1:",
-    dateDay2:     "Day 2:"
+    noDict:      "⚠️ No pseudos loaded",
+    generatedOk: (n, total, api) => `✅ <b>${n} lines generated</b> · ${total} pseudos in dict · via ${api}`,
+    dateTitle:   "📅 Event date",
+    dateDay1:    "Day 1:",
+    dateDay2:    "Day 2:",
+    dateCopyBtn: "📋 Copy"
   }
 };
 
@@ -562,7 +574,6 @@ async function saveToCloud(newEntries) {
     return r.ok;
   } catch(e) { return false; }
 }
-
 function loadDictFromText(txt) {
   const d = {};
   for (const rawLine of txt.split('\n')) {
@@ -604,7 +615,6 @@ async function autoLoadDict() {
 }
 autoLoadDict();
 
-// _ → espaces uniquement pour l'affichage dans le classement
 function getName(eid) {
   const raw = dict[eid];
   return raw ? raw.replace(/_/g, ' ') : null;
@@ -630,51 +640,40 @@ async function fetchWithRetry(url, options = {}, useProxy = false) {
 
       if (r.ok) return r;
 
-      // 4xx → erreur de config, inutile de retry
       if (r.status >= 400 && r.status < 500) {
         const msg = ERR_MSGS[r.status] || `${r.status} — Erreur inconnue`;
         throw new Error(`_FATAL_API error ${msg}`);
       }
 
-      // 5xx / 429 → instabilité serveur ou proxy, on retry
       const wait = (attempt + 1) * 2000;
       console.warn(`[Tentative ${attempt+1}/${MAX_RETRIES}] Erreur ${r.status} — attente ${wait}ms`);
-
       if (useProxy && proxiesTried < CORS_PROXIES.length - 1) {
         _proxyIndex = (_proxyIndex + 1) % CORS_PROXIES.length;
         proxiesTried++;
         console.warn(`→ Bascule proxy → ${CORS_PROXIES[_proxyIndex]}`);
       }
-
       lastErr = new Error(`API error ${r.status} — Serveur/proxy instable (tentative ${attempt+1}/${MAX_RETRIES})`);
       await sleep(wait);
 
     } catch(e) {
-      // Erreur fatale 4xx → on remonte immédiatement
-      if (e.message.startsWith('_FATAL_')) {
-        throw new Error(e.message.replace('_FATAL_', ''));
-      }
+      if (e.message.startsWith('_FATAL_')) throw new Error(e.message.replace('_FATAL_', ''));
 
-      // Erreur réseau pure (proxy down, timeout, DNS...)
       const wait = (attempt + 1) * 1500;
       console.warn(`[Tentative ${attempt+1}/${MAX_RETRIES}] Erreur réseau : ${e.message} — attente ${wait}ms`);
-
       if (useProxy && proxiesTried < CORS_PROXIES.length - 1) {
         _proxyIndex = (_proxyIndex + 1) % CORS_PROXIES.length;
         proxiesTried++;
         console.warn(`→ Bascule proxy → ${CORS_PROXIES[_proxyIndex]}`);
       }
-
       lastErr = new Error(`Erreur réseau — proxy injoignable (tentative ${attempt+1}/${MAX_RETRIES})`);
       await sleep(wait);
     }
   }
-
   throw lastErr || new Error('Échec après 3 tentatives sur tous les proxies disponibles.');
 }
 
 // ============================================================
-//  FETCH PAGE (Kass / FNIO)
+//  FETCH PAGE / FETCH ALL (Kass + FNIO)
 // ============================================================
 async function fetchPage(wid, p) {
   const cfg    = APIS[_api];
@@ -708,9 +707,7 @@ async function fetchAll(wid) {
 // ============================================================
 async function fetchWLS(lbId) {
   const target = `https://api.wls.gg/v5/leaderboards/${lbId.trim()}`;
-  const r      = await fetchWithRetry(target, {
-    headers: { "Accept": "application/json" }
-  }, true);
+  const r      = await fetchWithRetry(target, { headers: { "Accept": "application/json" } }, true);
   return r.json();
 }
 
@@ -725,7 +722,6 @@ function fmtLine(rank, members, pts) {
   }).join(',');
   return `${rank}\t${p}\t${pts}`;
 }
-
 function fmtLineWLS(rank, memberList, pts) {
   const p = memberList.map(m => {
     const eid  = (m.ingame_id || '').toLowerCase().replace(/-/g, '');
@@ -747,7 +743,6 @@ async function runSimple(wid) {
     date:  begin || null
   };
 }
-
 async function runCumul(wids) {
   const pl = {}; let tbF = null; const dates = [];
   for (const wid of wids) {
@@ -801,12 +796,8 @@ function tsToDate(ts) {
   const sec = n > 1e12 ? n/1000 : n;
   const d   = new Date(sec * 1000);
   if (isNaN(d.getTime())) return null;
-  const y   = d.getUTCFullYear();
-  const mo  = String(d.getUTCMonth()+1).padStart(2,'0');
-  const day = String(d.getUTCDate()).padStart(2,'0');
-  return `${y}-${mo}-${day}`;
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;
 }
-
 async function runSimpleWLS(lbId) {
   const data  = await fetchWLS(lbId);
   const teams = data.teams || [];
@@ -820,7 +811,6 @@ async function runSimpleWLS(lbId) {
   }
   return { lines, date };
 }
-
 async function runCumulWLS(ids) {
   const players = {}; const dates = [];
   for (const id of ids) {
@@ -845,108 +835,52 @@ async function runCumulWLS(ids) {
 }
 
 // ============================================================
-//  GENERATE (bouton principal)
+//  ✅ FIX DATE — format YYYY-MM-DD + bouton copier
 // ============================================================
+function parseToYMD(raw) {
+  if (!raw) return null;
+  // Extrait YYYY-MM-DD depuis ISO string ou timestamp
+  const isoMatch = String(raw).match(/^(\d{4}-\d{2}-\d{2})/);
+  if (isoMatch) return isoMatch[1];
+  // Fallback timestamp numérique
+  const ts = tsToDate(raw);
+  return ts || String(raw).slice(0, 10);
+}
+
+function makeDateLine(label, raw) {
+  const ymd = parseToYMD(raw) || '?';
+  const safeYmd = ymd.replace(/'/g, '');
+  return `
+    <div class="date-line">
+      ${label ? `<span style="color:#64748b;font-size:0.78rem">${label}</span>` : ''}
+      <span class="date-value">${ymd}</span>
+      <button class="date-copy-btn" onclick="copyDate('${safeYmd}', this)">${t('dateCopyBtn')}</button>
+    </div>`;
+}
+
+function copyDate(val, btn) {
+  navigator.clipboard.writeText(val);
+  const orig = btn.textContent;
+  btn.textContent = t('dateCopied');
+  setTimeout(() => btn.textContent = orig, 1500);
+}
+
 function showDateBlock(info) {
   const el = document.getElementById('date-block');
   if (!info) { el.classList.add('hidden'); return; }
-  let text = t('dateTitle') + "\n";
+  let html = `<div style="font-size:0.8rem;font-weight:700;color:#94a3b8;margin-bottom:6px">${t('dateTitle')}</div>`;
   if (Array.isArray(info)) {
-    text += `${t('dateDay1')} ${info[0]||'?'}\n${t('dateDay2')} ${info[1]||'?'}`;
+    html += makeDateLine(t('dateDay1'), info[0]);
+    html += makeDateLine(t('dateDay2'), info[1]);
   } else {
-    text += info;
+    html += makeDateLine('', info);
   }
-  el.textContent = text;
+  el.innerHTML = html;
   el.classList.remove('hidden');
 }
 
-function getWid(txt) {
-  txt = (txt || '').trim();
-  const m = txt.match(/[?&]window=([a-zA-Z0-9_-]+)/);
-  return m ? m[1] : txt;
-}
-
-async function generate() {
-  const btn = document.getElementById('bg'), ldr = document.getElementById('ld1');
-  btn.disabled = true; ldr.style.display = 'inline';
-  document.getElementById('o1').classList.add('hidden');
-  document.getElementById('date-block').classList.add('hidden');
-
-  // Reset proxy au début de chaque génération
-  _proxyIndex = 0;
-
-  try {
-    let res;
-    const apiLabel = _api === 'kass' ? 'Kass507.lat' : _api === 'fnio' ? 'FortniteAPI.io' : 'WLS.gg';
-
-    if (_api === 'wls') {
-      if (_mode === 's') {
-        const id = document.getElementById('wid1').value.trim();
-        if (!id) { alert(t('errNoWid')); return; }
-        res = await runSimpleWLS(id); dateInfo = res.date || null;
-      } else {
-        const id1 = document.getElementById('wd1').value.trim();
-        const id2 = document.getElementById('wd2').value.trim();
-        if (!id1||!id2) { alert(t('errNoBothWid')); return; }
-        res = await runCumulWLS([id1, id2]); dateInfo = res.dates || null;
-      }
-    } else {
-      if (_mode === 's') {
-        const wid = getWid(document.getElementById('wid1').value);
-        if (!wid) { alert(t('errNoWid')); return; }
-        const tmp = await runSimple(wid); res = { lines: tmp.lines }; dateInfo = tmp.date || null;
-      } else {
-        const d1 = getWid(document.getElementById('wd1').value);
-        const d2 = getWid(document.getElementById('wd2').value);
-        if (!d1||!d2) { alert(t('errNoBothWid')); return; }
-        const tmp = await runCumul([d1, d2]); res = { lines: tmp.lines }; dateInfo = tmp.dates || null;
-      }
-    }
-
-    const lines = res.lines;
-    const st    = document.getElementById('st1');
-    const pi    = document.getElementById('proxy-indicator');
-
-    if (!lines) {
-      st.className = 'alert err'; st.textContent = t('noResult');
-      pi.classList.add('hidden');
-      document.getElementById('date-block').classList.add('hidden');
-    } else {
-      st.className = 'alert ok';
-      const proxyName = APIS[_api]?.useCorsProxy || _api === 'wls'
-        ? new URL(CORS_PROXIES[_proxyIndex]).hostname
-        : null;
-      st.innerHTML = t('generatedOk', lines.length, Object.keys(dict).length, apiLabel, proxyName);
-
-      // Indicateur proxy utilisé (uniquement si ce n'est pas le premier)
-      if (_proxyIndex > 0) {
-        pi.textContent = `🔀 Proxy utilisé : ${CORS_PROXIES[_proxyIndex]} (fallback #${_proxyIndex})`;
-        pi.classList.remove('hidden');
-      } else {
-        pi.classList.add('hidden');
-      }
-
-      document.getElementById('r1').value = lines.join('\n');
-      document.getElementById('b1').className   = 'badge green';
-      document.getElementById('b1').textContent  = '✓';
-      document.getElementById('card1').classList.add('done');
-      showDateBlock(dateInfo);
-    }
-    document.getElementById('o1').classList.remove('hidden');
-
-  } catch(e) {
-    document.getElementById('st1').className = 'alert err';
-    document.getElementById('st1').innerHTML  = `❌ ${e.message}`;
-    document.getElementById('o1').classList.remove('hidden');
-    document.getElementById('date-block').classList.add('hidden');
-    document.getElementById('proxy-indicator').classList.add('hidden');
-  } finally {
-    btn.disabled = false; ldr.style.display = 'none';
-  }
-}
-
 // ============================================================
-//  STEP 2 — AJOUTER LES ÉQUIPES
+//  GENERATE
 // ============================================================
 function setMode(m) {
   _mode = m;
@@ -970,167 +904,19 @@ function loadTF() {
   const f = document.getElementById('tf').files[0];
   if (f) f.text().then(txt => document.getElementById('tt').value = txt);
 }
-
-function parseTeamsCSV(txt) {
-  const lines = txt.trim().split(/\r?\n/).filter(l => l.trim());
-  if (lines.length < 2) { alert(t('errCSVEmpty')); return null; }
-  const candidates = ['\t', ',', ';'];
-  let dlm = '\t', best = -1;
-  for (const c of candidates) {
-    const avg = lines.reduce((s, l) => s + (l.split(c).length - 1), 0) / lines.length;
-    if (avg > best) { best = avg; dlm = c; }
-  }
-  const hdrs = lines[0].split(dlm).map(h => h.trim().replace(/^\uFEFF/, ''));
-  let pi = hdrs.indexOf('PlayerPage'), ti = hdrs.indexOf('PlayerTeam');
-  if (pi < 0 || ti < 0) { alert(`${t('errCols')}\n${hdrs.join(' | ')}`); return null; }
-  const sampleCols  = lines.slice(1, Math.min(6, lines.length)).map(l => l.split(dlm).length);
-  const avgDataCols = sampleCols.reduce((a, b) => a + b, 0) / sampleCols.length;
-  const diff        = hdrs.length - Math.round(avgDataCols);
-  if (diff > 0) { pi = Math.max(0, pi - diff); ti = Math.max(0, ti - diff); }
-  const m = {};
-  for (let i = 1; i < lines.length; i++) {
-    const c = lines[i].split(dlm);
-    const p = (c[pi]||'').trim(), tt2 = (c[ti]||'').trim();
-    if (p) m[p] = tt2;
-  }
-  return m;
-}
-function extractNames(field) {
-  return [...field.matchAll(/\{\{!\}\}([^,|\n\t]+?)(?=[,|\n\t]|$)/g)]
-    .map(m => m[1].trim()).filter(Boolean);
-}
-function applyLine(line, p2t) {
-  const isWiki = line.includes('{{TournamentResults/Line|');
-  let pField;
-  if (isWiki) {
-    const m = line.match(/\|players=([^|]+)/);
-    if (!m) return line;
-    pField = m[1];
-  } else {
-    const parts = line.split('\t');
-    if (parts.length < 2) return line;
-    pField = parts[1];
-  }
-  const names = extractNames(pField);
-  if (!names.length) return line;
-  const teams = names.map(n => p2t[n] ?? '');
-  if (!teams.some(tt2 => tt2)) return line;
-  const val = teams.join(',');
-  const fn  = (names.length > 1 || (isWiki && line.includes('|teams='))) ? 'teams' : 'team';
-  if (isWiki) {
-    if (/\|teams?=/.test(line)) return line.replace(/\|teams?=[^|]*/, `|${fn}=${val}`);
-    return line.replace(/(\|prize=[^|]+)/, `$1\t|${fn}=${val}`);
-  } else {
-    const p = line.split('\t');
-    if (p.length === 3) return `${p[0]}\t${p[1]}\t${p[2]}\t${val}`;
-    if (p.length >  3) { p[3] = val; return p.join('\t'); }
-    return line + `\t${val}`;
-  }
-}
-function addTeams() {
-  const inp = document.getElementById('i2').value.trim();
-  const raw = document.getElementById('tt').value.trim();
-  if (!inp) { alert(t('errNoInput')); return; }
-  if (!raw) { alert(t('errNoCSV'));   return; }
-  const p2t = parseTeamsCSV(raw);
-  if (!p2t) return;
-  if (Object.keys(p2t).length === 0) {
-    document.getElementById('st2').className = 'alert err';
-    document.getElementById('st2').innerHTML = t('teams0');
-    document.getElementById('o2').classList.remove('hidden');
-    return;
-  }
-  let added = 0, updated = 0;
-  const result = inp.split('\n').map(line => {
-    const before = line, after = applyLine(line, p2t);
-    if (after !== before) {
-      const prev = (line.match(/\|teams?=([^|]*)/) || [])[1] || '';
-      if (prev.trim()) updated++; else added++;
-    }
-    return after;
-  }).join('\n');
-  document.getElementById('r2').value = result;
-  document.getElementById('st2').className = 'alert ok';
-  document.getElementById('st2').innerHTML  = t('teamsOk', added, updated, Object.keys(p2t).length);
-  document.getElementById('o2').classList.remove('hidden');
-  document.getElementById('b2').className   = 'badge green';
-  document.getElementById('b2').textContent  = '✓';
-  document.getElementById('card2').classList.add('done');
+function getWid(txt) {
+  txt = (txt || '').trim();
+  const m = txt.match(/[?&]window=([a-zA-Z0-9_-]+)/);
+  return m ? m[1] : txt;
 }
 
-// ============================================================
-//  DICT EDITOR
-// ============================================================
-function renderDictList() {
-  const d       = loadLocalDict();
-  const el      = document.getElementById('dict-list');
-  const entries = Object.entries(d);
-  if (!entries.length) {
-    el.innerHTML = `<p style="font-size:.82rem;color:#475569">${t('dictNone')}</p>`;
-    return;
-  }
-  el.innerHTML = `
-    <p style="font-size:.82rem;color:#64748b;margin-bottom:8px"><b>${t('dictCount', entries.length)}</b></p>
-    <div style="background:#0f172a;border-radius:8px;padding:10px;font-family:monospace;font-size:12px;max-height:200px;overflow-y:auto">
-      ${entries.map(([eid, name]) => `
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid #1e293b">
-          <span style="color:#e2e8f0">${name.replace(/_/g,' ')} <span style="color:#475569">= ${eid}</span></span>
-          <button onclick="dictRemove('${eid}')" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:1rem;padding:0 6px">✕</button>
-        </div>
-      `).join('')}
-    </div>
-    <button onclick="dictClear()" style="margin-top:8px;background:none;border:1px solid #ef4444;color:#ef4444;border-radius:6px;padding:5px 12px;font-size:.8rem;cursor:pointer">
-      ${t('dictClearBtn')}
-    </button>
-  `;
-}
+async function generate() {
+  const btn = document.getElementById('bg'), ldr = document.getElementById('ld1');
+  btn.disabled = true; ldr.style.display = 'inline';
+  document.getElementById('o1').classList.add('hidden');
+  document.getElementById('date-block').classList.add('hidden');
+  _proxyIndex = 0;
 
-async function dictAdd() {
-  const raw = document.getElementById('dict-new').value.trim();
-  const msg = document.getElementById('dict-msg');
-  if (!raw) return;
-
-  const rawLines = raw.split(/\r?\n/).map(l => l.trim()).filter(l => l && l.includes('='));
-  if (!rawLines.length) {
-    msg.style.color = '#fca5a5'; msg.textContent = t('dictErrFormat'); return;
-  }
-
-  const entries = {};
-  for (const line of rawLines) {
-    const i    = line.indexOf('=');
-    const name = line.slice(0, i).trim().replace(/ /g, '_');
-    const eid  = line.slice(i + 1).trim().toLowerCase().replace(/-/g, '');
-    if (name && eid) entries[eid] = name;
-  }
-
-  const count = Object.keys(entries).length;
-  if (!count) {
-    msg.style.color = '#fca5a5'; msg.textContent = t('dictErrMissing'); return;
-  }
-
-  msg.style.color = '#60a5fa'; msg.textContent = t('dictSaving');
-
-  const local = loadLocalDict();
-  Object.assign(local, entries);
-  Object.assign(dict, entries);
-  saveLocalDict(local);
-  document.getElementById('dict-new').value = '';
-  renderDictList();
-
-  const ok = await saveToCloud(entries);
-  msg.style.color = ok ? '#4ade80' : '#fbbf24';
-  msg.textContent  = ok ? t('dictOk', count) : t('dictWarn', count);
-  setTimeout(() => msg.textContent = '', 5000);
-}
-
-function dictRemove(eid) {
-  const d = loadLocalDict();
-  delete d[eid]; delete dict[eid]; saveLocalDict(d); renderDictList();
-}
-function dictClear() {
-  if (!confirm(t('dictClearConfirm'))) return;
-  localStorage.removeItem('custom_dict'); renderDictList(); autoLoadDict();
-}
-</script>
-</body>
-</html>
+  try {
+    let res;
+    const apiLabel = _api === 'kass' ? 'Kass507.lat' : _api === 'fnio' ?
