@@ -20,11 +20,9 @@
     .api-btn { flex: 1; min-width: 180px; padding: 12px 16px; border: 2px solid #334155; background: #0f172a; border-radius: 10px; cursor: pointer; text-align: left; transition: all .15s; color: #e2e8f0; }
     .api-btn:hover { border-color: #475569; }
     .api-btn.active-kass { border-color: #22c55e; background: #052e16; }
-    .api-btn.active-fnio { border-color: #f59e0b; background: #1c1200; }
     .api-btn.active-wls  { border-color: #e1435f; background: #1f0a10; }
     .api-btn-name { font-size: 0.95rem; font-weight: 700; display: block; margin-bottom: 3px; }
     .api-btn-tag-new { font-size: 0.75rem; color: #22c55e; font-weight: 700; }
-    .api-btn-tag-old { font-size: 0.75rem; color: #f59e0b; font-weight: 700; }
     .api-btn-tag-wls { font-size: 0.75rem; color: #e1435f; font-weight: 700; }
     .api-btn-desc { font-size: 0.78rem; color: #64748b; margin-top: 3px; display: block; }
     .card { background: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 24px; margin-bottom: 22px; }
@@ -34,6 +32,7 @@
     .badge.blue  { background: #3b82f6; }
     .badge.green { background: #22c55e; }
     .badge.amber { background: #f59e0b; color: #1a1a1a; }
+    .badge.violet { background: #8b5cf6; }
     .card-title { font-size: 1.05rem; font-weight: 600; }
     .tabs { display: flex; gap: 8px; margin-bottom: 18px; }
     .tab { padding: 7px 16px; border: 1.5px solid #475569; background: transparent; color: #94a3b8; border-radius: 7px; cursor: pointer; font-size: 0.88rem; font-weight: 500; }
@@ -75,15 +74,20 @@
     .info { background: #0c1a2e; border: 1px solid #3b82f6; color: #93c5fd; }
     .warn { background: #1c1200; border: 1px solid #f59e0b; color: #fbbf24; }
     code { background: #0f172a; padding: 1px 5px; border-radius: 4px; font-size: 0.85em; }
-    #date-block { margin-top: 10px; padding: 10px 14px; border-radius: 8px; background: #0f172a; border: 1px solid #334155; font-size: 0.82rem; color: #cbd5f5; }
+    #date-block { margin-top: 10px; padding: 10px 14px; border-radius: 8px; background: #0f172a; border: 1px solid #334155; font-size: 0.82rem; }
     .date-row { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
     .date-label { color: #64748b; font-size: 0.78rem; min-width: 52px; }
-    .date-value { font-family: monospace; font-size: 0.9rem; font-weight: 700; color: #e2e8f0; }
+    .date-value { font-family: monospace; font-size: 0.9rem; font-weight: 700; }
     .date-copy-btn { background: #1e293b; border: 1px solid #334155; border-radius: 5px; color: #94a3b8; cursor: pointer; font-size: 0.72rem; padding: 2px 9px; transition: .15s; }
     .date-copy-btn:hover { border-color: #3b82f6; color: #60a5fa; }
     #debug-card { background: #0d0d1a; border: 1.5px solid #6366f1; border-radius: 14px; padding: 20px; margin-bottom: 22px; }
     #debug-card h3 { font-size: 0.9rem; font-weight: 700; color: #a5b4fc; margin-bottom: 12px; }
-    #debug-log { width: 100%; height: 260px; background: #020208; border: 1px solid #312e81; border-radius: 8px; color: #a5b4fc; font-family: 'Courier New', monospace; font-size: 11px; padding: 10px; resize: vertical; overflow-y: auto; white-space: pre-wrap; word-break: break-all; }
+    #debug-log { width: 100%; height: 220px; background: #020208; border: 1px solid #312e81; border-radius: 8px; color: #a5b4fc; font-family: 'Courier New', monospace; font-size: 11px; padding: 10px; resize: vertical; overflow-y: auto; white-space: pre-wrap; word-break: break-all; }
+    /* Pseudo Update */
+    .pu-format-box { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px 14px; margin: 10px 0; font-family: 'Courier New', monospace; font-size: 11.5px; color: #94a3b8; line-height: 1.8; }
+    .pu-format-box .c-old  { color: #fca5a5; }
+    .pu-format-box .c-new  { color: #4ade80; }
+    .pu-format-box .c-id   { color: #60a5fa; }
     .footer { margin-top: 40px; padding: 24px; border-top: 1px solid #1e293b; display: flex; align-items: center; justify-content: center; gap: 16px; }
     .footer-avatar { width: 48px; height: 48px; border-radius: 50%; border: 2px solid #3b82f6; object-fit: cover; }
     .footer-text { text-align: left; }
@@ -108,31 +112,26 @@
     </button>
   </div>
 
+  <!-- API SELECTOR : Kass + WLS uniquement -->
   <div class="api-selector">
     <div class="api-selector-title" data-i18n="apiSelectorTitle">🔌 Choix de l'API</div>
     <div class="api-btns">
       <button class="api-btn active-kass" id="btn-kass" onclick="selectApi('kass')">
         <span class="api-btn-name">🟢 Kass507.lat</span>
-        <span class="api-btn-tag-new" data-i18n="apiNewTag">✅ NOUVELLE MÉTHODE — Recommandée</span>
-        <span class="api-btn-desc" data-i18n="apiNewDesc">Nouvelle API, fonctionne sur tous les events depuis Novembre 2025.</span>
-      </button>
-      <button class="api-btn" id="btn-fnio" onclick="selectApi('fnio')">
-        <span class="api-btn-name">🟡 FortniteAPI.io</span>
-        <span class="api-btn-tag-old" data-i18n="apiOldTag">⚠️ ANCIENNE MÉTHODE</span>
-        <span class="api-btn-desc" data-i18n="apiOldDesc">Ancienne API, fonctionne sur tous les events. Attention, API down le 31 Mars !</span>
+        <span class="api-btn-tag-new" data-i18n="apiNewTag">✅ RECOMMANDÉE</span>
+        <span class="api-btn-desc" data-i18n="apiNewDesc">Fonctionne sur tous les events depuis Novembre 2025.</span>
       </button>
       <button class="api-btn" id="btn-wls" onclick="selectApi('wls')">
         <span class="api-btn-name">🔴 WLS.gg</span>
         <span class="api-btn-tag-wls" data-i18n="apiWlsTag">🎯 TOURNOIS WLS</span>
-        <span class="api-btn-desc" data-i18n="apiWlsDesc">Pour les événements organisés via WLS</span>
+        <span class="api-btn-desc" data-i18n="apiWlsDesc">Pour les événements organisés via WLS.</span>
       </button>
     </div>
   </div>
 
-  <div id="dict-status" class="alert info" style="margin-bottom:16px">
-    ⏳ <span data-i18n="loading">Chargement du dictionnaire...</span>
-  </div>
+  <div id="dict-status" class="alert info" style="margin-bottom:16px">⏳ Chargement du dictionnaire...</div>
 
+  <!-- DEBUG -->
   <div id="debug-card">
     <h3>🔬 Debug — Analyse API en temps réel</h3>
     <textarea id="debug-log" readonly>En attente d'une génération...</textarea>
@@ -142,6 +141,7 @@
     </div>
   </div>
 
+  <!-- CARD 1 : Générer le classement -->
   <div class="card" id="card1">
     <div class="card-header">
       <div class="badge blue" id="b1">1</div>
@@ -149,7 +149,7 @@
     </div>
     <div class="tabs">
       <button class="tab active" onclick="setMode('s')" id="ts" data-i18n="tabSimple">🏆 Simple (1 event)</button>
-      <button class="tab"        onclick="setMode('c')" id="tc" data-i18n="tabCumul">📊 Cumulé (Day 1 + Day 2)</button>
+      <button class="tab" onclick="setMode('c')" id="tc" data-i18n="tabCumul">📊 Cumulé (Day 1 + Day 2)</button>
     </div>
     <div id="ms">
       <label id="lbl-wid1" data-i18n="widLabel">WindowID ou URL Fortnite Tracker</label>
@@ -169,7 +169,7 @@
       <span data-i18n="placementTo">à</span>
       <input type="number" id="rank-to" value="100" min="1" max="9999">
     </div>
-    <div class="hint" data-i18n="placementHint">💡 Filtre les rangs à inclure dans le résultat (ex: 1 à 100)</div>
+    <div class="hint" data-i18n="placementHint">💡 Filtre les rangs à inclure dans le résultat</div>
     <div class="btn-row">
       <button class="btn btn-blue" onclick="generate()" id="bg" data-i18n="btnGenerate">🚀 Générer</button>
       <span class="loader" id="ld1">⏳ Chargement...</span>
@@ -181,13 +181,14 @@
       <textarea id="r1" rows="12" readonly></textarea>
       <div id="date-block" class="hidden"></div>
       <div class="btn-row">
-        <button class="btn btn-green"  onclick="cp('r1','c1')" data-i18n="btnCopy">📋 Copier</button>
-        <button class="btn btn-purple" onclick="toStep2()"     data-i18n="btnStep2">➡️ Ajouter les équipes</button>
+        <button class="btn btn-green" onclick="cp('r1','c1')" data-i18n="btnCopy">📋 Copier</button>
+        <button class="btn btn-purple" onclick="toStep2()" data-i18n="btnStep2">➡️ Ajouter les équipes</button>
         <span id="c1" style="font-size:.85rem;color:#4ade80"></span>
       </div>
     </div>
   </div>
 
+  <!-- CARD 2 : Ajouter les équipes -->
   <div class="card" id="card2">
     <div class="card-header">
       <div class="badge" id="b2">2</div>
@@ -199,7 +200,7 @@
     <label data-i18n="csvLabel">Équipes — CSV ou TSV</label>
     <textarea id="tt" rows="7" placeholder="DataTeam&#9;PlayerTeam&#9;DataPlayer&#9;PlayerPage&#10;BIG Clan&#9;Malibuca&#9;Malibuca&#9;Malibuca"></textarea>
     <div class="file-input-row">
-      <button class="file-btn" onclick="document.getElementById('tf').click()" id="file-btn-label" data-i18n="fileBtn">📂 Choisir un fichier</button>
+      <button class="file-btn" onclick="document.getElementById('tf').click()" data-i18n="fileBtn">📂 Choisir un fichier</button>
       <span class="file-name" id="file-name-display" data-i18n="fileNone">Aucun fichier choisi</span>
     </div>
     <input type="file" id="tf" accept=".csv,.tsv,.txt" onchange="loadTF()">
@@ -219,6 +220,49 @@
     </div>
   </div>
 
+  <!-- CARD 3 : Pseudo Update -->
+  <div class="card" id="card3">
+    <div class="card-header">
+      <div class="badge violet" id="b3">3</div>
+      <div class="card-title" data-i18n="puTitle">Mise à jour des pseudos</div>
+    </div>
+    <p style="font-size:.85rem;color:#64748b;margin-bottom:12px" data-i18n="puDesc">
+      Remplace les anciens pseudos dans ton code wiki en te basant sur l'EpicID.
+    </p>
+
+    <div class="pu-format-box">
+      <span data-i18n="puFormatTitle" style="font-size:.78rem;font-weight:700;color:#64748b;display:block;margin-bottom:6px">FORMAT ATTENDU (3 lignes par joueur) :</span>
+      <span class="c-old">[AncienPseudo]()</span><br>
+      <span class="c-new">[NouveauPseudo](https://fortnite-esports.fandom.com/wiki/NouveauPseudo)</span><br>
+      <span class="c-id">645f6ea499ae4550a46b111ae8d64115</span>
+    </div>
+
+    <label data-i18n="puCodeLabel">Code wiki à modifier</label>
+    <textarea id="pu-code" rows="10" placeholder="{{DataTabs}}&#10;{{TournamentResults|...&#10;|{{TournamentResults/Line|players= EpicID{{!}}AncienPseudo, ...}}&#10;...}}"></textarea>
+
+    <label data-i18n="puUpdatesLabel">Mises à jour (format 3 lignes)</label>
+    <textarea id="pu-updates" rows="14" placeholder="[AncienPseudo]()&#10;[NouveauPseudo](https://fortnite-esports.fandom.com/wiki/NouveauPseudo)&#10;645f6ea499ae4550a46b111ae8d64115&#10;&#10;[AutreAncien]()&#10;[AutreNouveau](https://...)&#10;ad53e398b5884b15a797ba0a61658cc4"></textarea>
+    <div class="hint" data-i18n="puHint">💡 Un EpicID peut avoir plusieurs entrées — la dernière sera utilisée. Les lignes vides sont ignorées.</div>
+
+    <div class="btn-row">
+      <button class="btn btn-purple" onclick="applyPseudoUpdates()" data-i18n="puBtn">🔄 Mettre à jour les pseudos</button>
+    </div>
+
+    <div id="pu-output" class="hidden">
+      <div class="divider"></div>
+      <div id="pu-status" class="alert ok"></div>
+      <div id="pu-missing" class="alert warn hidden"></div>
+      <div id="pu-stats" style="font-size:.82rem;color:#64748b;margin:6px 0"></div>
+      <label data-i18n="puResultLabel">Code wiki mis à jour</label>
+      <textarea id="pu-result" rows="14" readonly></textarea>
+      <div class="btn-row">
+        <button class="btn btn-green" onclick="cp('pu-result','pu-copy-msg')" data-i18n="btnCopy">📋 Copier</button>
+        <span id="pu-copy-msg" style="font-size:.85rem;color:#4ade80"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARD DICT -->
   <div class="card" id="card-dict">
     <div class="card-header">
       <div class="badge amber">+</div>
@@ -275,10 +319,8 @@ const CORS_PROXIES = ["https://corsproxy.io/?","https://api.allorigins.win/raw?u
 let _proxyIndex = 0;
 
 const APIS = {
-  kass: { base:"https://kass507.lat/api", key:"kass_A3u2Fle0YACnjklJwreWylDNRp-2beDZ", header:"x-api-key", successField:"success", tbPath:(s)=>s?.rules?.tiebreakerFormula, useCorsProxy:true, pageOffset:0 },
-  fnio: { base:"https://fortniteapi.io/v1", key:"370a899b-33b3ba08-a5299259-571d2ca1", header:"Authorization", successField:"result", tbPath:(s)=>s?.rules?.tie, useCorsProxy:false, pageOffset:1 }
+  kass: { base:"https://kass507.lat/api", key:"kass_A3u2Fle0YACnjklJwreWylDNRp-2beDZ", header:"x-api-key", successField:"success", tbPath:(s)=>s?.rules?.tiebreakerFormula, useCorsProxy:true, pageOffset:0 }
 };
-const ERR_MSGS = { 400:"400 — WindowID invalide.", 401:"401 — Clé API invalide.", 403:"403 — Accès refusé.", 404:"404 — Event introuvable.", 429:"429 — Trop de requêtes.", 500:"500 — Erreur serveur." };
 
 let _api='kass', dict={}, _mode='s', _lang=localStorage.getItem('lang')||'fr', dateInfo=null;
 
@@ -286,8 +328,164 @@ let _api='kass', dict={}, _mode='s', _lang=localStorage.getItem('lang')||'fr', d
 //  TRADUCTIONS
 // ============================================================
 const T = {
-  fr: { subtitle:"Classement API → Équipes · Tout en 2 étapes",loading:"⏳ Chargement du dictionnaire...",apiSelectorTitle:"🔌 Choix de l'API",apiNewTag:"✅ NOUVELLE MÉTHODE — Recommandée",apiNewDesc:"Nouvelle API, fonctionne sur tous les events depuis Novembre 2025.",apiOldTag:"⚠️ ANCIENNE MÉTHODE",apiOldDesc:"Ancienne API, fonctionne sur tous les events. Attention, API down le 31 Mars !",apiWlsTag:"🎯 TOURNOIS WLS",apiWlsDesc:"Pour les événements organisés via WLS",step1title:"Générer le classement",tabSimple:"🏆 Simple (1 event)",tabCumul:"📊 Cumulé (Day 1 + Day 2)",widLabel:"WindowID ou URL Fortnite Tracker",widPlaceholder:"S39_SoloSeriesCupFinal_Day1_ME",widHint:"💡 Colle l'URL complète — le WindowID est extrait automatiquement",wlsIdLabel:"WLS Leaderboard ID",wlsIdPlaceholder:"797505610768728064",wlsIdHint:"💡 L'ID numérique du leaderboard WLS",placementLabel:"Placement",placementFrom:"De",placementTo:"à",placementHint:"💡 Filtre les rangs à inclure dans le résultat (ex: 1 à 100)",btnGenerate:"🚀 Générer",generatedLabel:"Classement généré",btnCopy:"📋 Copier",btnStep2:"➡️ Ajouter les équipes",step2title:"Ajouter les équipes",step2inputLabel:"Classement ou code wiki à traiter",step2inputPlaceholder:"Colle ici le résultat de l'étape 1...",step2inputHint:"Compatible avec le format classement ET le format wiki",csvLabel:"Équipes — CSV ou TSV",fileBtn:"📂 Choisir un fichier",fileNone:"Aucun fichier choisi",btnAddTeams:"🏅 Ajouter les équipes",resultLabel:"Résultat final",dictTitle:"Ajouter un joueur à la database",dictDesc:"Les entrées sont sauvegardées dans le <b>cloud partagé</b> — visibles par tout le monde instantanément.",dictLabel:"Format : PseudoWiki=EpicAccountID (une entrée par ligne)",dictHint:"💡 Les espaces sont convertis en _ pour le stockage. L'Epic Account ID (32 caractères) se trouve dans l'URL Fortnite Tracker.",btnDictAdd:"➕ Ajouter",madeBy:"Créé par",copiedMsg:"✅ Copié !",noResult:"❌ Aucun résultat — vérifie l'ID.",errNoWid:"Entre un ID !",errNoBothWid:"Entre les deux IDs !",errNoInput:"Rien à traiter !",errNoCSV:"Ajoute le CSV des équipes !",errCSVEmpty:"CSV vide !",errCols:"Colonnes introuvables !",dictErrFormat:"❌ Aucune ligne valide — utilise le format Pseudo=EpicID",dictErrMissing:"❌ Pseudo ou ID manquant sur une ligne",dictSaving:"⏳ Sauvegarde...",dictOk:(n)=>`✅ ${n} entrée${n>1?'s':''} ajoutée${n>1?'s':''} ☁️`,dictWarn:(n)=>`⚠️ ${n} entrée${n>1?'s':''} sauvegardée${n>1?'s':''} localement`,dictNone:"Aucune entrée ajoutée.",dictCount:(n)=>`${n} entrée(s) dans le cache local :`,dictClearConfirm:"Supprimer toutes les entrées locales ?",dictClearBtn:"🗑️ Tout effacer",pseudosLoaded:(total,f,c)=>{let m=`✅ <b>${total} pseudos chargés</b>`;if(f>0)m+=` · ${f} depuis GitHub`;if(c>0)m+=` · ${c} ajouts cloud ☁️`;return m;},noDict:"⚠️ Aucun pseudo chargé — l'outil fonctionne quand même",generatedOk:(n,total,api)=>`✅ <b>${n} lignes générées</b> · ${total} pseudos dans le dict · via ${api}`,teamsOk:(added,total)=>`✅ <b>${added}/${total} équipes ajoutées</b> depuis le CSV`,teamsMissing:(list)=>`⚠️ ${list.length} joueur${list.length>1?'s':''} du CSV non trouvé${list.length>1?'s':''} : <b>${list.join(', ')}</b>`,teams0:"❌ 0 joueur trouvé — vérifie les colonnes <code>PlayerPage</code> / <code>DataPlayer</code>",dateTitle:"📅 Date de l'événement",dateDay1:"Jour 1 :",dateDay2:"Jour 2 :",dateCopyBtn:"📋 Copier" },
-  en: { subtitle:"API Leaderboard → Teams · All in 2 steps",loading:"⏳ Loading dictionary...",apiSelectorTitle:"🔌 API Selection",apiNewTag:"✅ NEW METHOD — Recommended",apiNewDesc:"New API, works on all events since November 2025.",apiOldTag:"⚠️ OLD METHOD",apiOldDesc:"Old API, works on all events. Note: API down on 31 March!",apiWlsTag:"🎯 WLS TOURNAMENTS",apiWlsDesc:"For events organized through WLS",step1title:"Generate leaderboard",tabSimple:"🏆 Simple (1 event)",tabCumul:"📊 Cumulative (Day 1 + Day 2)",widLabel:"WindowID or Fortnite Tracker URL",widPlaceholder:"S39_SoloSeriesCupFinal_Day1_ME",widHint:"💡 Paste the full URL — WindowID is extracted automatically",wlsIdLabel:"WLS Leaderboard ID",wlsIdPlaceholder:"797505610768728064",wlsIdHint:"💡 The numeric WLS leaderboard ID",placementLabel:"Placement",placementFrom:"From",placementTo:"to",placementHint:"💡 Filter which ranks to include (e.g. 1 to 100)",btnGenerate:"🚀 Generate",generatedLabel:"Generated leaderboard",btnCopy:"📋 Copy",btnStep2:"➡️ Add teams",step2title:"Add teams",step2inputLabel:"Leaderboard or wiki code to process",step2inputPlaceholder:"Paste here the result from step 1...",step2inputHint:"Compatible with leaderboard AND wiki format",csvLabel:"Teams — CSV or TSV",fileBtn:"📂 Choose a file",fileNone:"No file chosen",btnAddTeams:"🏅 Add teams",resultLabel:"Final result",dictTitle:"Add a player to the database",dictDesc:"Entries are saved in the <b>shared cloud</b> — visible to everyone instantly.",dictLabel:"Format: WikiNickname=EpicAccountID (one entry per line)",dictHint:"💡 Spaces are stored as _. The Epic Account ID (32 chars) is in the Fortnite Tracker URL.",btnDictAdd:"➕ Add",madeBy:"Created by",copiedMsg:"✅ Copied!",noResult:"❌ No results — check the ID.",errNoWid:"Enter an ID!",errNoBothWid:"Enter both IDs!",errNoInput:"Nothing to process!",errNoCSV:"Add the teams CSV!",errCSVEmpty:"CSV is empty!",errCols:"Columns not found!",dictErrFormat:"❌ No valid lines — use Nickname=EpicID format",dictErrMissing:"❌ Missing nickname or ID on a line",dictSaving:"⏳ Saving...",dictOk:(n)=>`✅ ${n} entr${n>1?'ies':'y'} added ☁️`,dictWarn:(n)=>`⚠️ ${n} entr${n>1?'ies':'y'} saved locally`,dictNone:"No entries yet.",dictCount:(n)=>`${n} entr${n>1?'ies':'y'} in local cache:`,dictClearConfirm:"Delete all local entries?",dictClearBtn:"🗑️ Clear all",pseudosLoaded:(total,f,c)=>{let m=`✅ <b>${total} nicknames loaded</b>`;if(f>0)m+=` · ${f} from GitHub`;if(c>0)m+=` · ${c} cloud ☁️`;return m;},noDict:"⚠️ No nicknames loaded — tool still works",generatedOk:(n,total,api)=>`✅ <b>${n} lines generated</b> · ${total} in dict · via ${api}`,teamsOk:(added,total)=>`✅ <b>${added}/${total} teams added</b> from CSV`,teamsMissing:(list)=>`⚠️ ${list.length} player${list.length>1?'s':''} not found: <b>${list.join(', ')}</b>`,teams0:"❌ 0 players found — check <code>PlayerPage</code> / <code>DataPlayer</code> columns",dateTitle:"📅 Event date",dateDay1:"Day 1:",dateDay2:"Day 2:",dateCopyBtn:"📋 Copy" }
+  fr: {
+    subtitle:"Classement API → Équipes · Tout en 3 étapes",
+    loading:"⏳ Chargement du dictionnaire...",
+    apiSelectorTitle:"🔌 Choix de l'API",
+    apiNewTag:"✅ RECOMMANDÉE",
+    apiNewDesc:"Fonctionne sur tous les events depuis Novembre 2025.",
+    apiWlsTag:"🎯 TOURNOIS WLS",
+    apiWlsDesc:"Pour les événements organisés via WLS.",
+    step1title:"Générer le classement",
+    tabSimple:"🏆 Simple (1 event)",
+    tabCumul:"📊 Cumulé (Day 1 + Day 2)",
+    widLabel:"WindowID ou URL Fortnite Tracker",
+    widHint:"💡 Colle l'URL complète — le WindowID est extrait automatiquement",
+    wlsIdLabel:"WLS Leaderboard ID",
+    wlsIdHint:"💡 L'ID numérique du leaderboard WLS",
+    placementLabel:"Placement",
+    placementFrom:"De",
+    placementTo:"à",
+    placementHint:"💡 Filtre les rangs à inclure dans le résultat",
+    btnGenerate:"🚀 Générer",
+    generatedLabel:"Classement généré",
+    btnCopy:"📋 Copier",
+    btnStep2:"➡️ Ajouter les équipes",
+    step2title:"Ajouter les équipes",
+    step2inputLabel:"Classement ou code wiki à traiter",
+    step2inputHint:"Compatible avec le format classement ET le format wiki",
+    csvLabel:"Équipes — CSV ou TSV",
+    fileBtn:"📂 Choisir un fichier",
+    fileNone:"Aucun fichier choisi",
+    btnAddTeams:"🏅 Ajouter les équipes",
+    resultLabel:"Résultat final",
+    puTitle:"Mise à jour des pseudos",
+    puDesc:"Remplace les anciens pseudos dans ton code wiki en te basant sur l'EpicID.",
+    puFormatTitle:"FORMAT ATTENDU (3 lignes par joueur) :",
+    puCodeLabel:"Code wiki à modifier",
+    puUpdatesLabel:"Mises à jour (format 3 lignes)",
+    puHint:"💡 Un EpicID peut avoir plusieurs entrées — la dernière sera utilisée. Les lignes vides sont ignorées.",
+    puBtn:"🔄 Mettre à jour les pseudos",
+    puResultLabel:"Code wiki mis à jour",
+    puErrNoCode:"Entre le code wiki !",
+    puErrNoUpdates:"Entre les mises à jour !",
+    puErrNoParsed:"Aucune entrée valide — vérifie le format (3 lignes par joueur).",
+    puOk:(n,t)=>`✅ <b>${n} EpicID mis à jour</b> sur ${t} entrées traitées`,
+    puMissing:(list)=>`⚠️ ${list.length} EpicID non trouvé${list.length>1?'s':''} dans le code : <code>${list.slice(0,5).join(', ')}${list.length>5?'…':''}</code>`,
+    puStats:(entries,unique)=>`${entries} entrées parsées · ${unique} EpicIDs uniques`,
+    dictTitle:"Ajouter un joueur à la database",
+    dictDesc:"Les entrées sont sauvegardées dans le <b>cloud partagé</b> — visibles par tout le monde instantanément.",
+    dictLabel:"Format : PseudoWiki=EpicAccountID (une entrée par ligne)",
+    dictHint:"💡 Les espaces sont convertis en _ pour le stockage. L'Epic Account ID (32 caractères) se trouve dans l'URL Fortnite Tracker.",
+    btnDictAdd:"➕ Ajouter",
+    madeBy:"Créé par",
+    copiedMsg:"✅ Copié !",
+    noResult:"❌ Aucun résultat — vérifie l'ID.",
+    errNoWid:"Entre un ID !",
+    errNoBothWid:"Entre les deux IDs !",
+    errNoInput:"Rien à traiter !",
+    errNoCSV:"Ajoute le CSV des équipes !",
+    errCSVEmpty:"CSV vide !",
+    errCols:"Colonnes introuvables !",
+    dictErrFormat:"❌ Aucune ligne valide — utilise le format Pseudo=EpicID",
+    dictErrMissing:"❌ Pseudo ou ID manquant",
+    dictSaving:"⏳ Sauvegarde...",
+    dictOk:(n)=>`✅ ${n} entrée${n>1?'s':''} ajoutée${n>1?'s':''} ☁️`,
+    dictWarn:(n)=>`⚠️ ${n} entrée${n>1?'s':''} sauvegardée${n>1?'s':''} localement`,
+    dictNone:"Aucune entrée ajoutée.",
+    dictCount:(n)=>`${n} entrée(s) dans le cache local :`,
+    dictClearConfirm:"Supprimer toutes les entrées locales ?",
+    dictClearBtn:"🗑️ Tout effacer",
+    pseudosLoaded:(total,f,c)=>{let m=`✅ <b>${total} pseudos chargés</b>`;if(f>0)m+=` · ${f} depuis GitHub`;if(c>0)m+=` · ${c} ajouts cloud ☁️`;return m;},
+    noDict:"⚠️ Aucun pseudo chargé — l'outil fonctionne quand même",
+    generatedOk:(n,total,api)=>`✅ <b>${n} lignes générées</b> · ${total} pseudos dans le dict · via ${api}`,
+    teamsOk:(added,total)=>`✅ <b>${added}/${total} équipes ajoutées</b> depuis le CSV`,
+    teamsMissing:(list)=>`⚠️ ${list.length} joueur${list.length>1?'s':''} non trouvé${list.length>1?'s':''} : <b>${list.join(', ')}</b>`,
+    teams0:"❌ 0 joueur trouvé — vérifie les colonnes <code>PlayerPage</code> / <code>DataPlayer</code>",
+    dateTitle:"📅 Date de l'événement",
+    dateDay1:"Jour 1 :",
+    dateDay2:"Jour 2 :",
+    dateCopyBtn:"📋 Copier"
+  },
+  en: {
+    subtitle:"API Leaderboard → Teams · All in 3 steps",
+    loading:"⏳ Loading dictionary...",
+    apiSelectorTitle:"🔌 API Selection",
+    apiNewTag:"✅ RECOMMENDED",
+    apiNewDesc:"Works on all events since November 2025.",
+    apiWlsTag:"🎯 WLS TOURNAMENTS",
+    apiWlsDesc:"For events organized through WLS.",
+    step1title:"Generate leaderboard",
+    tabSimple:"🏆 Simple (1 event)",
+    tabCumul:"📊 Cumulative (Day 1 + Day 2)",
+    widLabel:"WindowID or Fortnite Tracker URL",
+    widHint:"💡 Paste the full URL — WindowID is extracted automatically",
+    wlsIdLabel:"WLS Leaderboard ID",
+    wlsIdHint:"💡 The numeric WLS leaderboard ID",
+    placementLabel:"Placement",
+    placementFrom:"From",
+    placementTo:"to",
+    placementHint:"💡 Filter which ranks to include",
+    btnGenerate:"🚀 Generate",
+    generatedLabel:"Generated leaderboard",
+    btnCopy:"📋 Copy",
+    btnStep2:"➡️ Add teams",
+    step2title:"Add teams",
+    step2inputLabel:"Leaderboard or wiki code to process",
+    step2inputHint:"Compatible with leaderboard AND wiki format",
+    csvLabel:"Teams — CSV or TSV",
+    fileBtn:"📂 Choose a file",
+    fileNone:"No file chosen",
+    btnAddTeams:"🏅 Add teams",
+    resultLabel:"Final result",
+    puTitle:"Pseudo Update",
+    puDesc:"Replace old nicknames in your wiki code using the EpicID.",
+    puFormatTitle:"EXPECTED FORMAT (3 lines per player):",
+    puCodeLabel:"Wiki code to update",
+    puUpdatesLabel:"Updates (3-line format)",
+    puHint:"💡 One EpicID can have multiple entries — the last one wins. Empty lines are ignored.",
+    puBtn:"🔄 Update pseudos",
+    puResultLabel:"Updated wiki code",
+    puErrNoCode:"Enter the wiki code!",
+    puErrNoUpdates:"Enter the updates!",
+    puErrNoParsed:"No valid entries — check the format (3 lines per player).",
+    puOk:(n,t)=>`✅ <b>${n} EpicIDs updated</b> out of ${t} entries processed`,
+    puMissing:(list)=>`⚠️ ${list.length} EpicID${list.length>1?'s':''} not found in code: <code>${list.slice(0,5).join(', ')}${list.length>5?'…':''}</code>`,
+    puStats:(entries,unique)=>`${entries} entries parsed · ${unique} unique EpicIDs`,
+    dictTitle:"Add a player to the database",
+    dictDesc:"Entries are saved in the <b>shared cloud</b> — visible to everyone instantly.",
+    dictLabel:"Format: WikiNickname=EpicAccountID (one entry per line)",
+    dictHint:"💡 Spaces are stored as _. The Epic Account ID (32 chars) is in the Fortnite Tracker URL.",
+    btnDictAdd:"➕ Add",
+    madeBy:"Created by",
+    copiedMsg:"✅ Copied!",
+    noResult:"❌ No results — check the ID.",
+    errNoWid:"Enter an ID!",
+    errNoBothWid:"Enter both IDs!",
+    errNoInput:"Nothing to process!",
+    errNoCSV:"Add the teams CSV!",
+    errCSVEmpty:"CSV is empty!",
+    errCols:"Columns not found!",
+    dictErrFormat:"❌ No valid lines — use Nickname=EpicID format",
+    dictErrMissing:"❌ Missing nickname or ID",
+    dictSaving:"⏳ Saving...",
+    dictOk:(n)=>`✅ ${n} entr${n>1?'ies':'y'} added ☁️`,
+    dictWarn:(n)=>`⚠️ ${n} entr${n>1?'ies':'y'} saved locally`,
+    dictNone:"No entries yet.",
+    dictCount:(n)=>`${n} entr${n>1?'ies':'y'} in local cache:`,
+    dictClearConfirm:"Delete all local entries?",
+    dictClearBtn:"🗑️ Clear all",
+    pseudosLoaded:(total,f,c)=>{let m=`✅ <b>${total} nicknames loaded</b>`;if(f>0)m+=` · ${f} from GitHub`;if(c>0)m+=` · ${c} cloud ☁️`;return m;},
+    noDict:"⚠️ No nicknames loaded — tool still works",
+    generatedOk:(n,total,api)=>`✅ <b>${n} lines generated</b> · ${total} in dict · via ${api}`,
+    teamsOk:(added,total)=>`✅ <b>${added}/${total} teams added</b> from CSV`,
+    teamsMissing:(list)=>`⚠️ ${list.length} player${list.length>1?'s':''} not found: <b>${list.join(', ')}</b>`,
+    teams0:"❌ 0 players found — check <code>PlayerPage</code> / <code>DataPlayer</code> columns",
+    dateTitle:"📅 Event date",
+    dateDay1:"Day 1:",
+    dateDay2:"Day 2:",
+    dateCopyBtn:"📋 Copy"
+  }
 };
 
 function t(key,...args){const val=T[_lang][key];return typeof val==='function'?val(...args):(val||key);}
@@ -295,8 +493,22 @@ function applyTranslations(){document.querySelectorAll('[data-i18n]').forEach(el
 function toggleLang(){_lang=_lang==='fr'?'en':'fr';localStorage.setItem('lang',_lang);document.getElementById('lang-label').textContent=_lang==='fr'?'English':'Français';document.querySelector('.lang-flag').textContent=_lang==='fr'?'🇬🇧':'🇫🇷';applyTranslations();}
 if(_lang==='en'){document.getElementById('lang-label').textContent='Français';document.querySelector('.lang-flag').textContent='🇫🇷';applyTranslations();}
 
-function selectApi(api){_api=api;document.getElementById('btn-kass').className='api-btn'+(api==='kass'?' active-kass':'');document.getElementById('btn-fnio').className='api-btn'+(api==='fnio'?' active-fnio':'');document.getElementById('btn-wls').className='api-btn'+(api==='wls'?' active-wls':'');updateInputLabels();}
-function updateInputLabels(){const isWls=_api==='wls';document.getElementById('lbl-wid1').textContent=isWls?t('wlsIdLabel'):t('widLabel');document.getElementById('hint-wid1').textContent=isWls?t('wlsIdHint'):t('widHint');document.getElementById('wid1').placeholder=isWls?t('wlsIdPlaceholder'):t('widPlaceholder');document.getElementById('lbl-day1').textContent=isWls?`${t('wlsIdLabel')} 1`:'Day 1';document.getElementById('lbl-day2').textContent=isWls?`${t('wlsIdLabel')} 2`:'Day 2';document.getElementById('wd1').placeholder=isWls?t('wlsIdPlaceholder'):t('widPlaceholder');document.getElementById('wd2').placeholder=isWls?t('wlsIdPlaceholder'):t('widPlaceholder');}
+function selectApi(api){
+  _api=api;
+  document.getElementById('btn-kass').className='api-btn'+(api==='kass'?' active-kass':'');
+  document.getElementById('btn-wls').className='api-btn'+(api==='wls'?' active-wls':'');
+  updateInputLabels();
+}
+function updateInputLabels(){
+  const isWls=_api==='wls';
+  document.getElementById('lbl-wid1').textContent=isWls?t('wlsIdLabel'):t('widLabel');
+  document.getElementById('hint-wid1').textContent=isWls?t('wlsIdHint'):t('widHint');
+  document.getElementById('wid1').placeholder=isWls?'797505610768728064':'S39_SoloSeriesCupFinal_Day1_ME';
+  document.getElementById('lbl-day1').textContent=isWls?`${t('wlsIdLabel')} 1`:'Day 1';
+  document.getElementById('lbl-day2').textContent=isWls?`${t('wlsIdLabel')} 2`:'Day 2';
+  document.getElementById('wd1').placeholder=isWls?'797505610768728064':'...Day1_ME';
+  document.getElementById('wd2').placeholder=isWls?'797505610768728064':'...Day2_ME';
+}
 
 function fetchWithTimeout(url,options={},ms=8000){return Promise.race([fetch(url,options),new Promise((_,reject)=>setTimeout(()=>reject(new Error(`Timeout ${ms}ms`)),ms))]);}
 function sleep(ms){return new Promise(res=>setTimeout(res,ms));}
@@ -304,12 +516,23 @@ function sleep(ms){return new Promise(res=>setTimeout(res,ms));}
 // ============================================================
 //  CLOUD DICT
 // ============================================================
-async function fetchCloudDict(){try{const r=await fetchWithTimeout(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}/latest`,{headers:{"X-Master-Key":JSONBIN_KEY}},8000);if(!r.ok)throw new Error(`JSONBin ${r.status}`);const data=await r.json();const rec=data.record||{};delete rec['init'];return rec;}catch(e){console.warn("JSONBin:",e.message);return{};}}
+async function fetchCloudDict(){try{const r=await fetchWithTimeout(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}/latest`,{headers:{"X-Master-Key":JSONBIN_KEY}},8000);if(!r.ok)throw new Error(`JSONBin ${r.status}`);const data=await r.json();const rec=data.record||{};delete rec['init'];return rec;}catch(e){return{};}}
 async function saveToCloud(newEntries){try{const current=await fetchCloudDict();Object.assign(current,newEntries);const r=await fetchWithTimeout(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}`,{method:'PUT',headers:{"Content-Type":"application/json","X-Master-Key":JSONBIN_KEY,"X-Bin-Versioning":"false"},body:JSON.stringify(current)},8000);return r.ok;}catch(e){return false;}}
 function loadDictFromText(txt){const d={};for(const rawLine of txt.split('\n')){const line=rawLine.trim();if(!line||!line.includes('='))continue;const i=line.indexOf('=');const name=line.slice(0,i).trim();const eid=line.slice(i+1).trim().toLowerCase().replace(/-/g,'');if(eid&&name)d[eid]=name;}return d;}
 function loadLocalDict(){try{return JSON.parse(localStorage.getItem('custom_dict')||'{}');}catch{return{};}}
 function saveLocalDict(d){localStorage.setItem('custom_dict',JSON.stringify(d));}
-async function autoLoadDict(){const status=document.getElementById('dict-status');status.className='alert info';status.innerHTML=t('loading');let fileCount=0,cloudCount=0;try{const r=await fetchWithTimeout(`${GITHUB_DICT_URL}?t=${Date.now()}`,{},8000);if(r.ok){const fd=loadDictFromText(await r.text());fileCount=Object.keys(fd).length;Object.assign(dict,fd);}}catch(e){console.warn("GitHub dict:",e.message);}try{const cloud=await fetchCloudDict();cloudCount=Object.keys(cloud).length;Object.assign(dict,cloud);}catch(e){console.warn("Cloud dict:",e.message);}Object.assign(dict,loadLocalDict());const total=Object.keys(dict).length;status.className=total>0?'alert ok':'alert warn';status.innerHTML=total>0?t('pseudosLoaded',total,fileCount,cloudCount):t('noDict');renderDictList();}
+async function autoLoadDict(){
+  const status=document.getElementById('dict-status');
+  status.className='alert info';status.innerHTML=t('loading');
+  let fileCount=0,cloudCount=0;
+  try{const r=await fetchWithTimeout(`${GITHUB_DICT_URL}?t=${Date.now()}`,{},8000);if(r.ok){const fd=loadDictFromText(await r.text());fileCount=Object.keys(fd).length;Object.assign(dict,fd);}}catch(e){}
+  try{const cloud=await fetchCloudDict();cloudCount=Object.keys(cloud).length;Object.assign(dict,cloud);}catch(e){}
+  Object.assign(dict,loadLocalDict());
+  const total=Object.keys(dict).length;
+  status.className=total>0?'alert ok':'alert warn';
+  status.innerHTML=total>0?t('pseudosLoaded',total,fileCount,cloudCount):t('noDict');
+  renderDictList();
+}
 autoLoadDict();
 function getName(eid){const raw=dict[eid];return raw?raw.replace(/_/g,' '):null;}
 
@@ -323,9 +546,9 @@ async function fetchWithRetry(url,options={},useProxy=false){
     dbg(`fetchWithRetry tentative ${attempt+1}/3`,{url:finalUrl});
     try{
       const r=await fetchWithTimeout(finalUrl,options,10000);
-      dbg(`→ HTTP ${r.status}`,{url:finalUrl});
+      dbg(`→ HTTP ${r.status}`);
       if(r.ok)return r;
-      if(r.status>=400&&r.status<500){let body='';try{body=await r.clone().text();}catch{}dbg(`→ ERREUR ${r.status} fatale`,{body:body.slice(0,300)});throw new Error(`_FATAL_${ERR_MSGS[r.status]||`Erreur ${r.status}`}`);}
+      if(r.status>=400&&r.status<500){let body='';try{body=await r.clone().text();}catch{}dbg(`→ ERREUR ${r.status}`,{body:body.slice(0,200)});throw new Error(`_FATAL_Erreur ${r.status}`);}
       if(useProxy&&proxiesTried<CORS_PROXIES.length-1){_proxyIndex=(_proxyIndex+1)%CORS_PROXIES.length;proxiesTried++;}
       lastErr=new Error(`Erreur ${r.status} (tentative ${attempt+1}/3)`);
       await sleep((attempt+1)*2000);
@@ -333,7 +556,7 @@ async function fetchWithRetry(url,options={},useProxy=false){
       if(e.message.startsWith('_FATAL_'))throw new Error(e.message.replace('_FATAL_',''));
       dbg(`→ EXCEPTION`,{msg:e.message});
       if(useProxy&&proxiesTried<CORS_PROXIES.length-1){_proxyIndex=(_proxyIndex+1)%CORS_PROXIES.length;proxiesTried++;}
-      lastErr=new Error(`Erreur réseau (tentative ${attempt+1}/3) : ${e.message}`);
+      lastErr=new Error(`Erreur réseau : ${e.message}`);
       await sleep((attempt+1)*1500);
     }
   }
@@ -347,12 +570,7 @@ async function fetchPage(wid,p){
   dbg(`fetchPage logicPage=${p} realPage=${pageParam}`);
   const r=await fetchWithRetry(target,{headers:{[cfg.header]:cfg.key,"Accept":"application/json"}},cfg.useCorsProxy);
   const json=await r.json();
-  dbg(`→ JSON page ${pageParam}`,{
-    result:json?.[cfg.successField],totalPages:json?.totalPages,
-    sessionResultsCount:json?.session?.results?.length??'N/A',
-    // ✅ LOG : on affiche exactement les clés du premier résultat pour détecter teamAccountIds vs teamAccountNames
-    firstResultKeys: Object.keys(json?.session?.results?.[0]||json?.results?.[0]||{})
-  });
+  dbg(`→ JSON page ${pageParam}`,{result:json?.[cfg.successField],totalPages:json?.totalPages,count:json?.session?.results?.length??'N/A'});
   return json;
 }
 
@@ -362,20 +580,15 @@ async function fetchAll(wid){
   dbg(`fetchAll START wid="${wid}"`);
   while(true){
     let d;
-    try{ d=await fetchPage(wid,page); }
-    catch(e){
-      dbg(`fetchAll CATCH page=${page}`,{msg:e.message,resultsAlready:results.length});
-      if(results.length>0){dbg('→ Arrêt propre avec résultats existants');break;}
-      throw e;
-    }
-    if(!d?.[cfg.successField]){dbg(`fetchAll STOP: ${cfg.successField}=false`,{page});break;}
+    try{d=await fetchPage(wid,page);}
+    catch(e){dbg(`fetchAll CATCH page=${page}`,{msg:e.message,resultsAlready:results.length});if(results.length>0)break;throw e;}
+    if(!d?.[cfg.successField]){dbg(`fetchAll STOP: ${cfg.successField}=false`);break;}
     if(page===0){const f=cfg.tbPath(d.session);if(f)tb=f;begin=d.session?.beginTime||d.beginTime||null;}
     const pageResults=d.session?.results||d.results||[];
     dbg(`page ${page} → ${pageResults.length} résultats`);
-    if(pageResults.length===0){dbg('→ Page vide, arrêt');break;}
+    if(pageResults.length===0)break;
     results.push(...pageResults);
-    const totalPages=d.totalPages||1;
-    if(page>=totalPages-1){dbg(`→ Dernière page (${page+1}/${totalPages}), arrêt`);break;}
+    if(page>=(d.totalPages||1)-1)break;
     page++;
   }
   dbg(`fetchAll END: ${results.length} résultats`);
@@ -384,24 +597,11 @@ async function fetchAll(wid){
 
 async function fetchWLS(lbId){const r=await fetchWithRetry(`https://api.wls.gg/v5/leaderboards/${lbId.trim()}`,{headers:{"Accept":"application/json"}},true);return r.json();}
 
-// ============================================================
-//  ✅ FIX PRINCIPAL : getMemberId gère string (teamAccountIds)
-//     ET objet {id, name} (teamAccountNames / teamAccounts)
-// ============================================================
-function getMemberId(m){
-  return typeof m === 'string' ? m.toLowerCase().replace(/-/g,'') : (m.id||'').toLowerCase().replace(/-/g,'');
-}
-function getMemberName(m){
-  if(typeof m === 'string') return null; // pas de name dans teamAccountIds
-  return m.name || null;
-}
+function getMemberId(m){return typeof m==='string'?m.toLowerCase().replace(/-/g,''):(m.id||'').toLowerCase().replace(/-/g,'');}
+function getMemberName(m){if(typeof m==='string')return null;return m.name||null;}
 
 function fmtLine(rank,members,pts){
-  const p=members.map(m=>{
-    const eid=getMemberId(m);
-    const name=getName(eid)||getMemberName(m)||eid;
-    return`${eid}{{!}}${name}`;
-  }).join(',');
+  const p=members.map(m=>{const eid=getMemberId(m);const name=getName(eid)||getMemberName(m)||eid;return`${eid}{{!}}${name}`;}).join(',');
   return`${rank}\t${p}\t${pts}`;
 }
 function fmtLineWLS(rank,memberList,pts){
@@ -409,19 +609,14 @@ function fmtLineWLS(rank,memberList,pts){
   return`${rank}\t${p}\t${pts}`;
 }
 
-// ============================================================
-//  RUN SIMPLE / CUMUL
-// ============================================================
 async function runSimple(wid){
   const{results,begin}=await fetchAll(wid);
   if(!results.length)return{lines:null,date:null};
   results.sort((a,b)=>(a.rank||999)-(b.rank||999));
   return{
     lines:results.map((r,i)=>{
-      // ✅ Fallback complet : teamAccountNames → teamAccounts → teamAccountIds (vieux events FNIO = strings)
       const members=r.teamAccountNames||r.teamAccounts||r.teamAccountIds||[];
-      const pts=r.pointsEarned||r.points||0;
-      return fmtLine(r.rank||i+1,members,pts);
+      return fmtLine(r.rank||i+1,members,r.pointsEarned||r.points||0);
     }),
     date:begin||null
   };
@@ -434,7 +629,6 @@ async function runCumul(wids){
     if(!tbF&&tb)tbF=tb;
     dates.push(begin||null);
     for(const res of results){
-      // ✅ Même fallback pour runCumul
       const mb=res.teamAccountNames||res.teamAccounts||res.teamAccountIds||[];
       const key=mb.map(m=>getMemberId(m)).sort().join('|');
       if(!pl[key])pl[key]={pts:0,mb,stats:{}};
@@ -474,50 +668,9 @@ async function generate(){
   dbg('=== GÉNÉRATION DÉMARRÉE ===',{api:_api,mode:_mode});
   try{
     let res;
-    const apiLabel=_api==='kass'?'Kass507.lat':_api==='fnio'?'FortniteAPI.io':'WLS.gg';
+    const apiLabel=_api==='kass'?'Kass507.lat':'WLS.gg';
     if(_api==='wls'){
       if(_mode==='s'){const id=document.getElementById('wid1').value.trim();if(!id){alert(t('errNoWid'));return;}res=await runSimpleWLS(id);dateInfo=res.date||null;}
       else{const id1=document.getElementById('wd1').value.trim();const id2=document.getElementById('wd2').value.trim();if(!id1||!id2){alert(t('errNoBothWid'));return;}res=await runCumulWLS([id1,id2]);dateInfo=res.dates||null;}
     }else{
-      if(_mode==='s'){const wid=getWid(document.getElementById('wid1').value);if(!wid){alert(t('errNoWid'));return;}dbg('windowId',{wid});const tmp=await runSimple(wid);res={lines:tmp.lines};dateInfo=tmp.date||null;}
-      else{const d1=getWid(document.getElementById('wd1').value);const d2=getWid(document.getElementById('wd2').value);if(!d1||!d2){alert(t('errNoBothWid'));return;}const tmp=await runCumul([d1,d2]);res={lines:tmp.lines};dateInfo=tmp.dates||null;}
-    }
-    let lines=res.lines;
-    const st=document.getElementById('st1');
-    if(!lines){
-      dbg('RÉSULTAT: aucune ligne');
-      st.className='alert err';st.textContent=t('noResult');
-      document.getElementById('date-block').classList.add('hidden');
-    }else{
-      lines=filterByRank(lines);
-      dbg(`RÉSULTAT FINAL: ${lines.length} lignes après filtre`,getPlacementRange());
-      st.className='alert ok';
-      st.innerHTML=t('generatedOk',lines.length,Object.keys(dict).length,apiLabel);
-      document.getElementById('r1').value=lines.join('\n');
-      document.getElementById('b1').className='badge green';
-      document.getElementById('b1').textContent='✓';
-      document.getElementById('card1').classList.add('done');
-      showDateBlock(dateInfo);
-    }
-    document.getElementById('o1').classList.remove('hidden');
-  }catch(e){
-    dbg('ERREUR FATALE',{msg:e.message});
-    document.getElementById('st1').className='alert err';
-    document.getElementById('st1').innerHTML=`❌ ${e.message}`;
-    document.getElementById('o1').classList.remove('hidden');
-    document.getElementById('date-block').classList.add('hidden');
-  }finally{btn.disabled=false;ldr.style.display='none';dbg('=== TERMINÉ ===');}
-}
-
-function parseTeamsCSV(txt){const lines=txt.trim().split(/\r?\n/).filter(l=>l.trim());if(lines.length<2){alert(t('errCSVEmpty'));return null;}const candidates=['\t',',',';'];let dlm='\t',best=-1;for(const c of candidates){const avg=lines.reduce((s,l)=>s+(l.split(c).length-1),0)/lines.length;if(avg>best){best=avg;dlm=c;}}const hdrs=lines[0].split(dlm).map(h=>h.trim().replace(/^\uFEFF/,''));const ti=hdrs.indexOf('PlayerTeam');const di=hdrs.indexOf('DataPlayer');const pi=hdrs.indexOf('PlayerPage');if(ti<0){alert(`${t('errCols')}\n${hdrs.join(' | ')}`);return null;}if(di<0&&pi<0){alert(`${t('errCols')}\n${hdrs.join(' | ')}`);return null;}const map={},csvKeys=new Set();for(let i=1;i<lines.length;i++){const c=lines[i].split(dlm);const offset=Math.max(0,hdrs.length-c.length);const teamIdx=Math.max(0,ti-offset);const dpIdx=di>=0?Math.max(0,di-offset):-1;const ppIdx=pi>=0?Math.max(0,pi-offset):-1;const team=(c[teamIdx]||'').trim();if(!team)continue;if(ppIdx>=0&&ppIdx<c.length){const pp=(c[ppIdx]||'').trim();if(pp){map[pp]=team;csvKeys.add(pp);}}if(dpIdx>=0&&dpIdx<c.length){const dp=(c[dpIdx]||'').trim();if(dp){map[dp]=team;csvKeys.add(dp);}}}return{map,csvKeys,total:lines.length-1};}
-function extractNames(field){return[...field.matchAll(/\{\{!\}\}([^,|\n\t]+?)(?=[,|\n\t]|$)/g)].map(m=>m[1].trim()).filter(Boolean);}
-function applyLine(line,map){const isWiki=line.includes('{{TournamentResults/Line|');let pField;if(isWiki){const m=line.match(/\|players=([^|]+)/);if(!m)return{out:line,usedKeys:[]};pField=m[1];}else{const parts=line.split('\t');if(parts.length<2)return{out:line,usedKeys:[]};pField=parts[1];}const names=extractNames(pField);if(!names.length)return{out:line,usedKeys:[]};const usedKeys=[];const teams=names.map(n=>{const team=map[n];if(team){usedKeys.push(n);return team;}return'';});if(!teams.some(v=>v))return{out:line,usedKeys:[]};const val=teams.join(',');const fn=(names.length>1||(isWiki&&line.includes('|teams=')))?'teams':'team';let out;if(isWiki){if(/\|teams?=/.test(line))out=line.replace(/\|teams?=[^|]*/,`|${fn}=${val}`);else out=line.replace(/(\|prize=[^|]+)/,`$1\t|${fn}=${val}`);}else{const p=line.split('\t');if(p.length===3)out=`${p[0]}\t${p[1]}\t${p[2]}\t${val}`;else if(p.length>3){p[3]=val;out=p.join('\t');}else out=line+`\t${val}`;}return{out,usedKeys};}
-function addTeams(){const inp=document.getElementById('i2').value.trim();const raw=document.getElementById('tt').value.trim();if(!inp){alert(t('errNoInput'));return;}if(!raw){alert(t('errNoCSV'));return;}const parsed=parseTeamsCSV(raw);if(!parsed)return;const{map,csvKeys,total:csvTotal}=parsed;if(Object.keys(map).length===0){document.getElementById('st2').className='alert err';document.getElementById('st2').innerHTML=t('teams0');document.getElementById('st2-missing').classList.add('hidden');document.getElementById('o2').classList.remove('hidden');return;}const usedInCode=new Set();let teamsAdded=0;const result=inp.split('\n').map(line=>{const{out,usedKeys}=applyLine(line,map);if(usedKeys.length>0){teamsAdded++;usedKeys.forEach(k=>usedInCode.add(k));}return out;}).join('\n');const notFound=[],seen=new Set();for(const k of csvKeys){if(!usedInCode.has(k)&&!seen.has(k)){seen.add(k);notFound.push(k);}}document.getElementById('r2').value=result;document.getElementById('st2').className='alert ok';document.getElementById('st2').innerHTML=t('teamsOk',teamsAdded,csvTotal);const missingEl=document.getElementById('st2-missing');if(notFound.length>0){missingEl.className='alert warn';missingEl.innerHTML=t('teamsMissing',notFound);missingEl.classList.remove('hidden');}else missingEl.classList.add('hidden');document.getElementById('o2').classList.remove('hidden');document.getElementById('b2').className='badge green';document.getElementById('b2').textContent='✓';document.getElementById('card2').classList.add('done');}
-
-function renderDictList(){const d=loadLocalDict(),el=document.getElementById('dict-list'),entries=Object.entries(d);if(!entries.length){el.innerHTML=`<p style="font-size:.82rem;color:#475569">${t('dictNone')}</p>`;return;}el.innerHTML=`<p style="font-size:.82rem;color:#64748b;margin-bottom:8px"><b>${t('dictCount',entries.length)}</b></p><div style="background:#0f172a;border-radius:8px;padding:10px;font-family:monospace;font-size:12px;max-height:200px;overflow-y:auto">${entries.map(([eid,name])=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid #1e293b"><span style="color:#e2e8f0">${name.replace(/_/g,' ')} <span style="color:#475569">= ${eid}</span></span><button onclick="dictRemove('${eid}')" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:1rem;padding:0 6px">✕</button></div>`).join('')}</div><button onclick="dictClear()" style="margin-top:8px;background:none;border:1px solid #ef4444;color:#ef4444;border-radius:6px;padding:5px 12px;font-size:.8rem;cursor:pointer">${t('dictClearBtn')}</button>`;}
-async function dictAdd(){const raw=document.getElementById('dict-new').value.trim();const msg=document.getElementById('dict-msg');if(!raw)return;const rawLines=raw.split(/\r?\n/).map(l=>l.trim()).filter(l=>l&&l.includes('='));if(!rawLines.length){msg.style.color='#fca5a5';msg.textContent=t('dictErrFormat');return;}const entries={};for(const line of rawLines){const i=line.indexOf('=');const name=line.slice(0,i).trim().replace(/ /g,'_');const eid=line.slice(i+1).trim().toLowerCase().replace(/-/g,'');if(name&&eid)entries[eid]=name;}const count=Object.keys(entries).length;if(!count){msg.style.color='#fca5a5';msg.textContent=t('dictErrMissing');return;}msg.style.color='#60a5fa';msg.textContent=t('dictSaving');const local=loadLocalDict();Object.assign(local,entries);Object.assign(dict,entries);saveLocalDict(local);document.getElementById('dict-new').value='';renderDictList();const ok=await saveToCloud(entries);msg.style.color=ok?'#4ade80':'#fbbf24';msg.textContent=ok?t('dictOk',count):t('dictWarn',count);setTimeout(()=>msg.textContent='',5000);}
-function dictRemove(eid){const d=loadLocalDict();delete d[eid];delete dict[eid];saveLocalDict(d);renderDictList();}
-function dictClear(){if(!confirm(t('dictClearConfirm')))return;localStorage.removeItem('custom_dict');renderDictList();autoLoadDict();}
-</script>
-</body>
-</html>
+      if(_mode==='s'){const w
