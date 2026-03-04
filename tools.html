@@ -671,9 +671,9 @@ async function fetchAll(wid) {
     if (page === 0) {
       const f = cfg.tbPath(d.session);
       if (f) tb = f;
-      begin = d.session?.beginTime || null;
+      begin = d.session?.beginTime || d.beginTime || null;
     }
-    const pageResults = d.session?.results || [];
+    const pageResults = d.session?.results || d.results || [];
     // Page vide = plus de données
     if (pageResults.length === 0) break;
     results.push(...pageResults);
@@ -1131,3 +1131,4 @@ function dictClear() {
 </script>
 </body>
 </html>
+
