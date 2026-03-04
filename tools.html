@@ -61,9 +61,7 @@
       color: #e2e8f0; font-size: 0.92rem;
     }
     input[type=text]:focus, input[type=number]:focus { outline: none; border-color: #3b82f6; }
-    /* ✅ Masque le file input natif */
     input[type=file] { display: none; }
-    /* ✅ Bouton fichier custom */
     .file-input-row { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
     .file-btn {
       padding: 7px 16px; background: #334155; border: 1px solid #475569;
@@ -76,7 +74,6 @@
     textarea:focus { outline: none; border-color: #3b82f6; }
     .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
     @media(max-width:580px) { .grid2 { grid-template-columns: 1fr; } }
-    /* ✅ Placement range */
     .placement-row { display: flex; align-items: center; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
     .placement-row span { font-size: 0.83rem; color: #64748b; }
     .placement-row input[type=number] { width: 90px; text-align: center; }
@@ -180,7 +177,6 @@
       </div>
     </div>
 
-    <!-- ✅ PLACEMENT RANGE -->
     <label data-i18n="placementLabel">Placement</label>
     <div class="placement-row">
       <span data-i18n="placementFrom">De</span>
@@ -219,7 +215,6 @@
     <label data-i18n="csvLabel">Équipes — CSV ou TSV</label>
     <textarea id="tt" rows="7"
       placeholder="DataTeam&#9;PlayerTeam&#9;DataPlayer&#9;PlayerPage&#10;BIG Clan&#9;Malibuca&#9;Malibuca&#9;Malibuca"></textarea>
-    <!-- ✅ Bouton fichier custom traduit -->
     <div class="file-input-row">
       <button class="file-btn" onclick="document.getElementById('tf').click()" id="file-btn-label" data-i18n="fileBtn">📂 Choisir un fichier</button>
       <span class="file-name" id="file-name-display" data-i18n="fileNone">Aucun fichier choisi</span>
@@ -260,7 +255,6 @@
     <div id="dict-list" style="margin-top:16px"></div>
   </div>
 
-  <!-- ✅ FIX PP : URL raw GitHub correcte -->
   <footer class="footer">
     <img src="https://raw.githubusercontent.com/Clementsly/fortnite-wiki-tools/main/Design%20sans%20titre%20(6).png" alt="Clem" class="footer-avatar">
     <div class="footer-text">
@@ -296,7 +290,8 @@ const APIS = {
     header: "x-api-key",
     successField: "success",
     tbPath: (s) => s?.rules?.tiebreakerFormula,
-    useCorsProxy: true
+    useCorsProxy: true,
+    pageOffset: 0   // ✅ Kass commence à page 0
   },
   fnio: {
     base: "https://fortniteapi.io/v1",
@@ -304,7 +299,8 @@ const APIS = {
     header: "Authorization",
     successField: "result",
     tbPath: (s) => s?.rules?.tie,
-    useCorsProxy: false
+    useCorsProxy: false,
+    pageOffset: 1   // ✅ FNIO commence à page 1 — FIX ERREUR 500 VIEUX EVENTS
   }
 };
 
@@ -642,16 +638,18 @@ async function fetchWithRetry(url, options = {}, useProxy = false) {
 }
 
 // ============================================================
-//  FETCH PAGE / ALL
+//  ✅ FIX PAGINATION — FNIO commence à page 1, Kass à page 0
 // ============================================================
 async function fetchPage(wid, p) {
-  const cfg    = APIS[_api];
-  const target = `${cfg.base}/events/window?windowId=${encodeURIComponent(wid)}&page=${p}`;
+  const cfg       = APIS[_api];
+  const pageParam = p + (cfg.pageOffset || 0);
+  const target    = `${cfg.base}/events/window?windowId=${encodeURIComponent(wid)}&page=${pageParam}`;
   const r = await fetchWithRetry(target, {
     headers: { [cfg.header]: cfg.key, "Accept": "application/json" }
   }, cfg.useCorsProxy);
   return r.json();
 }
+
 async function fetchAll(wid) {
   const cfg = APIS[_api];
   let results = [], page = 0, tb = null, begin = null;
@@ -669,6 +667,7 @@ async function fetchAll(wid) {
   }
   return { results, tb, begin };
 }
+
 async function fetchWLS(lbId) {
   const target = `https://api.wls.gg/v5/leaderboards/${lbId.trim()}`;
   const r = await fetchWithRetry(target, { headers: { "Accept": "application/json" } }, true);
@@ -855,7 +854,6 @@ function toStep2() {
 function loadTF() {
   const f = document.getElementById('tf').files[0];
   if (!f) return;
-  // ✅ Affiche le nom du fichier choisi
   document.getElementById('file-name-display').textContent = f.name;
   f.text().then(txt => document.getElementById('tt').value = txt);
 }
@@ -864,15 +862,11 @@ function getWid(txt) {
   const m = txt.match(/[?&]window=([a-zA-Z0-9_-]+)/);
   return m ? m[1] : txt;
 }
-
-// ✅ Récupère et valide le placement range
 function getPlacementRange() {
   const from = parseInt(document.getElementById('rank-from').value, 10) || 1;
   const to   = parseInt(document.getElementById('rank-to').value,   10) || 100;
   return { from: Math.max(1, from), to: Math.max(from, to) };
 }
-
-// ✅ Filtre les lignes par placement range
 function filterByRank(lines) {
   const { from, to } = getPlacementRange();
   return lines.filter(line => {
@@ -913,15 +907,12 @@ async function generate() {
         const tmp = await runCumul([d1, d2]); res = { lines: tmp.lines }; dateInfo = tmp.dates || null;
       }
     }
-
     let lines = res.lines;
     const st  = document.getElementById('st1');
-
     if (!lines) {
       st.className = 'alert err'; st.textContent = t('noResult');
       document.getElementById('date-block').classList.add('hidden');
     } else {
-      // ✅ Applique le filtre placement
       lines = filterByRank(lines);
       st.className = 'alert ok';
       st.innerHTML = t('generatedOk', lines.length, Object.keys(dict).length, apiLabel);
@@ -943,7 +934,7 @@ async function generate() {
 }
 
 // ============================================================
-//  STEP 2 — AJOUTER LES ÉQUIPES
+//  STEP 2
 // ============================================================
 function parseTeamsCSV(txt) {
   const lines = txt.trim().split(/\r?\n/).filter(l => l.trim());
