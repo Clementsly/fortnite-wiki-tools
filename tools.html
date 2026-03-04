@@ -291,7 +291,7 @@ const APIS = {
     successField: "success",
     tbPath: (s) => s?.rules?.tiebreakerFormula,
     useCorsProxy: true,
-    pageOffset: 0   // ✅ Kass commence à page 0
+    pageOffset: 0
   },
   fnio: {
     base: "https://fortniteapi.io/v1",
@@ -300,7 +300,7 @@ const APIS = {
     successField: "result",
     tbPath: (s) => s?.rules?.tie,
     useCorsProxy: false,
-    pageOffset: 1   // ✅ FNIO commence à page 1 — FIX ERREUR 500 VIEUX EVENTS
+    pageOffset: 1   // ✅ FNIO commence à page 1
   }
 };
 
@@ -638,7 +638,7 @@ async function fetchWithRetry(url, options = {}, useProxy = false) {
 }
 
 // ============================================================
-//  ✅ FIX PAGINATION — FNIO commence à page 1, Kass à page 0
+//  FETCH PAGE
 // ============================================================
 async function fetchPage(wid, p) {
   const cfg       = APIS[_api];
@@ -650,18 +650,33 @@ async function fetchPage(wid, p) {
   return r.json();
 }
 
+// ============================================================
+//  ✅ FETCH ALL — protection page inexistante (500 mid-loop)
+// ============================================================
 async function fetchAll(wid) {
   const cfg = APIS[_api];
   let results = [], page = 0, tb = null, begin = null;
   while (true) {
-    const d = await fetchPage(wid, page);
+    let d;
+    try {
+      d = await fetchPage(wid, page);
+    } catch(e) {
+      // Si on a déjà des résultats et qu'une page intermédiaire plante
+      // (ex: FNIO retourne totalPages incorrect sur vieux events),
+      // on arrête proprement sans tout faire échouer
+      if (results.length > 0) break;
+      throw e;
+    }
     if (!d?.[cfg.successField]) break;
     if (page === 0) {
       const f = cfg.tbPath(d.session);
       if (f) tb = f;
       begin = d.session?.beginTime || null;
     }
-    results.push(...(d.session?.results || []));
+    const pageResults = d.session?.results || [];
+    // Page vide = plus de données
+    if (pageResults.length === 0) break;
+    results.push(...pageResults);
     if (page >= (d.totalPages || 1) - 1) break;
     page++;
   }
