@@ -466,4 +466,406 @@ function getRange(){const f=parseInt(document.getElementById('rk-from').value)||
 function filterRank(lines){const{from,to}=getRange();return lines.filter(l=>{const r=parseInt(l.split('\t')[0]);return!isNaN(r)&&r>=from&&r<=to;});}
 function cp(id,fid){navigator.clipboard.writeText(document.getElementById(id).value);const el=document.getElementById(fid);el.textContent=s('copied');setTimeout(()=>el.textContent='',2000);}
 function loadTxt(inputId,targetId,nameId){const f=document.getElementById(inputId).files[0];if(!f)return;document.getElementById(nameId).textContent=f.name;f.text().then(txt=>document.getElementById(targetId).value=txt);}
-function to
+function toStep2(){document.getElementById('i2').value=document.getElementById('r1').value;document.getElementById('b2').classList.add('b');document.getElementById('card2').scrollIntoView({behavior:'smooth'});}
+function detectDlm(lines){const cands=['\t',',',';'];let best='\t',bestScore=-1;for(const d of cands){const avg=lines.reduce((x,l)=>x+(l.split(d).length-1),0)/lines.length;if(avg>bestScore){bestScore=avg;best=d;}}return best;}
+function markDone(badgeId,cardId){const b=document.getElementById(badgeId);b.className='badge g';b.textContent='✓';document.getElementById(cardId).classList.add('done');}
+
+// ============================================================
+//  DICT / NAME RESOLUTION
+// ============================================================
+function getName(eid){const r=dict[eid];return r?r.replace(/_/g,' '):null;}
+function resolveName(eid,apiName){return getName(eid)||apiName||'not found';}
+
+// ============================================================
+//  FORMAT LINES
+// ============================================================
+function getMid(m){return typeof m==='string'?m.toLowerCase().replace(/-/g,''):((m.id||'').toLowerCase().replace(/-/g,''));}
+function getMname(m){return typeof m==='string'?null:(m.name||null);}
+
+function fmtLine(rank,members,pts){
+  const p=members.map(m=>{const eid=getMid(m);const name=resolveName(eid,getMname(m));return eid+'{{!}}'+name;}).join(',');
+  return rank+'\t'+p+'\t'+pts;
+}
+function fmtLineWLS(rank,mlist,pts){
+  const p=mlist.map(m=>{const eid=(m.ingame_id||'').toLowerCase().replace(/-/g,'');const name=resolveName(eid,m.name);return eid+'{{!}}'+name;}).join(',');
+  return rank+'\t'+p+'\t'+pts;
+}
+function fmtFileLine(rank,ids,pts){
+  const p=ids.map(eid=>{const name=resolveName(eid,null);return eid+'{{!}}'+name;}).join(',');
+  return rank+'\t'+p+'\t'+pts;
+}
+
+// ============================================================
+//  HTML FILE PARSER
+// ============================================================
+function parseHTMLLeaderboard(content){
+  const positions=[];let idx=0;
+  while(true){const pos=content.indexOf('"teamAccountIds"',idx);if(pos===-1)break;positions.push(pos);idx=pos+1;}
+  if(!positions.length)return null;
+  const results=[];
+  for(let i=0;i<positions.length;i++){
+    const pos=positions[i];
+    const chunkStart=i>0?positions[i-1]+50:0;
+    const chunk=content.slice(chunkStart,pos+400);
+    const taM=content.slice(pos,pos+500).match(/"teamAccountIds"\s*:\s*\[([^\]]+)\]/);
+    if(!taM)continue;
+    const ids=taM[1].split(',').map(x=>x.trim().replace(/"/g,'').replace(/-/g,'').toLowerCase()).filter(x=>x.length>0);
+    if(!ids.length)continue;
+    let rankVal=-1;
+    const rankRe=/"rank"\s*:\s*(\d+)/g;let rm;
+    while((rm=rankRe.exec(chunk))!==null)rankVal=parseInt(rm[1]);
+    if(rankVal<1)continue;
+    let ptsVal=-1;
+    const peRe=/"pointsEarned"\s*:\s*(\d+)(?!\.\d)/g;let pm;
+    while((pm=peRe.exec(chunk))!==null)ptsVal=parseInt(pm[1]);
+    if(ptsVal<0)continue;
+    const dateM=chunk.match(/"endTime"\s*:\s*"(\d{4}-\d{2}-\d{2})/);
+    results.push({rank:rankVal,pts:ptsVal,ids,date:dateM?dateM[1]:null});
+  }
+  const seen=new Set(),unique=[];
+  for(const r of results){if(!seen.has(r.rank)){seen.add(r.rank);unique.push(r);}}
+  unique.sort((a,b)=>a.rank-b.rank);
+  return unique.length?unique:null;
+}
+function readFile(inputId){
+  return new Promise((res,rej)=>{
+    const f=document.getElementById(inputId).files[0];if(!f)return res(null);
+    const reader=new FileReader();reader.onload=e=>res(e.target.result);reader.onerror=()=>rej(new Error('Erreur lecture fichier'));reader.readAsText(f,'utf-8');
+  });
+}
+async function runFileSimple(){
+  const content=await readFile('fi1');if(!content)throw new Error(s('errNoFile'));
+  const entries=parseHTMLLeaderboard(content);if(!entries)throw new Error(s('errFileParse'));
+  const date=(entries.find(e=>e.date)||{}).date||null;
+  return{lines:entries.map(e=>fmtFileLine(e.rank,e.ids,e.pts)),date};
+}
+async function runFileCumul(){
+  const c1=await readFile('fi1b'),c2=await readFile('fi2b');if(!c1||!c2)throw new Error(s('errNoBothF'));
+  const e1=parseHTMLLeaderboard(c1),e2=parseHTMLLeaderboard(c2);if(!e1||!e2)throw new Error(s('errFileParse'));
+  const date1=(e1.find(e=>e.date)||{}).date||null,date2=(e2.find(e=>e.date)||{}).date||null;
+  const teams={};
+  for(const e of[...e1,...e2]){const key=e.ids.slice().sort().join('|');if(!teams[key])teams[key]={ids:e.ids,pts:0};teams[key].pts+=e.pts;}
+  const list=Object.values(teams).sort((a,b)=>b.pts-a.pts);
+  return{lines:list.map((p,i)=>fmtFileLine(i+1,p.ids,p.pts)),dates:[date1,date2]};
+}
+
+// ============================================================
+//  NETWORK
+// ============================================================
+function fetchTO(url,opts,ms){ms=ms||8000;return Promise.race([fetch(url,opts||{}),new Promise((_,rej)=>setTimeout(()=>rej(new Error('Timeout '+ms+'ms')),ms))]);}
+async function fetchRetry(url,opts,useProxy){
+  let lastErr=null,ptried=0;
+  for(let i=0;i<3;i++){
+    const fu=useProxy?PROXIES[_proxyIdx]+encodeURIComponent(url):url;
+    try{const r=await fetchTO(fu,opts||{},10000);if(r.ok)return r;if(r.status>=400&&r.status<500)throw new Error('HTTP '+r.status);if(useProxy&&ptried<PROXIES.length-1){_proxyIdx=(_proxyIdx+1)%PROXIES.length;ptried++;}lastErr=new Error('Erreur '+r.status);await sleep((i+1)*2000);}
+    catch(e){if(useProxy&&ptried<PROXIES.length-1){_proxyIdx=(_proxyIdx+1)%PROXIES.length;ptried++;}lastErr=e;await sleep((i+1)*1500);}
+  }
+  throw lastErr||new Error('Échec après 3 tentatives');
+}
+
+// ============================================================
+//  KASS API
+// ============================================================
+async function kassPage(wid,pg){
+  const url='https://kass507.lat/api/events/window?windowId='+encodeURIComponent(wid)+'&page='+pg;
+  const r=await fetchRetry(url,{headers:{'x-api-key':'kass_A3u2Fle0YACnjklJwreWylDNRp-2beDZ','Accept':'application/json'}},true);
+  return r.json();
+}
+async function kassAll(wid){
+  let results=[],pg=0,tb=null,begin=null;
+  while(true){
+    let d;try{d=await kassPage(wid,pg);}catch(e){if(results.length>0)break;throw e;}
+    if(!d||!d.success)break;
+    if(pg===0){const f=d.session&&d.session.rules&&d.session.rules.tiebreakerFormula;if(f)tb=f;begin=(d.session&&d.session.beginTime)||null;}
+    const pr=(d.session&&d.session.results)||d.results||[];if(!pr.length)break;
+    results.push(...pr);if(pg>=((d.totalPages||1)-1))break;pg++;
+  }
+  return{results,tb,begin};
+}
+async function runSimple(wid){
+  const d=await kassAll(wid);if(!d.results.length)return{lines:null,date:null};
+  d.results.sort((a,b)=>(a.rank||999)-(b.rank||999));
+  return{lines:d.results.map((r,i)=>fmtLine(r.rank||i+1,r.teamAccountNames||r.teamAccounts||r.teamAccountIds||[],r.pointsEarned||r.points||0)),date:d.begin||null};
+}
+async function runCumul(wids){
+  const pl={};let tbF=null;const dates=[];
+  for(const wid of wids){
+    const d=await kassAll(wid);if(!tbF&&d.tb)tbF=d.tb;dates.push(d.begin||null);
+    for(const res of d.results){
+      const mb=res.teamAccountNames||res.teamAccounts||res.teamAccountIds||[];
+      const key=mb.map(m=>getMid(m)).sort().join('|');
+      if(!pl[key])pl[key]={pts:0,mb,stats:{}};
+      pl[key].pts+=res.pointsEarned||res.points||0;
+      for(const sess of(res.sessionHistory||[])){const ts=sess.trackedStats||{};for(const k in ts){if(!pl[key].stats[k])pl[key].stats[k]=[];pl[key].stats[k].push(ts[k]);}}
+    }
+  }
+  if(!tbF)tbF={components:[{trackedStat:'VICTORY_ROYALE_STAT',aggregation:'sum',multiplier:1},{trackedStat:'TEAM_ELIMS_STAT_INDEX',aggregation:'sum',multiplier:1},{trackedStat:'PLACEMENT_STAT_INDEX',aggregation:'avg',multiplier:1}]};
+  const list=Object.values(pl).map(p=>{const tb=tbF.components.map(c=>{const vals=p.stats[c.trackedStat]||[];if(!vals.length)return 0;const raw=c.aggregation==='avg'?vals.reduce((a,b)=>a+b,0)/vals.length:vals.reduce((a,b)=>a+b,0);return raw*(c.multiplier||1);});return{...p,tb};});
+  list.sort((a,b)=>{if(b.pts!==a.pts)return b.pts-a.pts;for(let i=0;i<a.tb.length;i++)if(b.tb[i]!==a.tb[i])return b.tb[i]-a.tb[i];return 0;});
+  return{lines:list.map((p,i)=>fmtLine(i+1,p.mb,p.pts)),dates};
+}
+
+// ============================================================
+//  WLS API
+// ============================================================
+function tsYMD(ts){if(!ts)return null;const n=Number(ts);if(!isFinite(n))return null;const sec=n>1e12?n/1000:n;const d=new Date(sec*1000);if(isNaN(d.getTime()))return null;return d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0');}
+async function fetchWLS(id){const r=await fetchRetry('https://api.wls.gg/v5/leaderboards/'+id.trim(),{headers:{'Accept':'application/json'}},true);return r.json();}
+async function runSimpleWLS(id){
+  const data=await fetchWLS(id);const teams=data.teams||[];if(!teams.length)return{lines:null,date:null};
+  teams.sort((a,b)=>(a.place||999)-(b.place||999));
+  let date=null;if(teams[0]&&teams[0].sessions){const s0=Object.values(teams[0].sessions)[0];if(s0&&s0.start_time)date=tsYMD(s0.start_time);}
+  return{lines:teams.map(t=>fmtLineWLS(t.place,Object.values(t.members||{}),t.points||0)),date};
+}
+async function runCumulWLS(ids){
+  const players={};const dates=[];
+  for(const id of ids){
+    const data=await fetchWLS(id);const teams=data.teams||[];
+    let d=null;if(teams.length&&teams[0].sessions){const s0=Object.values(teams[0].sessions)[0];if(s0&&s0.start_time)d=tsYMD(s0.start_time);}
+    dates.push(d);
+    for(const team of teams){const ml=Object.values(team.members||{});const key=ml.map(m=>(m.ingame_id||'').toLowerCase()).sort().join('|');if(!players[key])players[key]={pts:0,members:ml};players[key].pts+=team.points||0;}
+  }
+  const list=Object.values(players).sort((a,b)=>b.pts-a.pts);
+  return{lines:list.map((p,i)=>fmtLineWLS(i+1,p.members,p.pts)),dates};
+}
+
+// ============================================================
+//  DATE BLOCK
+// ============================================================
+function toYMD(raw){if(!raw)return null;const m=String(raw).match(/(\d{4}-\d{2}-\d{2})/);return m?m[1]:tsYMD(raw);}
+function makeDateRow(lbl,raw){const ymd=toYMD(raw)||'?';return'<div class="date-row">'+(lbl?'<span class="date-lbl">'+lbl+'</span>':'')+'<span class="date-val">'+ymd+'</span><button class="date-copy" onclick="cpDate(\''+ymd+'\',this)">'+s('dateCopy')+'</button></div>';}
+function cpDate(v,btn){navigator.clipboard.writeText(v);const o=btn.textContent;btn.textContent='✅';setTimeout(()=>btn.textContent=o,1500);}
+function showDate(info){
+  const el=document.getElementById('date-block');if(!info){el.classList.add('hidden');return;}
+  let h='<div style="font-size:.78rem;font-weight:700;color:#94a3b8;margin-bottom:2px">'+s('dateTitle')+'</div>';
+  if(Array.isArray(info)){h+=makeDateRow(s('dateDay1'),info[0]);h+=makeDateRow(s('dateDay2'),info[1]);}
+  else h+=makeDateRow('',info);
+  el.innerHTML=h;el.classList.remove('hidden');
+}
+
+// ============================================================
+//  GENERATE
+// ============================================================
+async function generate(){
+  const btn=document.getElementById('gen-btn'),ldr=document.getElementById('ld1');
+  btn.disabled=true;ldr.style.display='inline';
+  document.getElementById('o1').classList.add('hidden');
+  document.getElementById('date-block').classList.add('hidden');
+  _proxyIdx=0;
+  try{
+    let res;const st=document.getElementById('st1');const apiLabel=_api==='kass'?'Kass507.lat':'WLS.gg';
+    if(_mode==='file'){
+      if(_fileMode==='single'){if(!document.getElementById('fi1').files.length){alert(s('errNoFile'));return;}res=await runFileSimple();dateInfo=res.date||null;}
+      else{if(!document.getElementById('fi1b').files.length||!document.getElementById('fi2b').files.length){alert(s('errNoBothF'));return;}res=await runFileCumul();dateInfo=res.dates||null;}
+      if(!res.lines||!res.lines.length){st.className='alert err';st.textContent=s('errFileParse');}
+      else{const f=filterRank(res.lines);st.className='alert ok';st.innerHTML=s('genOkFile',f.length,Object.keys(dict).length);document.getElementById('r1').value=f.join('\n');markDone('b1','card1');showDate(dateInfo);}
+    }else if(_api==='wls'){
+      if(_mode==='simple'){const id=document.getElementById('wid1').value.trim();if(!id){alert(s('errNoId'));return;}res=await runSimpleWLS(id);dateInfo=res.date||null;}
+      else{const i1=document.getElementById('wd1').value.trim(),i2=document.getElementById('wd2').value.trim();if(!i1||!i2){alert(s('errNoBoth'));return;}res=await runCumulWLS([i1,i2]);dateInfo=res.dates||null;}
+      applyApiResult(res,st,apiLabel);
+    }else{
+      if(_mode==='simple'){const wid=getWid(document.getElementById('wid1').value);if(!wid){alert(s('errNoId'));return;}res=await runSimple(wid);dateInfo=res.date||null;}
+      else{const d1=getWid(document.getElementById('wd1').value),d2=getWid(document.getElementById('wd2').value);if(!d1||!d2){alert(s('errNoBoth'));return;}res=await runCumul([d1,d2]);dateInfo=res.dates||null;}
+      applyApiResult(res,st,apiLabel);
+    }
+    document.getElementById('o1').classList.remove('hidden');
+  }catch(e){
+    document.getElementById('st1').className='alert err';
+    document.getElementById('st1').innerHTML='❌ '+e.message;
+    document.getElementById('o1').classList.remove('hidden');
+  }finally{btn.disabled=false;ldr.style.display='none';}
+}
+function applyApiResult(res,st,apiLabel){
+  if(!res.lines){st.className='alert err';st.textContent=s('noRes');}
+  else{const f=filterRank(res.lines);st.className='alert ok';st.innerHTML=s('genOk',f.length,Object.keys(dict).length,apiLabel);document.getElementById('r1').value=f.join('\n');markDone('b1','card1');showDate(dateInfo);}
+}
+
+// ============================================================
+//  ADD TEAMS  ← FONCTION CORRIGÉE
+// ============================================================
+function addTeams(){
+  const input = document.getElementById('i2').value.trim();
+  const csv   = document.getElementById('tt').value.trim();
+  if(!input){ alert('Entre le classement !'); return; }
+  if(!csv){ alert(s('errNoCsv')); return; }
+
+  const lines = csv.trim().split(/\r?\n/).filter(l => l.trim());
+  if(lines.length < 2){ alert(s('errCsvEmpty')); return; }
+
+  const dlm  = detectDlm(lines);
+  const hdrs = lines[0].split(dlm).map(h => h.trim().replace(/^\uFEFF/,''));
+  const ti   = hdrs.indexOf('PlayerTeam');
+  const di   = hdrs.indexOf('DataPlayer');
+  const pi   = hdrs.indexOf('PlayerPage');
+  if(ti < 0 || (di < 0 && pi < 0)){ alert(s('errCols') + '\n' + hdrs.join(' | ')); return; }
+
+  // map : clé joueur → { dataTeam, page }
+  const map = {};
+  for(let i = 1; i < lines.length; i++){
+    const cols       = lines[i].split(dlm).map(c => c.trim());
+    const playerKey  = cols[di >= 0 ? di : pi] || '';
+    const playerPage = cols[pi >= 0 ? pi : di] || '';
+    const dataTeam   = (ti >= 0 && cols[ti]) ? cols[ti] : '';
+    if(!playerKey) continue;
+    map[playerKey] = { dataTeam, page: playerPage || playerKey };
+  }
+
+  const isWiki = input.includes('{{TournamentResults');
+  let result = '', added = 0, total = 0;
+  const notFound = [];
+
+  if(isWiki){
+    // ── MODE WIKI : traitement ligne par ligne ──────────────
+    result = input.split('\n').map(line => {
+      if(!line.includes('TournamentResults/Line')) return line;
+
+      // 1. Parser players= et collecter les équipes dans l'ordre
+      const teamSlots = []; // un slot par joueur
+
+      line = line.replace(/(\|players=\s*)(.*?)(\s*\|(?:points|hide|prpoints)[^|]*)/, (full, pre, ps, tail) => {
+        const entries = ps.split(',');
+        const newEntries = entries.map(entry => {
+          const sp = entry.trim().split('{{!}}');
+          if(sp.length < 2) return entry;
+          const epicId = sp[0].trim();
+          const name   = sp[1].trim();
+          total++;
+          if(map[name]){
+            added++;
+            teamSlots.push(map[name].dataTeam || '');
+            return epicId + '{{!}}' + map[name].page;
+          } else {
+            teamSlots.push('');
+            if(!notFound.includes(name)) notFound.push(name);
+            return entry.trim();
+          }
+        });
+        return pre + newEntries.join(', ') + tail;
+      });
+
+      // 2. Mettre à jour teams= avec les valeurs collectées
+      if(teamSlots.length > 0){
+        const teamsVal = teamSlots.join(',');
+        line = line.replace(/\|teams=[^|]*/, '|teams=' + teamsVal);
+      }
+
+      return line;
+    }).join('\n');
+
+  } else {
+    // ── MODE CLASSEMENT BRUT ────────────────────────────────
+    result = input.split('\n').map(line => {
+      const cols = line.split('\t');
+      if(cols.length < 2) return line;
+      const newParts = cols[1].split(',').map(entry => {
+        const sp = entry.split('{{!}}');
+        if(sp.length < 2) return entry;
+        const epicId = sp[0].trim();
+        const name   = sp[1].trim();
+        total++;
+        if(map[name]){
+          added++;
+          const tg = map[name].dataTeam ? '{{Team|' + map[name].dataTeam + '}}' : '';
+          return tg + epicId + '{{!}}' + map[name].page;
+        }
+        if(!notFound.includes(name)) notFound.push(name);
+        return entry;
+      });
+      cols[1] = newParts.join(',');
+      return cols.join('\t');
+    }).join('\n');
+  }
+
+  const st2  = document.getElementById('st2');
+  const st2m = document.getElementById('st2m');
+  if(added === 0){ st2.className = 'alert err'; st2.innerHTML = s('teams0'); }
+  else           { st2.className = 'alert ok';  st2.innerHTML = s('teamsOk', added, total); }
+  if(notFound.length){ st2m.classList.remove('hidden'); st2m.innerHTML = s('teamsMiss', notFound); }
+  else st2m.classList.add('hidden');
+
+  document.getElementById('r2').value = result;
+  markDone('b2','card2');
+  document.getElementById('o2').classList.remove('hidden');
+}
+
+// ============================================================
+//  PSEUDO UPDATE
+// ============================================================
+function parseTSV3(txt){
+  const lines=txt.trim().split(/\r?\n/).filter(l=>l.trim());if(!lines.length)return null;
+  const dlm=detectDlm(lines);const entries=[];
+  for(const raw of lines){
+    const cols=raw.split(dlm).map(c=>c.trim());if(cols.length<3)continue;
+    const[wrongId,playerPage,fortniteId]=cols;
+    if(wrongId.toLowerCase()==='wrongid'||playerPage.toLowerCase()==='playerpage')continue;
+    if(!wrongId||!playerPage||!fortniteId)continue;
+    entries.push({wrongId,playerPage,fortniteId:fortniteId.toLowerCase().replace(/-/g,'')});
+  }
+  return entries.length?entries:null;
+}
+function applyPseudo(){
+  const code=document.getElementById('pu-code').value,txt=document.getElementById('pu-upd').value.trim();
+  if(!code.trim()){alert(s('puErrCode'));return;}if(!txt){alert(s('puErrUpd'));return;}
+  const entries=parseTSV3(txt);if(!entries){alert(s('puErrParse'));return;}
+  let result=code,n=0;const notFound=[];
+  for(const e of entries){
+    const search=e.fortniteId+'{{!}}'+e.wrongId,repl=e.fortniteId+'{{!}}'+e.playerPage;
+    if(result.includes(search)){result=result.split(search).join(repl);n++;}
+    else notFound.push(e.wrongId);
+  }
+  const st=document.getElementById('pu-st'),stm=document.getElementById('pu-miss');
+  st.className=n>0?'alert ok':'alert warn';st.innerHTML=s('puOk',n,entries.length);
+  if(notFound.length){stm.classList.remove('hidden');stm.innerHTML=s('puMiss',notFound);}
+  else stm.classList.add('hidden');
+  document.getElementById('pu-res').value=result;
+  document.getElementById('pu-out').classList.remove('hidden');
+  document.getElementById('pu-out').scrollIntoView({behavior:'smooth'});
+}
+
+// ============================================================
+//  CLOUD DICT
+// ============================================================
+async function fetchCloud(){try{const r=await fetchTO('https://api.jsonbin.io/v3/b/'+JSONBIN_ID+'/latest',{headers:{'X-Master-Key':JSONBIN_KEY}},8000);if(!r.ok)throw new Error('cloud err');const data=await r.json();const rec=data.record||{};delete rec['init'];return rec;}catch{return{};}}
+async function saveCloud(entries){try{const cur=await fetchCloud();Object.assign(cur,entries);const r=await fetchTO('https://api.jsonbin.io/v3/b/'+JSONBIN_ID,{method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':JSONBIN_KEY,'X-Bin-Versioning':'false'},body:JSON.stringify(cur)},8000);return r.ok;}catch{return false;}}
+function parseDictTxt(txt){const d={};for(const raw of txt.split('\n')){const l=raw.trim();if(!l||!l.includes('='))continue;const i=l.indexOf('=');const name=l.slice(0,i).trim(),eid=l.slice(i+1).trim().toLowerCase().replace(/-/g,'');if(name&&eid)d[eid]=name;}return d;}
+function localDict(){try{return JSON.parse(localStorage.getItem('custom_dict')||'{}');}catch{return{};}}
+function saveLocalDict(d){localStorage.setItem('custom_dict',JSON.stringify(d));}
+
+async function loadDict(){
+  const el=document.getElementById('dict-status');el.className='alert inf';el.innerHTML='⏳ '+s('loading');
+  let fCount=0,cCount=0;
+  try{const r=await fetchTO(GITHUB_DICT+'?t='+Date.now(),{},8000);if(r.ok){const d=parseDictTxt(await r.text());fCount=Object.keys(d).length;Object.assign(dict,d);}}catch{}
+  try{const c=await fetchCloud();cCount=Object.keys(c).length;Object.assign(dict,c);}catch{}
+  Object.assign(dict,localDict());
+  const tot=Object.keys(dict).length;
+  el.className=tot>0?'alert ok':'alert warn';
+  el.innerHTML=tot>0?s('pseudosOk',tot,fCount,cCount):s('noDict');
+  renderDictList();
+}
+loadDict();
+
+async function dictAdd(){
+  const raw=document.getElementById('dict-new').value.trim(),msg=document.getElementById('dict-msg');
+  if(!raw){msg.style.color='#fca5a5';msg.innerHTML=s('dictErrFmt');return;}
+  const entries={};let valid=0;
+  for(const line of raw.split('\n')){const l=line.trim();if(!l||!l.includes('='))continue;const i=l.indexOf('=');const name=l.slice(0,i).trim().replace(/ /g,'_'),eid=l.slice(i+1).trim().toLowerCase().replace(/-/g,'');if(name&&eid){entries[eid]=name;valid++;}}
+  if(!valid){msg.style.color='#fca5a5';msg.innerHTML=s('dictErrFmt');return;}
+  msg.style.color='#60a5fa';msg.textContent=s('dictSaving');
+  const ok=await saveCloud(entries);
+  Object.assign(dict,entries);const local=localDict();Object.assign(local,entries);saveLocalDict(local);
+  msg.style.color=ok?'#4ade80':'#fbbf24';msg.innerHTML=ok?s('dictOk',valid):s('dictWarn',valid);
+  document.getElementById('dict-new').value='';renderDictList();
+}
+function renderDictList(){
+  const local=localDict(),keys=Object.keys(local),el=document.getElementById('dict-list');
+  if(!keys.length){el.innerHTML='';return;}
+  let html='<p style="font-size:.8rem;color:#64748b;margin-bottom:8px">'+keys.length+' entrée'+(keys.length>1?'s':'')+' locales</p>';
+  html+='<div style="background:#0f172a;border:1px solid #334155;border-radius:8px;padding:10px 12px;max-height:160px;overflow-y:auto">';
+  html+=keys.map(k=>'<div style="font-size:.78rem;color:#94a3b8;padding:2px 0"><code style="color:#60a5fa">'+k.slice(0,8)+'…</code> → <b style="color:#e2e8f0">'+local[k].replace(/_/g,' ')+'</b></div>').join('');
+  html+='</div>';
+  html+='<button class="btn" style="background:#1f0a0a;color:#fca5a5;border:1px solid #ef4444;font-size:.78rem;padding:5px 14px;margin-top:8px" onclick="clearLocal()">🗑️ Vider le cache local</button>';
+  el.innerHTML=html;
+}
+function clearLocal(){if(!confirm('Vider le cache local ?'))return;localStorage.removeItem('custom_dict');renderDictList();}
+</script>
+</body>
+</html>
