@@ -87,6 +87,9 @@
     .date-val{font-family:monospace;font-size:.9rem;font-weight:700}
     .date-copy{background:#1e293b;border:1px solid #334155;border-radius:5px;color:#94a3b8;cursor:pointer;font-size:.72rem;padding:2px 9px;transition:.15s}
     .date-copy:hover{border-color:#3b82f6;color:#60a5fa}
+    .miss-table{width:100%;border-collapse:collapse;font-size:.78rem;margin-top:10px}
+    .miss-table th{text-align:left;padding:5px 8px;background:#0f172a;color:#64748b;font-weight:600;border-bottom:1px solid #334155}
+    .miss-table td{padding:5px 8px;border-bottom:1px solid #1e293b;font-family:'Courier New',monospace;color:#fbbf24;vertical-align:top}
     .footer{margin-top:40px;padding:24px;border-top:1px solid #1e293b;display:flex;align-items:center;justify-content:center;gap:16px}
     .footer img{width:48px;height:48px;border-radius:50%;border:2px solid #3b82f6;object-fit:cover}
     .footer .made{font-size:.78rem;color:#475569;margin-bottom:2px}
@@ -220,7 +223,7 @@
     <textarea id="i2" rows="10" placeholder="Colle ici le résultat de l'étape 1..."></textarea>
     <p class="hint" id="s2-hint">Compatible avec le format classement (rank↹players↹points) ET le format wiki</p>
     <label id="csv-lbl">Équipes — CSV ou TSV</label>
-    <textarea id="tt" rows="7" placeholder="DataTeam&#9;PlayerTeam&#9;DataPlayer&#9;PlayerPage&#10;BIG Clan&#9;Malibuca&#9;Malibuca&#9;Malibuca"></textarea>
+    <textarea id="tt" rows="7" placeholder="DataTeam&#9;PlayerTeam&#9;DataPlayer&#9;PlayerPage&#10;BIG Clan&#9;&#9;Malibuca&#9;Malibuca"></textarea>
     <div class="file-row">
       <button class="file-btn" onclick="document.getElementById('tf-csv').click()" id="file-btn-csv">📂 Choisir un fichier</button>
       <span class="file-name" id="tfn-csv">Aucun fichier choisi</span>
@@ -362,9 +365,6 @@ const STRINGS = {
     noDict:'⚠️ Aucun pseudo chargé — l\'outil fonctionne quand même',
     genOk:(n,tot,api)=>`✅ <b>${n} lignes générées</b> · ${tot} pseudos dans le dict · via ${api}`,
     genOkFile:(n,tot)=>`✅ <b>${n} équipes extraites du fichier HTML</b> · ${tot} pseudos dans le dict`,
-    teamsOk:(a,t)=>`✅ <b>${a}/${t} équipes ajoutées</b> depuis le CSV`,
-    teamsMiss:(l)=>`⚠️ ${l.length} joueur${l.length>1?'s':''} non trouvé${l.length>1?'s':''} : <b>${l.join(', ')}</b>`,
-    teams0:'❌ 0 joueur trouvé — vérifie les colonnes <code>PlayerPage</code> / <code>DataPlayer</code>',
     puOk:(n,t)=>`✅ <b>${n} remplacement${n>1?'s':''} effectué${n>1?'s':''}</b> sur ${t} entrées`,
     puMiss:(l)=>`⚠️ ${l.length} non trouvé${l.length>1?'s':''} : <code>${l.slice(0,6).join(', ')}${l.length>6?'…':''}</code>`,
     puErrCode:'Entre le code wiki !',puErrUpd:'Entre la table des mises à jour !',
@@ -406,9 +406,6 @@ const STRINGS = {
     noDict:'⚠️ No nicknames loaded — tool still works',
     genOk:(n,tot,api)=>`✅ <b>${n} lines generated</b> · ${tot} in dict · via ${api}`,
     genOkFile:(n,tot)=>`✅ <b>${n} teams extracted from HTML file</b> · ${tot} in dict`,
-    teamsOk:(a,t)=>`✅ <b>${a}/${t} teams added</b> from CSV`,
-    teamsMiss:(l)=>`⚠️ ${l.length} player${l.length>1?'s':''} not found: <b>${l.join(', ')}</b>`,
-    teams0:'❌ 0 players found — check <code>PlayerPage</code> / <code>DataPlayer</code> columns',
     puOk:(n,t)=>`✅ <b>${n} replacement${n>1?'s':''} made</b> out of ${t} entries`,
     puMiss:(l)=>`⚠️ ${l.length} not found: <code>${l.slice(0,6).join(', ')}${l.length>6?'…':''}</code>`,
     puErrCode:'Enter the wiki code!',puErrUpd:'Enter the updates table!',
@@ -680,7 +677,18 @@ function applyApiResult(res,st,apiLabel){
 }
 
 // ============================================================
-//  ADD TEAMS  ← FONCTION CORRIGÉE
+//  ADD TEAMS — CORRIGÉ
+//
+//  Logique du |teams= :
+//  Pour chaque joueur dans |players=, on cherche son équipe
+//  (via PlayerPage d'abord, puis DataPlayer en fallback).
+//  On construit un slot par joueur, séparé par des virgules.
+//  Si AUCUN joueur n'a d'équipe sur toute la ligne → teams= reste vide.
+//
+//  Rapport :
+//  - totalCSV = nombre de lignes (joueurs) dans le CSV fourni
+//  - matched  = combien ont été trouvés ET associés dans le code
+//  - missing  = les lignes CSV complètes non trouvées dans le code
 // ============================================================
 function addTeams(){
   const input = document.getElementById('i2').value.trim();
@@ -688,104 +696,159 @@ function addTeams(){
   if(!input){ alert('Entre le classement !'); return; }
   if(!csv){ alert(s('errNoCsv')); return; }
 
-  const lines = csv.trim().split(/\r?\n/).filter(l => l.trim());
-  if(lines.length < 2){ alert(s('errCsvEmpty')); return; }
+  // ── 1. Parser le CSV/TSV ──────────────────────────────────
+  const csvLines = csv.split(/\r?\n/).filter(l => l.trim());
+  if(csvLines.length < 2){ alert(s('errCsvEmpty')); return; }
 
-  const dlm  = detectDlm(lines);
-  const hdrs = lines[0].split(dlm).map(h => h.trim().replace(/^\uFEFF/,''));
-  const ti   = hdrs.indexOf('PlayerTeam');
-  const di   = hdrs.indexOf('DataPlayer');
-  const pi   = hdrs.indexOf('PlayerPage');
-  if(ti < 0 || (di < 0 && pi < 0)){ alert(s('errCols') + '\n' + hdrs.join(' | ')); return; }
+  const dlm  = detectDlm(csvLines);
+  const hdrs = csvLines[0].split(dlm).map(h => h.trim().replace(/^\uFEFF/,''));
 
-  // map : clé joueur → { dataTeam, page }
-  const map = {};
-  for(let i = 1; i < lines.length; i++){
-    const cols       = lines[i].split(dlm).map(c => c.trim());
-    const playerKey  = cols[di >= 0 ? di : pi] || '';
-    const playerPage = cols[pi >= 0 ? pi : di] || '';
-    const dataTeam   = (ti >= 0 && cols[ti]) ? cols[ti] : '';
-    if(!playerKey) continue;
-    map[playerKey] = { dataTeam, page: playerPage || playerKey };
+  // Colonnes requises
+  const iDataTeam   = hdrs.indexOf('DataTeam');
+  const iPlayerTeam = hdrs.indexOf('PlayerTeam'); // souvent vide dans les TSV
+  const iDataPlayer = hdrs.indexOf('DataPlayer');
+  const iPlayerPage = hdrs.indexOf('PlayerPage');
+
+  if(iDataTeam < 0){
+    alert(s('errCols') + '\nColonne "DataTeam" introuvable.\n' + hdrs.join(' | '));
+    return;
+  }
+  if(iPlayerPage < 0 && iDataPlayer < 0){
+    alert(s('errCols') + '\nColonnes "PlayerPage" et "DataPlayer" introuvables.\n' + hdrs.join(' | '));
+    return;
   }
 
-  const isWiki = input.includes('{{TournamentResults');
-  let result = '', added = 0, total = 0;
-  const notFound = [];
+  // ── 2. Construire le mapping  pseudo → { dataTeam, rawLine } ──
+  // On cherche d'abord via PlayerPage, puis DataPlayer comme fallback
+  // Un joueur peut avoir deux clés pointant vers la même entrée
+  const playerToTeam = new Map();   // clé = pseudo (string) → dataTeam (string)
+  const csvEntries   = [];          // toutes les entrées du CSV (pour le rapport)
 
-  if(isWiki){
-    // ── MODE WIKI : traitement ligne par ligne ──────────────
-    result = input.split('\n').map(line => {
-      if(!line.includes('TournamentResults/Line')) return line;
+  for(let i = 1; i < csvLines.length; i++){
+    const cols = csvLines[i].split(dlm).map(c => c.trim());
 
-      // 1. Parser players= et collecter les équipes dans l'ordre
-      const teamSlots = []; // un slot par joueur
+    const dataTeam   = iDataTeam   >= 0 && cols[iDataTeam]   ? cols[iDataTeam]   : '';
+    const playerPage = iPlayerPage >= 0 && cols[iPlayerPage] ? cols[iPlayerPage] : '';
+    const dataPlayer = iDataPlayer >= 0 && cols[iDataPlayer] ? cols[iDataPlayer] : '';
 
-      line = line.replace(/(\|players=\s*)(.*?)(\s*\|(?:points|hide|prpoints)[^|]*)/, (full, pre, ps, tail) => {
-        const entries = ps.split(',');
-        const newEntries = entries.map(entry => {
-          const sp = entry.trim().split('{{!}}');
-          if(sp.length < 2) return entry;
-          const epicId = sp[0].trim();
-          const name   = sp[1].trim();
-          total++;
-          if(map[name]){
-            added++;
-            teamSlots.push(map[name].dataTeam || '');
-            return epicId + '{{!}}' + map[name].page;
-          } else {
-            teamSlots.push('');
-            if(!notFound.includes(name)) notFound.push(name);
-            return entry.trim();
-          }
-        });
-        return pre + newEntries.join(', ') + tail;
-      });
+    if(!dataTeam) continue; // ligne sans équipe → on skip
 
-      // 2. Mettre à jour teams= avec les valeurs collectées
-      if(teamSlots.length > 0){
-        const teamsVal = teamSlots.join(',');
-        line = line.replace(/\|teams=[^|]*/, '|teams=' + teamsVal);
+    const entry = { dataTeam, playerPage, dataPlayer, rawLine: csvLines[i] };
+    csvEntries.push(entry);
+
+    if(playerPage) playerToTeam.set(playerPage, dataTeam);
+    if(dataPlayer && dataPlayer !== playerPage) playerToTeam.set(dataPlayer, dataTeam);
+  }
+
+  const totalCSV = csvEntries.length;
+
+  if(totalCSV === 0){
+    const st2 = document.getElementById('st2');
+    st2.className = 'alert err';
+    st2.textContent = '❌ Aucune entrée valide dans le CSV (colonne DataTeam vide ?)';
+    document.getElementById('st2m').classList.add('hidden');
+    document.getElementById('r2').value = input;
+    document.getElementById('o2').classList.remove('hidden');
+    return;
+  }
+
+  // ── 3. Traitement du code ─────────────────────────────────
+  const usedKeys = new Set(); // pseudos du CSV qui ont été matchés dans le code
+
+  const result = input.split('\n').map(line => {
+    if(!line.includes('TournamentResults/Line')) return line;
+
+    // Extraire le champ players=...
+    const playersMatch = line.match(/\|players=\s*(.*?)\s*\|(?=points|hide|prpoints)/);
+    if(!playersMatch) return line;
+
+    const playersField = playersMatch[1];
+    // Séparer les joueurs (virgule, mais attention aux espaces)
+    const playerEntries = playersField.split(',').map(e => e.trim()).filter(Boolean);
+
+    // Pour chaque joueur, déterminer son équipe
+    const teamSlots = playerEntries.map(entry => {
+      const parts = entry.split('{{!}}');
+      if(parts.length < 2) return '';
+      const playerName = parts[1].trim();
+      if(playerToTeam.has(playerName)){
+        usedKeys.add(playerName);
+        return playerToTeam.get(playerName);
       }
+      return ''; // pas d'équipe connue → slot vide
+    });
 
-      return line;
-    }).join('\n');
+    // Si tous les slots sont vides → teams= reste vide
+    const hasAnyTeam = teamSlots.some(t => t !== '');
+    const teamsVal   = hasAnyTeam ? teamSlots.join(',') : '';
 
-  } else {
-    // ── MODE CLASSEMENT BRUT ────────────────────────────────
-    result = input.split('\n').map(line => {
-      const cols = line.split('\t');
-      if(cols.length < 2) return line;
-      const newParts = cols[1].split(',').map(entry => {
-        const sp = entry.split('{{!}}');
-        if(sp.length < 2) return entry;
-        const epicId = sp[0].trim();
-        const name   = sp[1].trim();
-        total++;
-        if(map[name]){
-          added++;
-          const tg = map[name].dataTeam ? '{{Team|' + map[name].dataTeam + '}}' : '';
-          return tg + epicId + '{{!}}' + map[name].page;
-        }
-        if(!notFound.includes(name)) notFound.push(name);
-        return entry;
-      });
-      cols[1] = newParts.join(',');
-      return cols.join('\t');
-    }).join('\n');
+    // Remplacer |teams=... dans la ligne
+    line = line.replace(/\|teams=[^|]*/, '|teams=' + teamsVal);
+
+    return line;
+  }).join('\n');
+
+  // ── 4. Calculer le rapport ────────────────────────────────
+  // matched = entrées CSV dont au moins un pseudo a été trouvé dans le code
+  const matchedEntries  = [];
+  const unmatchedEntries = [];
+
+  for(const entry of csvEntries){
+    const ppFound = entry.playerPage && usedKeys.has(entry.playerPage);
+    const dpFound = entry.dataPlayer && usedKeys.has(entry.dataPlayer);
+    if(ppFound || dpFound){
+      matchedEntries.push(entry);
+    } else {
+      unmatchedEntries.push(entry);
+    }
   }
 
+  // ── 5. Afficher les résultats ─────────────────────────────
   const st2  = document.getElementById('st2');
   const st2m = document.getElementById('st2m');
-  if(added === 0){ st2.className = 'alert err'; st2.innerHTML = s('teams0'); }
-  else           { st2.className = 'alert ok';  st2.innerHTML = s('teamsOk', added, total); }
-  if(notFound.length){ st2m.classList.remove('hidden'); st2m.innerHTML = s('teamsMiss', notFound); }
-  else st2m.classList.add('hidden');
+
+  if(matchedEntries.length === 0){
+    st2.className = 'alert err';
+    st2.textContent = '❌ 0 joueur trouvé dans le code — vérifie les colonnes PlayerPage / DataPlayer';
+  } else {
+    st2.className = 'alert ok';
+    st2.innerHTML = `✅ <b>${matchedEntries.length}/${totalCSV} joueurs avec équipe ajoutés</b> dans le code wiki`;
+  }
+
+  if(unmatchedEntries.length > 0){
+    // Tableau des lignes CSV non trouvées
+    let tbl = `<div style="margin-top:6px;font-size:.82rem;font-weight:700;margin-bottom:6px">
+      ⚠️ ${unmatchedEntries.length} joueur${unmatchedEntries.length>1?'s':''} du CSV non trouvé${unmatchedEntries.length>1?'s':''} dans le code :
+    </div>`;
+    tbl += `<div style="background:#0f172a;border:1px solid #334155;border-radius:8px;max-height:220px;overflow-y:auto">
+      <table class="miss-table">
+        <thead><tr>
+          <th>DataTeam</th>
+          <th>PlayerPage</th>
+          <th>DataPlayer</th>
+        </tr></thead>
+        <tbody>`;
+    for(const e of unmatchedEntries){
+      tbl += `<tr>
+        <td>${escHtml(e.dataTeam)}</td>
+        <td>${escHtml(e.playerPage)}</td>
+        <td>${escHtml(e.dataPlayer)}</td>
+      </tr>`;
+    }
+    tbl += `</tbody></table></div>`;
+    st2m.className = 'alert warn';
+    st2m.innerHTML = tbl;
+    st2m.classList.remove('hidden');
+  } else {
+    st2m.classList.add('hidden');
+  }
 
   document.getElementById('r2').value = result;
   markDone('b2','card2');
   document.getElementById('o2').classList.remove('hidden');
 }
+
+function escHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 // ============================================================
 //  PSEUDO UPDATE
