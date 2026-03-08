@@ -33,6 +33,7 @@
     .badge.blue  { background: #3b82f6; }
     .badge.green { background: #22c55e; }
     .badge.amber { background: #f59e0b; color: #1a1a1a; }
+    .badge.purple { background: #8b5cf6; }
     .card-title { font-size: 1.05rem; font-weight: 600; }
     .tabs { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
     .tab { padding: 7px 16px; border: 1.5px solid #475569; background: transparent; color: #94a3b8; border-radius: 7px; cursor: pointer; font-size: 0.88rem; font-weight: 500; white-space: nowrap; }
@@ -80,6 +81,19 @@
     .warn { background: #1c1200; border: 1px solid #f59e0b; color: #fbbf24; }
     code { background: #0f172a; padding: 1px 5px; border-radius: 4px; font-size: 0.85em; }
     .missing-lines { margin-top: 8px; background: #0f172a; border-radius: 6px; padding: 8px 10px; font-family: 'Courier New', monospace; font-size: 11px; max-height: 180px; overflow-y: auto; color: #fbbf24; }
+    /* Correcteur de pseudos */
+    .pseudo-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin-top: 10px; }
+    .pseudo-table th { text-align: left; padding: 7px 10px; background: #0f172a; color: #64748b; font-weight: 600; border-bottom: 1px solid #334155; }
+    .pseudo-table td { padding: 6px 10px; border-bottom: 1px solid #1e293b; vertical-align: middle; }
+    .pseudo-table tr:hover td { background: #0f172a44; }
+    .pseudo-old { color: #fca5a5; font-family: monospace; }
+    .pseudo-new { color: #4ade80; font-family: monospace; }
+    .pseudo-input { background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #e2e8f0; font-family: monospace; font-size: 12px; padding: 4px 8px; width: 100%; }
+    .pseudo-input:focus { outline: none; border-color: #8b5cf6; }
+    .pseudo-status { font-size: 0.75rem; padding: 2px 8px; border-radius: 10px; font-weight: 600; white-space: nowrap; }
+    .ps-found    { background: #052e16; color: #4ade80; }
+    .ps-notfound { background: #1c1200; color: #fbbf24; }
+    .ps-manual   { background: #1a0a2e; color: #a78bfa; }
     #date-block { margin-top: 10px; padding: 10px 14px; border-radius: 8px; background: #0f172a; border: 1px solid #334155; font-size: 0.82rem; }
     .date-row { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
     .date-label { color: #64748b; font-size: 0.78rem; min-width: 52px; }
@@ -101,188 +115,213 @@
   <div class="topbar">
     <div class="topbar-left">
       <h1>⚡ Fortnite Wiki Tools</h1>
-      <p class="subtitle" data-i18n="subtitle">Classement API/Fichier → Équipes · Tout en 2 étapes</p>
+      <p class="subtitle" data-i18n="subtitle">Classement API/Fichier → Équipes · Tout en 3 étapes</p>
     </div>
-    <button class="lang-btn" onclick="toggleLang()" id="lang-toggle">
+    <button class="lang-btn" onclick="toggleLang()">
       <span id="lang-flag">🇬🇧</span>
       <span id="lang-label">English</span>
     </button>
   </div>
 
+  <!-- SOURCE SELECTOR -->
   <div class="api-selector">
-    <div class="api-selector-title" data-i18n="apiSelectorTitle">🔌 Choix de la source</div>
+    <div class="api-selector-title">🔌 Source</div>
     <div class="api-btns">
       <button class="api-btn active-kass" id="btn-kass" onclick="selectApi('kass')">
         <span class="api-btn-name">🟢 Kass507.lat</span>
-        <span class="api-btn-tag-kass" data-i18n="apiKassTag">✅ RECOMMANDÉE</span>
-        <span class="api-btn-desc" data-i18n="apiKassDesc">Fonctionne sur tous les events depuis Nov. 2025</span>
+        <span class="api-btn-tag-kass">✅ RECOMMANDÉE</span>
+        <span class="api-btn-desc">Fonctionne sur tous les events depuis Nov. 2025</span>
       </button>
       <button class="api-btn" id="btn-file" onclick="selectApi('file')">
         <span class="api-btn-name">🟣 Fichier HTML</span>
-        <span class="api-btn-tag-file" data-i18n="apiFileTag">📁 HORS-LIGNE</span>
-        <span class="api-btn-desc" data-i18n="apiFileDesc">Importe un export HTML Fortnite Tracker (Ctrl+S)</span>
+        <span class="api-btn-tag-file">📁 HORS-LIGNE</span>
+        <span class="api-btn-desc">Importe un export HTML Fortnite Tracker (Ctrl+S)</span>
       </button>
       <button class="api-btn" id="btn-wls" onclick="selectApi('wls')">
         <span class="api-btn-name">🔴 WLS.gg</span>
-        <span class="api-btn-tag-wls" data-i18n="apiWlsTag">🎯 TOURNOIS WLS</span>
-        <span class="api-btn-desc" data-i18n="apiWlsDesc">Pour les événements organisés via WLS</span>
+        <span class="api-btn-tag-wls">🎯 TOURNOIS WLS</span>
+        <span class="api-btn-desc">Pour les événements organisés via WLS</span>
       </button>
     </div>
   </div>
 
   <div id="dict-status" class="alert info" style="margin-bottom:16px">⏳ Chargement du dictionnaire...</div>
 
-  <!-- CARD 1 -->
+  <!-- ═══ ÉTAPE 1 : GÉNÉRER ═══ -->
   <div class="card" id="card1">
     <div class="card-header">
       <div class="badge blue" id="b1">1</div>
-      <div class="card-title" data-i18n="step1title">Générer le classement</div>
+      <div class="card-title">Générer le classement</div>
     </div>
-
-    <!-- Tabs mode -->
     <div class="tabs" id="tabs-mode">
-      <button class="tab active" onclick="setMode('simple')" id="t-simple" data-i18n="tabSimple">🏆 Simple</button>
-      <button class="tab"        onclick="setMode('cumul')"  id="t-cumul"  data-i18n="tabCumul">📊 Cumulé (Day1+Day2)</button>
+      <button class="tab active" onclick="setMode('simple')" id="t-simple">🏆 Simple</button>
+      <button class="tab"        onclick="setMode('cumul')"  id="t-cumul">📊 Cumulé (Day1+Day2)</button>
     </div>
 
-    <!-- MODE SIMPLE — API -->
+    <!-- API simple -->
     <div id="m-api-simple">
       <label id="lbl-wid1">WindowID ou URL Fortnite Tracker</label>
       <input type="text" id="wid1" placeholder="S39_SoloSeriesCupFinal_Day1_ME">
       <div class="hint" id="hint-wid1">💡 Colle l'URL complète — le WindowID est extrait automatiquement</div>
     </div>
-
-    <!-- MODE CUMUL — API -->
+    <!-- API cumul -->
     <div id="m-api-cumul" class="hidden">
       <div class="grid2">
-        <div>
-          <label id="lbl-day1">Day 1</label>
-          <input type="text" id="wd1" placeholder="...Day1_ME">
-        </div>
-        <div>
-          <label id="lbl-day2">Day 2</label>
-          <input type="text" id="wd2" placeholder="...Day2_ME">
-        </div>
+        <div><label id="lbl-day1">Day 1</label><input type="text" id="wd1" placeholder="...Day1_ME"></div>
+        <div><label id="lbl-day2">Day 2</label><input type="text" id="wd2" placeholder="...Day2_ME"></div>
       </div>
     </div>
-
-    <!-- MODE SIMPLE — FICHIER -->
+    <!-- Fichier simple -->
     <div id="m-file-simple" class="hidden">
-      <label data-i18n="fileLbl">Fichier HTML Fortnite Tracker</label>
-      <div class="drop-zone" id="dz1"
-           onclick="document.getElementById('fi1').click()"
+      <label>Fichier HTML Fortnite Tracker</label>
+      <div class="drop-zone" id="dz1" onclick="document.getElementById('fi1').click()"
            ondragover="dzOver(event,'dz1')" ondragleave="dzLeave('dz1')" ondrop="dzDrop(event,'dz1','fi1','dzt1')">
         <div class="drop-zone-icon">📂</div>
-        <div class="drop-zone-title" id="dzt1" data-i18n="dzTitle">Glisse ton fichier ici ou clique pour choisir</div>
-        <div class="drop-zone-sub" data-i18n="dzSub">Export HTML Fortnite Tracker (.html / .htm)</div>
+        <div class="drop-zone-title" id="dzt1">Glisse ton fichier ici ou clique pour choisir</div>
+        <div class="drop-zone-sub">Export HTML Fortnite Tracker (.html / .htm)</div>
       </div>
       <input type="file" id="fi1" accept=".html,.htm,.txt" onchange="dzPick('fi1','dz1','dzt1')">
-      <div class="hint" data-i18n="fileHint">💡 Sauvegarde la page avec Ctrl+S dans ton navigateur</div>
     </div>
-
-    <!-- MODE CUMUL — FICHIER -->
+    <!-- Fichier cumul -->
     <div id="m-file-cumul" class="hidden">
       <div class="grid2">
         <div>
           <label>Fichier Day 1</label>
-          <div class="drop-zone" id="dz2"
-               onclick="document.getElementById('fi2').click()"
+          <div class="drop-zone" id="dz2" onclick="document.getElementById('fi2').click()"
                ondragover="dzOver(event,'dz2')" ondragleave="dzLeave('dz2')" ondrop="dzDrop(event,'dz2','fi2','dzt2')">
             <div class="drop-zone-icon">📂</div>
-            <div class="drop-zone-title" id="dzt2" data-i18n="dzTitle">Glisse ou clique</div>
+            <div class="drop-zone-title" id="dzt2">Glisse ou clique</div>
             <div class="drop-zone-sub">Day 1 HTML</div>
           </div>
           <input type="file" id="fi2" accept=".html,.htm,.txt" onchange="dzPick('fi2','dz2','dzt2')">
         </div>
         <div>
           <label>Fichier Day 2</label>
-          <div class="drop-zone" id="dz3"
-               onclick="document.getElementById('fi3').click()"
+          <div class="drop-zone" id="dz3" onclick="document.getElementById('fi3').click()"
                ondragover="dzOver(event,'dz3')" ondragleave="dzLeave('dz3')" ondrop="dzDrop(event,'dz3','fi3','dzt3')">
             <div class="drop-zone-icon">📂</div>
-            <div class="drop-zone-title" id="dzt3" data-i18n="dzTitle">Glisse ou clique</div>
+            <div class="drop-zone-title" id="dzt3">Glisse ou clique</div>
             <div class="drop-zone-sub">Day 2 HTML</div>
           </div>
           <input type="file" id="fi3" accept=".html,.htm,.txt" onchange="dzPick('fi3','dz3','dzt3')">
         </div>
       </div>
-      <div class="hint" data-i18n="fileHint">💡 Sauvegarde la page avec Ctrl+S dans ton navigateur</div>
     </div>
+    <div class="hint" id="file-hint" style="display:none">💡 Sauvegarde la page avec Ctrl+S dans ton navigateur</div>
 
-    <!-- Placement -->
-    <label data-i18n="placementLabel">Placement</label>
+    <label>Placement</label>
     <div class="placement-row">
-      <span data-i18n="placementFrom">De</span>
+      <span>De</span>
       <input type="number" id="rank-from" value="1" min="1" max="9999">
-      <span data-i18n="placementTo">à</span>
+      <span>à</span>
       <input type="number" id="rank-to" value="100" min="1" max="9999">
     </div>
-    <div class="hint" data-i18n="placementHint">💡 Filtre les rangs à inclure dans le résultat</div>
+    <div class="hint">💡 Filtre les rangs à inclure dans le résultat</div>
 
     <div class="btn-row">
-      <button class="btn btn-blue" onclick="generate()" id="bg" data-i18n="btnGenerate">🚀 Générer</button>
+      <button class="btn btn-blue" onclick="generate()" id="bg">🚀 Générer</button>
       <span class="loader" id="ld1">⏳ Chargement...</span>
     </div>
     <div id="o1" class="hidden">
       <div class="divider"></div>
       <div id="st1" class="alert ok"></div>
-      <label data-i18n="generatedLabel">Classement généré</label>
+      <label>Classement généré</label>
       <textarea id="r1" rows="12" readonly></textarea>
       <div id="date-block" class="hidden"></div>
       <div class="btn-row">
-        <button class="btn btn-green"  onclick="cp('r1','c1')" data-i18n="btnCopy">📋 Copier</button>
-        <button class="btn btn-purple" onclick="toStep2()"     data-i18n="btnStep2">➡️ Ajouter les équipes</button>
+        <button class="btn btn-green"  onclick="cp('r1','c1')">📋 Copier</button>
+        <button class="btn btn-purple" onclick="toStep2()">➡️ Corriger les pseudos</button>
         <span id="c1" style="font-size:.85rem;color:#4ade80"></span>
       </div>
     </div>
   </div>
 
-  <!-- CARD 2 -->
+  <!-- ═══ ÉTAPE 2 : CORRECTEUR DE PSEUDOS ═══ -->
   <div class="card" id="card2">
     <div class="card-header">
-      <div class="badge" id="b2">2</div>
-      <div class="card-title" data-i18n="step2title">Ajouter les équipes</div>
+      <div class="badge purple" id="b2">2</div>
+      <div class="card-title">Corriger les pseudos</div>
     </div>
-    <label data-i18n="step2inputLabel">Code wiki à traiter</label>
-    <textarea id="i2" rows="10" placeholder="Colle ici le résultat de l'étape 1, ou ton code wiki {{TournamentResults/Line|...}}"></textarea>
-    <div class="hint" data-i18n="step2inputHint">Format wiki {{TournamentResults/Line|...}}</div>
-    <label data-i18n="csvLabel">Équipes — CSV ou TSV</label>
-    <textarea id="tt" rows="7" placeholder="DataTeam&#9;PlayerTeam&#9;DataPlayer&#9;PlayerPage&#10;BIG Clan&#9;&#9;Malibuca&#9;Malibuca"></textarea>
-    <div class="file-input-row">
-      <button class="file-btn" onclick="document.getElementById('tf').click()" data-i18n="fileBtn">📂 Choisir un fichier</button>
-      <span class="file-name" id="file-name-display" data-i18n="fileNone">Aucun fichier choisi</span>
-    </div>
-    <input type="file" id="tf" accept=".csv,.tsv,.txt" onchange="loadTF()">
+    <p style="font-size:.85rem;color:#64748b;margin-bottom:12px">
+      Colle le classement brut (format <code>rank↹epicid{{!}}nom,...</code>) — les noms non trouvés dans le dictionnaire sont surlignés pour correction manuelle.
+    </p>
+    <label>Classement à corriger</label>
+    <textarea id="pseudo-input" rows="10" placeholder="Colle ici le résultat de l'étape 1..."></textarea>
     <div class="btn-row">
-      <button class="btn btn-blue" onclick="addTeams()" data-i18n="btnAddTeams">🏅 Ajouter les équipes</button>
+      <button class="btn btn-blue" onclick="analyzePseudos()">🔍 Analyser</button>
     </div>
-    <div id="o2" class="hidden">
+    <div id="pseudo-table-wrap" class="hidden">
       <div class="divider"></div>
-      <div id="st2" class="alert ok"></div>
-      <div id="st2-missing" class="alert warn hidden"></div>
-      <label data-i18n="resultLabel">Résultat final</label>
-      <textarea id="r2" rows="12" readonly></textarea>
-      <div class="btn-row">
-        <button class="btn btn-green" onclick="cp('r2','c2')" data-i18n="btnCopy">📋 Copier</button>
-        <span id="c2" style="font-size:.85rem;color:#4ade80"></span>
+      <div id="pseudo-stats" class="alert info"></div>
+      <table class="pseudo-table" id="pseudo-table">
+        <thead><tr>
+          <th>Rang</th><th>EpicID</th><th>Nom actuel</th><th>Correction</th><th>Statut</th>
+        </tr></thead>
+        <tbody id="pseudo-tbody"></tbody>
+      </table>
+      <div class="btn-row" style="margin-top:14px">
+        <button class="btn btn-green"  onclick="applyPseudoFixes()">✅ Appliquer les corrections</button>
+        <button class="btn btn-purple" onclick="toStep3()">➡️ Ajouter les équipes</button>
+      </div>
+      <div id="pseudo-result-wrap" class="hidden">
+        <div class="divider"></div>
+        <label>Classement corrigé</label>
+        <textarea id="pseudo-result" rows="10" readonly></textarea>
+        <div class="btn-row">
+          <button class="btn btn-green"  onclick="cp('pseudo-result','c-pseudo')">📋 Copier</button>
+          <button class="btn btn-purple" onclick="toStep3()">➡️ Ajouter les équipes</button>
+          <span id="c-pseudo" style="font-size:.85rem;color:#4ade80"></span>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- CARD DICT -->
+  <!-- ═══ ÉTAPE 3 : AJOUTER LES ÉQUIPES ═══ -->
+  <div class="card" id="card3">
+    <div class="card-header">
+      <div class="badge" id="b3">3</div>
+      <div class="card-title">Ajouter les équipes</div>
+    </div>
+    <label>Code wiki à traiter</label>
+    <textarea id="i3" rows="10" placeholder="Colle ici le résultat de l'étape 1 ou 2, ou ton code wiki {{TournamentResults/Line|...}}"></textarea>
+    <div class="hint">Format wiki {{TournamentResults/Line|...}}</div>
+    <label>Équipes — CSV ou TSV</label>
+    <textarea id="tt" rows="7" placeholder="DataTeam&#9;PlayerTeam&#9;DataPlayer&#9;PlayerPage&#10;BIG Clan&#9;&#9;Malibuca&#9;Malibuca"></textarea>
+    <div class="file-input-row">
+      <button class="file-btn" onclick="document.getElementById('tf').click()">📂 Choisir un fichier</button>
+      <span class="file-name" id="file-name-display">Aucun fichier choisi</span>
+    </div>
+    <input type="file" id="tf" accept=".csv,.tsv,.txt" onchange="loadTF()">
+    <div class="btn-row">
+      <button class="btn btn-blue" onclick="addTeams()">🏅 Ajouter les équipes</button>
+    </div>
+    <div id="o3" class="hidden">
+      <div class="divider"></div>
+      <div id="st3" class="alert ok"></div>
+      <div id="st3-missing" class="alert warn hidden"></div>
+      <label>Résultat final</label>
+      <textarea id="r3" rows="12" readonly></textarea>
+      <div class="btn-row">
+        <button class="btn btn-green" onclick="cp('r3','c3')">📋 Copier</button>
+        <span id="c3" style="font-size:.85rem;color:#4ade80"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ DICT ═══ -->
   <div class="card" id="card-dict">
     <div class="card-header">
       <div class="badge amber">+</div>
-      <div class="card-title" data-i18n="dictTitle">Ajouter un joueur à la database</div>
+      <div class="card-title">Ajouter un joueur à la database</div>
     </div>
-    <p style="font-size:.85rem;color:#64748b;margin-bottom:14px" data-i18n="dictDesc">
+    <p style="font-size:.85rem;color:#64748b;margin-bottom:14px">
       Les entrées sont sauvegardées dans le <b>cloud partagé</b> — visibles par tout le monde instantanément.
     </p>
-    <label data-i18n="dictLabel">Format : PseudoWiki=EpicAccountID (une entrée par ligne)</label>
+    <label>Format : PseudoWiki=EpicAccountID (une entrée par ligne)</label>
     <textarea id="dict-new" rows="5" placeholder="Parz=abc123def456abc123def456abc123de&#10;Player Name=def456abc123def456abc123def456ab"></textarea>
-    <div class="hint" data-i18n="dictHint">💡 L'Epic Account ID (32 caractères) se trouve dans l'URL Fortnite Tracker.</div>
+    <div class="hint">💡 L'Epic Account ID (32 caractères) se trouve dans l'URL Fortnite Tracker.</div>
     <div class="btn-row" style="margin-top:12px">
-      <button class="btn btn-blue" onclick="dictAdd()" data-i18n="btnDictAdd">➕ Ajouter</button>
+      <button class="btn btn-blue" onclick="dictAdd()">➕ Ajouter</button>
       <span id="dict-msg" style="font-size:.85rem"></span>
     </div>
     <div id="dict-list" style="margin-top:16px"></div>
@@ -291,7 +330,7 @@
   <footer class="footer">
     <img src="https://raw.githubusercontent.com/Clementsly/fortnite-wiki-tools/main/Design%20sans%20titre%20(6).png" alt="Clem" class="footer-avatar">
     <div class="footer-text">
-      <div class="made-by" data-i18n="madeBy">Créé par</div>
+      <div class="made-by">Créé par</div>
       <div class="author-name">Clem</div>
       <a href="https://x.com/clemclx" target="_blank" class="footer-twitter">
         <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.911-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
@@ -310,6 +349,7 @@ const JSONBIN_ID  = "699cd8d6d0ea881f40d31e4a";
 const JSONBIN_KEY = "$2a$10$Uxd5kmWUdHQG2q40rB1m8uOe2GftztNasNvtMAHQ8m8J8OGkrMbGO";
 const CORS_PROXIES = ["https://corsproxy.io/?","https://api.allorigins.win/raw?url=","https://corsproxy.org/?"];
 let _proxyIndex = 0;
+
 let _api  = 'kass';
 let _mode = 'simple';
 let _lang = localStorage.getItem('lang') || 'fr';
@@ -317,257 +357,91 @@ let dict  = {};
 let dateInfo = null;
 
 // ============================================================
-//  I18N
+//  I18N minimal
 // ============================================================
-const T = {
-  fr: {
-    subtitle:        "Classement API/Fichier → Équipes · Tout en 2 étapes",
-    apiSelectorTitle:"🔌 Choix de la source",
-    apiKassTag:      "✅ RECOMMANDÉE",
-    apiKassDesc:     "Fonctionne sur tous les events depuis Nov. 2025",
-    apiFileTag:      "📁 HORS-LIGNE",
-    apiFileDesc:     "Importe un export HTML Fortnite Tracker (Ctrl+S)",
-    apiWlsTag:       "🎯 TOURNOIS WLS",
-    apiWlsDesc:      "Pour les événements organisés via WLS",
-    step1title:      "Générer le classement",
-    tabSimple:       "🏆 Simple",
-    tabCumul:        "📊 Cumulé (Day1+Day2)",
-    fileLbl:         "Fichier HTML Fortnite Tracker",
-    dzTitle:         "Glisse ton fichier ici ou clique pour choisir",
-    dzSub:           "Export HTML Fortnite Tracker (.html / .htm)",
-    fileHint:        "💡 Sauvegarde la page avec Ctrl+S dans ton navigateur",
-    placementLabel:  "Placement",
-    placementFrom:   "De",
-    placementTo:     "à",
-    placementHint:   "💡 Filtre les rangs à inclure dans le résultat",
-    btnGenerate:     "🚀 Générer",
-    generatedLabel:  "Classement généré",
-    btnCopy:         "📋 Copier",
-    btnStep2:        "➡️ Ajouter les équipes",
-    step2title:      "Ajouter les équipes",
-    step2inputLabel: "Code wiki à traiter",
-    step2inputHint:  "Format wiki {{TournamentResults/Line|...}}",
-    csvLabel:        "Équipes — CSV ou TSV",
-    fileBtn:         "📂 Choisir un fichier",
-    fileNone:        "Aucun fichier choisi",
-    btnAddTeams:     "🏅 Ajouter les équipes",
-    resultLabel:     "Résultat final",
-    dictTitle:       "Ajouter un joueur à la database",
-    dictDesc:        "Les entrées sont sauvegardées dans le <b>cloud partagé</b> — visibles par tout le monde instantanément.",
-    dictLabel:       "Format : PseudoWiki=EpicAccountID (une entrée par ligne)",
-    dictHint:        "💡 L'Epic Account ID (32 caractères) se trouve dans l'URL Fortnite Tracker.",
-    btnDictAdd:      "➕ Ajouter",
-    madeBy:          "Créé par",
-    loading:         "⏳ Chargement du dictionnaire...",
-    copiedMsg:       "✅ Copié !",
-    noResult:        "❌ Aucun résultat — vérifie l'ID.",
-    errNoWid:        "Entre un ID !",
-    errNoBothWid:    "Entre les deux IDs !",
-    errNoFile:       "Choisis un fichier HTML !",
-    errNoBothFiles:  "Choisis les deux fichiers HTML !",
-    errFileParse:    "❌ Impossible de lire les données — vérifie que c'est bien un export HTML Fortnite Tracker",
-    errNoInput:      "Rien à traiter !",
-    errNoCSV:        "Ajoute le CSV des équipes !",
-    errCSVEmpty:     "CSV vide !",
-    errCols:         "Colonnes introuvables — il faut au moins DataTeam + (DataPlayer ou PlayerPage)",
-    dictErrFormat:   "❌ Aucune ligne valide — utilise le format Pseudo=EpicID",
-    dictErrMissing:  "❌ Pseudo ou ID manquant",
-    dictSaving:      "⏳ Sauvegarde...",
-    dictOk:          (n) => `✅ ${n} entrée${n>1?'s':''} ajoutée${n>1?'s':''} ☁️`,
-    dictWarn:        (n) => `⚠️ ${n} entrée${n>1?'s':''} sauvegardée${n>1?'s':''} localement`,
-    dictNone:        "Aucune entrée pour l'instant.",
-    dictCount:       (n) => `${n} entrée(s) dans le cache local :`,
-    dictClearConfirm:"Supprimer toutes les entrées locales ?",
-    dictClearBtn:    "🗑️ Tout effacer",
-    pseudosLoaded:   (total, f, c) => { let m=`✅ <b>${total} pseudos chargés</b>`; if(f>0)m+=` · ${f} depuis GitHub`; if(c>0)m+=` · ${c} cloud ☁️`; return m; },
-    noDict:          "⚠️ Aucun pseudo chargé — l'outil fonctionne quand même",
-    generatedOk:     (n, total, src) => `✅ <b>${n} lignes générées</b> · ${total} pseudos dans le dict · via ${src}`,
-    generatedOkFile: (n, total) => `✅ <b>${n} équipes extraites du fichier HTML</b> · ${total} pseudos dans le dict`,
-    teamsOk:         (a, total) => `✅ <b>${a}/${total} joueurs avec équipe ajoutés</b> dans le code`,
-    teamsMissing:    (lines) => {
-      const header = `⚠️ ${lines.length} joueur${lines.length>1?'s':''} du CSV non trouvé${lines.length>1?'s':''} dans le code :`;
-      return header + `<div class="missing-lines">${lines.map(l=>`<div>${escHtml(l)}</div>`).join('')}</div>`;
-    },
-    teams0:          "❌ Aucun joueur du CSV trouvé dans le code wiki",
-    dateTitle:       "📅 Date de l'événement",
-    dateDay1:        "Jour 1 :",
-    dateDay2:        "Jour 2 :",
-    dateCopyBtn:     "📋 Copier"
-  },
-  en: {
-    subtitle:        "API/File Leaderboard → Teams · All in 2 steps",
-    apiSelectorTitle:"🔌 Source selection",
-    apiKassTag:      "✅ RECOMMENDED",
-    apiKassDesc:     "Works on all events since Nov. 2025",
-    apiFileTag:      "📁 OFFLINE",
-    apiFileDesc:     "Import a Fortnite Tracker HTML export (Ctrl+S)",
-    apiWlsTag:       "🎯 WLS TOURNAMENTS",
-    apiWlsDesc:      "For events organized through WLS",
-    step1title:      "Generate leaderboard",
-    tabSimple:       "🏆 Simple",
-    tabCumul:        "📊 Cumulative (Day1+Day2)",
-    fileLbl:         "Fortnite Tracker HTML File",
-    dzTitle:         "Drop your file here or click to choose",
-    dzSub:           "Fortnite Tracker HTML export (.html / .htm)",
-    fileHint:        "💡 Save the page with Ctrl+S in your browser",
-    placementLabel:  "Placement",
-    placementFrom:   "From",
-    placementTo:     "to",
-    placementHint:   "💡 Filter which ranks to include",
-    btnGenerate:     "🚀 Generate",
-    generatedLabel:  "Generated leaderboard",
-    btnCopy:         "📋 Copy",
-    btnStep2:        "➡️ Add teams",
-    step2title:      "Add teams",
-    step2inputLabel: "Wiki code to process",
-    step2inputHint:  "Wiki format {{TournamentResults/Line|...}}",
-    csvLabel:        "Teams — CSV or TSV",
-    fileBtn:         "📂 Choose a file",
-    fileNone:        "No file chosen",
-    btnAddTeams:     "🏅 Add teams",
-    resultLabel:     "Final result",
-    dictTitle:       "Add a player to the database",
-    dictDesc:        "Entries are saved in the <b>shared cloud</b> — visible to everyone instantly.",
-    dictLabel:       "Format: WikiNickname=EpicAccountID (one per line)",
-    dictHint:        "💡 The Epic Account ID (32 chars) is in the Fortnite Tracker URL.",
-    btnDictAdd:      "➕ Add",
-    madeBy:          "Created by",
-    loading:         "⏳ Loading dictionary...",
-    copiedMsg:       "✅ Copied!",
-    noResult:        "❌ No results — check the ID.",
-    errNoWid:        "Enter an ID!",
-    errNoBothWid:    "Enter both IDs!",
-    errNoFile:       "Choose an HTML file!",
-    errNoBothFiles:  "Choose both HTML files!",
-    errFileParse:    "❌ Cannot read data — make sure it's a Fortnite Tracker HTML export",
-    errNoInput:      "Nothing to process!",
-    errNoCSV:        "Add the teams CSV!",
-    errCSVEmpty:     "CSV is empty!",
-    errCols:         "Columns not found — need at least DataTeam + (DataPlayer or PlayerPage)",
-    dictErrFormat:   "❌ No valid lines — use Nickname=EpicID format",
-    dictErrMissing:  "❌ Missing nickname or ID",
-    dictSaving:      "⏳ Saving...",
-    dictOk:          (n) => `✅ ${n} entr${n>1?'ies':'y'} added ☁️`,
-    dictWarn:        (n) => `⚠️ ${n} entr${n>1?'ies':'y'} saved locally`,
-    dictNone:        "No entries yet.",
-    dictCount:       (n) => `${n} entr${n>1?'ies':'y'} in local cache:`,
-    dictClearConfirm:"Delete all local entries?",
-    dictClearBtn:    "🗑️ Clear all",
-    pseudosLoaded:   (total, f, c) => { let m=`✅ <b>${total} nicknames loaded</b>`; if(f>0)m+=` · ${f} from GitHub`; if(c>0)m+=` · ${c} cloud ☁️`; return m; },
-    noDict:          "⚠️ No nicknames loaded — tool still works",
-    generatedOk:     (n, total, src) => `✅ <b>${n} lines generated</b> · ${total} in dict · via ${src}`,
-    generatedOkFile: (n, total) => `✅ <b>${n} teams extracted from HTML file</b> · ${total} in dict`,
-    teamsOk:         (a, total) => `✅ <b>${a}/${total} players with team added</b> to the code`,
-    teamsMissing:    (lines) => {
-      const header = `⚠️ ${lines.length} player${lines.length>1?'s':''} from CSV not found in code:`;
-      return header + `<div class="missing-lines">${lines.map(l=>`<div>${escHtml(l)}</div>`).join('')}</div>`;
-    },
-    teams0:          "❌ No players from CSV found in wiki code",
-    dateTitle:       "📅 Event date",
-    dateDay1:        "Day 1:",
-    dateDay2:        "Day 2:",
-    dateCopyBtn:     "📋 Copy"
-  }
-};
-
-function t(key, ...args) { const v = T[_lang][key]; return typeof v === 'function' ? v(...args) : (v || key); }
-function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function applyTranslations() {
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    const k = el.getAttribute('data-i18n');
-    if (T[_lang][k] && typeof T[_lang][k] === 'string') el.innerHTML = T[_lang][k];
-  });
-  updateDynLabels();
-}
 function toggleLang() {
   _lang = _lang === 'fr' ? 'en' : 'fr';
   localStorage.setItem('lang', _lang);
   document.getElementById('lang-label').textContent = _lang === 'fr' ? 'English' : 'Français';
   document.getElementById('lang-flag').textContent  = _lang === 'fr' ? '🇬🇧' : '🇫🇷';
-  applyTranslations();
 }
 if (_lang === 'en') {
   document.getElementById('lang-label').textContent = 'Français';
   document.getElementById('lang-flag').textContent  = '🇫🇷';
-  applyTranslations();
 }
 
 // ============================================================
-//  SOURCE / MODE SELECTOR
+//  SOURCE / MODE
 // ============================================================
 function selectApi(api) {
   _api = api;
   ['kass','file','wls'].forEach(k => {
     document.getElementById('btn-'+k).className = 'api-btn' + (k === api ? ` active-${k}` : '');
   });
-  updateDynLabels();
-  setMode(_mode); // re-applique l'affichage des panneaux
+  setMode(_mode);
+  const isWls = api === 'wls';
+  document.getElementById('lbl-wid1').textContent  = isWls ? 'WLS Leaderboard ID' : 'WindowID ou URL Fortnite Tracker';
+  document.getElementById('hint-wid1').textContent = isWls ? "💡 L'ID numérique du leaderboard WLS" : "💡 Colle l'URL complète — le WindowID est extrait automatiquement";
+  document.getElementById('wid1').placeholder      = isWls ? '797505610768728064' : 'S39_SoloSeriesCupFinal_Day1_ME';
+  const l1 = isWls ? 'WLS ID 1' : 'Day 1'; const l2 = isWls ? 'WLS ID 2' : 'Day 2';
+  document.getElementById('lbl-day1').textContent = l1;
+  document.getElementById('lbl-day2').textContent = l2;
 }
-
 function setMode(m) {
   _mode = m;
   document.getElementById('t-simple').classList.toggle('active', m === 'simple');
   document.getElementById('t-cumul').classList.toggle('active',  m === 'cumul');
-
   const isFile = _api === 'file';
   document.getElementById('m-api-simple').classList.toggle('hidden',  isFile || m !== 'simple');
   document.getElementById('m-api-cumul').classList.toggle('hidden',   isFile || m !== 'cumul');
   document.getElementById('m-file-simple').classList.toggle('hidden', !isFile || m !== 'simple');
   document.getElementById('m-file-cumul').classList.toggle('hidden',  !isFile || m !== 'cumul');
-}
-
-function updateDynLabels() {
-  const isWls = _api === 'wls';
-  document.getElementById('lbl-wid1').textContent = isWls ? t('wlsIdLabel') || 'WLS Leaderboard ID' : 'WindowID ou URL Fortnite Tracker';
-  document.getElementById('hint-wid1').textContent = isWls
-    ? '💡 L\'ID numérique du leaderboard WLS'
-    : '💡 Colle l\'URL complète — le WindowID est extrait automatiquement';
-  document.getElementById('wid1').placeholder = isWls ? '797505610768728064' : 'S39_SoloSeriesCupFinal_Day1_ME';
+  document.getElementById('file-hint').style.display = isFile ? '' : 'none';
 }
 
 // ============================================================
-//  DRAG & DROP FICHIERS
+//  DRAG & DROP
 // ============================================================
-function dzOver(e, id) { e.preventDefault(); document.getElementById(id).classList.add('drag'); }
-function dzLeave(id)   { document.getElementById(id).classList.remove('drag'); }
-function dzDrop(e, dzId, inputId, titleId) {
-  e.preventDefault(); dzLeave(dzId);
-  const f = e.dataTransfer.files[0]; if (!f) return;
-  const dt = new DataTransfer(); dt.items.add(f);
-  document.getElementById(inputId).files = dt.files;
-  dzMarkLoaded(dzId, titleId, f.name);
+function dzOver(e,id){e.preventDefault();document.getElementById(id).classList.add('drag');}
+function dzLeave(id){document.getElementById(id).classList.remove('drag');}
+function dzDrop(e,dzId,inputId,titleId){
+  e.preventDefault();dzLeave(dzId);
+  const f=e.dataTransfer.files[0];if(!f)return;
+  const dt=new DataTransfer();dt.items.add(f);
+  document.getElementById(inputId).files=dt.files;
+  dzMarkLoaded(dzId,titleId,f.name);
 }
-function dzPick(inputId, dzId, titleId) {
-  const f = document.getElementById(inputId).files[0]; if (!f) return;
-  dzMarkLoaded(dzId, titleId, f.name);
+function dzPick(inputId,dzId,titleId){
+  const f=document.getElementById(inputId).files[0];if(!f)return;
+  dzMarkLoaded(dzId,titleId,f.name);
 }
-function dzMarkLoaded(dzId, titleId, name) {
-  const dz = document.getElementById(dzId);
-  dz.classList.remove('drag'); dz.classList.add('loaded');
-  document.getElementById(titleId).textContent = '✅ ' + name;
+function dzMarkLoaded(dzId,titleId,name){
+  document.getElementById(dzId).classList.remove('drag');
+  document.getElementById(dzId).classList.add('loaded');
+  document.getElementById(titleId).textContent='✅ '+name;
 }
 
 // ============================================================
-//  NETWORK
+//  RÉSEAU
 // ============================================================
-function fetchWithTimeout(url, opts={}, ms=8000) {
-  return Promise.race([fetch(url, opts), new Promise((_,r)=>setTimeout(()=>r(new Error('Timeout')),ms))]);
+function fetchWithTimeout(url,opts={},ms=8000){
+  return Promise.race([fetch(url,opts),new Promise((_,r)=>setTimeout(()=>r(new Error('Timeout')),ms))]);
 }
-function sleep(ms) { return new Promise(r=>setTimeout(r,ms)); }
-async function fetchWithRetry(url, opts={}, useProxy=false) {
-  let lastErr=null, pt=0;
-  for (let i=0; i<3; i++) {
-    const fu = useProxy ? CORS_PROXIES[_proxyIndex]+encodeURIComponent(url) : url;
-    try {
-      const r = await fetchWithTimeout(fu, opts, 10000);
-      if (r.ok) return r;
-      if (r.status>=400&&r.status<500) throw new Error(`HTTP ${r.status}`);
-      if (useProxy&&pt<CORS_PROXIES.length-1){_proxyIndex=(_proxyIndex+1)%CORS_PROXIES.length;pt++;}
-      lastErr=new Error(`Erreur ${r.status}`); await sleep((i+1)*2000);
-    } catch(e) {
-      if (e.message.startsWith('HTTP')) throw e;
-      if (useProxy&&pt<CORS_PROXIES.length-1){_proxyIndex=(_proxyIndex+1)%CORS_PROXIES.length;pt++;}
-      lastErr=new Error(e.message); await sleep((i+1)*1500);
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+async function fetchWithRetry(url,opts={},useProxy=false){
+  let lastErr=null,pt=0;
+  for(let i=0;i<3;i++){
+    const fu=useProxy?CORS_PROXIES[_proxyIndex]+encodeURIComponent(url):url;
+    try{
+      const r=await fetchWithTimeout(fu,opts,10000);
+      if(r.ok)return r;
+      if(r.status>=400&&r.status<500)throw new Error(`HTTP ${r.status}`);
+      if(useProxy&&pt<CORS_PROXIES.length-1){_proxyIndex=(_proxyIndex+1)%CORS_PROXIES.length;pt++;}
+      lastErr=new Error(`Erreur ${r.status}`);await sleep((i+1)*2000);
+    }catch(e){
+      if(e.message.startsWith('HTTP'))throw e;
+      if(useProxy&&pt<CORS_PROXIES.length-1){_proxyIndex=(_proxyIndex+1)%CORS_PROXIES.length;pt++;}
+      lastErr=new Error(e.message);await sleep((i+1)*1500);
     }
   }
   throw lastErr||new Error('Échec après 3 tentatives');
@@ -576,27 +450,27 @@ async function fetchWithRetry(url, opts={}, useProxy=false) {
 // ============================================================
 //  DICT
 // ============================================================
-async function fetchCloudDict() {
-  try {
-    const r = await fetchWithTimeout(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}/latest`,{headers:{"X-Master-Key":JSONBIN_KEY}},8000);
-    if (!r.ok) throw new Error();
-    const data = await r.json(); const rec = data.record||{}; delete rec['init']; return rec;
-  } catch(e){return {};}
+async function fetchCloudDict(){
+  try{
+    const r=await fetchWithTimeout(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}/latest`,{headers:{"X-Master-Key":JSONBIN_KEY}},8000);
+    if(!r.ok)throw new Error();
+    const data=await r.json();const rec=data.record||{};delete rec['init'];return rec;
+  }catch(e){return{};}
 }
-async function saveToCloud(entries) {
-  try {
-    const cur = await fetchCloudDict(); Object.assign(cur,entries);
-    const r = await fetchWithTimeout(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}`,
+async function saveToCloud(entries){
+  try{
+    const cur=await fetchCloudDict();Object.assign(cur,entries);
+    const r=await fetchWithTimeout(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}`,
       {method:'PUT',headers:{"Content-Type":"application/json","X-Master-Key":JSONBIN_KEY,"X-Bin-Versioning":"false"},body:JSON.stringify(cur)},8000);
     return r.ok;
-  } catch(e){return false;}
+  }catch(e){return false;}
 }
-function parseDictText(txt) {
+function parseDictText(txt){
   const d={};
-  for (const line of txt.split('\n')) {
-    const l=line.trim(); if(!l||!l.includes('=')) continue;
-    const i=l.indexOf('='); const name=l.slice(0,i).trim(); const eid=l.slice(i+1).trim().toLowerCase().replace(/-/g,'');
-    if(eid&&name) d[eid]=name;
+  for(const line of txt.split('\n')){
+    const l=line.trim();if(!l||!l.includes('='))continue;
+    const i=l.indexOf('=');const name=l.slice(0,i).trim();const eid=l.slice(i+1).trim().toLowerCase().replace(/-/g,'');
+    if(eid&&name)d[eid]=name;
   }
   return d;
 }
@@ -604,14 +478,15 @@ function loadLocalDict(){try{return JSON.parse(localStorage.getItem('custom_dict
 function saveLocalDict(d){localStorage.setItem('custom_dict',JSON.stringify(d));}
 async function autoLoadDict(){
   const st=document.getElementById('dict-status');
-  st.className='alert info'; st.textContent=t('loading');
+  st.className='alert info';st.textContent='⏳ Chargement du dictionnaire...';
   let fc=0,cc=0;
-  try { const r=await fetchWithTimeout(`${GITHUB_DICT_URL}?t=${Date.now()}`,{},8000); if(r.ok){const fd=parseDictText(await r.text());fc=Object.keys(fd).length;Object.assign(dict,fd);} } catch(e){}
-  try { const cl=await fetchCloudDict(); cc=Object.keys(cl).length; Object.assign(dict,cl); } catch(e){}
+  try{const r=await fetchWithTimeout(`${GITHUB_DICT_URL}?t=${Date.now()}`,{},8000);if(r.ok){const fd=parseDictText(await r.text());fc=Object.keys(fd).length;Object.assign(dict,fd);}}catch(e){}
+  try{const cl=await fetchCloudDict();cc=Object.keys(cl).length;Object.assign(dict,cl);}catch(e){}
   Object.assign(dict,loadLocalDict());
   const total=Object.keys(dict).length;
   st.className=total>0?'alert ok':'alert warn';
-  st.innerHTML=total>0?t('pseudosLoaded',total,fc,cc):t('noDict');
+  if(total>0){let m=`✅ <b>${total} pseudos chargés</b>`;if(fc>0)m+=` · ${fc} depuis GitHub`;if(cc>0)m+=` · ${cc} cloud ☁️`;st.innerHTML=m;}
+  else st.textContent='⚠️ Aucun pseudo chargé — l\'outil fonctionne quand même';
   renderDictList();
 }
 autoLoadDict();
@@ -620,215 +495,185 @@ function getName(eid){const r=dict[eid];return r?r.replace(/_/g,' '):null;}
 // ============================================================
 //  HTML FILE PARSER
 // ============================================================
-function parseHTMLFile(content) {
-  const positions = [];
-  let idx = 0;
-  while (true) { const p = content.indexOf('"teamAccountIds"', idx); if (p===-1) break; positions.push(p); idx=p+1; }
-  if (!positions.length) return null;
-
-  const results = [];
-  for (let i=0; i<positions.length; i++) {
-    const pos   = positions[i];
-    const start = i>0 ? positions[i-1]+50 : 0;
-    const chunk = content.slice(start, pos+500);
-
-    const taM = content.slice(pos, pos+500).match(/"teamAccountIds"\s*:\s*\[([^\]]+)\]/);
-    if (!taM) continue;
-    const ids = taM[1].split(',').map(x=>x.trim().replace(/"/g,'').replace(/-/g,'').toLowerCase()).filter(x=>x.length>0);
-    if (!ids.length) continue;
-
-    let rank=-1;
-    const rankRe=/"rank"\s*:\s*(\d+)/g; let rm;
-    while((rm=rankRe.exec(chunk))!==null) rank=parseInt(rm[1]);
-    if (rank<1) continue;
-
-    let pts=-1;
-    const ptsRe=/"pointsEarned"\s*:\s*(\d+)(?!\.\d)/g; let pm;
-    while((pm=ptsRe.exec(chunk))!==null) pts=parseInt(pm[1]);
-    if (pts<0) continue;
-
-    const dateM = chunk.match(/"endTime"\s*:\s*"(\d{4}-\d{2}-\d{2})/);
-    results.push({rank, pts, ids, date: dateM?dateM[1]:null});
+function parseHTMLFile(content){
+  const positions=[];let idx=0;
+  while(true){const p=content.indexOf('"teamAccountIds"',idx);if(p===-1)break;positions.push(p);idx=p+1;}
+  if(!positions.length)return null;
+  const results=[];
+  for(let i=0;i<positions.length;i++){
+    const pos=positions[i];
+    const start=i>0?positions[i-1]+50:0;
+    const chunk=content.slice(start,pos+500);
+    const taM=content.slice(pos,pos+500).match(/"teamAccountIds"\s*:\s*\[([^\]]+)\]/);
+    if(!taM)continue;
+    const ids=taM[1].split(',').map(x=>x.trim().replace(/"/g,'').replace(/-/g,'').toLowerCase()).filter(x=>x.length>0);
+    if(!ids.length)continue;
+    let rank=-1;const rankRe=/"rank"\s*:\s*(\d+)/g;let rm;
+    while((rm=rankRe.exec(chunk))!==null)rank=parseInt(rm[1]);
+    if(rank<1)continue;
+    let pts=-1;const ptsRe=/"pointsEarned"\s*:\s*(\d+)(?!\.\d)/g;let pm;
+    while((pm=ptsRe.exec(chunk))!==null)pts=parseInt(pm[1]);
+    if(pts<0)continue;
+    const dateM=chunk.match(/"endTime"\s*:\s*"(\d{4}-\d{2}-\d{2})/);
+    results.push({rank,pts,ids,date:dateM?dateM[1]:null});
   }
-
-  const seen=new Set(), unique=[];
-  for (const r of results) { if(!seen.has(r.rank)){seen.add(r.rank);unique.push(r);} }
+  const seen=new Set(),unique=[];
+  for(const r of results){if(!seen.has(r.rank)){seen.add(r.rank);unique.push(r);}}
   unique.sort((a,b)=>a.rank-b.rank);
-  return unique.length ? unique : null;
+  return unique.length?unique:null;
 }
-function readFileInput(inputId) {
+function readFileInput(inputId){
   return new Promise((res,rej)=>{
-    const f=document.getElementById(inputId).files[0]; if(!f) return res(null);
+    const f=document.getElementById(inputId).files[0];if(!f)return res(null);
     const reader=new FileReader();
     reader.onload=e=>res(e.target.result);
     reader.onerror=()=>rej(new Error('Erreur lecture'));
     reader.readAsText(f,'utf-8');
   });
 }
-function fileEntryToLine(rank, ids, pts) {
-  const p = ids.map(eid => { const name=getName(eid)||'not found'; return `${eid}{{!}}${name}`; }).join(',');
+function fileEntryToLine(rank,ids,pts){
+  const p=ids.map(eid=>{const name=getName(eid)||'not found';return `${eid}{{!}}${name}`;}).join(',');
   return `${rank}\t${p}\t${pts}`;
 }
 
 // ============================================================
-//  KASS / WLS API
+//  KASS API
 // ============================================================
-async function kassAll(wid) {
-  let results=[], page=0, tb=null, begin=null;
+async function kassAll(wid){
+  let results=[],page=0,tb=null,begin=null;
   while(true){
-    const r = await fetchWithRetry(
+    const r=await fetchWithRetry(
       `https://kass507.lat/api/events/window?windowId=${encodeURIComponent(wid)}&page=${page}`,
-      {headers:{"x-api-key":"kass_A3u2Fle0YACnjklJwreWylDNRp-2beDZ","Accept":"application/json"}}, true
+      {headers:{"x-api-key":"kass_A3u2Fle0YACnjklJwreWylDNRp-2beDZ","Accept":"application/json"}},true
     );
-    const d = await r.json();
-    if (!d?.success) break;
-    if (page===0){const f=d.session?.rules?.tiebreakerFormula; if(f)tb=f; begin=d.session?.beginTime||null;}
+    const d=await r.json();
+    if(!d?.success)break;
+    if(page===0){const f=d.session?.rules?.tiebreakerFormula;if(f)tb=f;begin=d.session?.beginTime||null;}
     results.push(...(d.session?.results||[]));
-    if (page>=(d.totalPages||1)-1) break;
+    if(page>=(d.totalPages||1)-1)break;
     page++;
   }
-  return {results,tb,begin};
+  return{results,tb,begin};
+}
+function toLine(rank,mb,pts){
+  const p=mb.map(m=>{const eid=(m.id||'').toLowerCase().replace(/-/g,'');return `${eid}{{!}}${getName(eid)||m.name||eid}`;}).join(',');
+  return `${rank}\t${p}\t${pts}`;
 }
 async function kassSimple(wid){
-  const {results,begin}=await kassAll(wid);
-  if(!results.length) return {lines:null,date:null};
+  const{results,begin}=await kassAll(wid);
+  if(!results.length)return{lines:null,date:null};
   results.sort((a,b)=>(a.rank||999)-(b.rank||999));
-  return {
-    lines: results.map((r,i)=>{
-      const mb=r.teamAccountNames||[];
-      const p=mb.map(m=>{const eid=(m.id||'').toLowerCase().replace(/-/g,'');return `${eid}{{!}}${getName(eid)||m.name||eid}`;}).join(',');
-      return `${r.rank||i+1}\t${p}\t${r.pointsEarned||0}`;
-    }),
-    date: begin||null
-  };
+  return{lines:results.map((r,i)=>toLine(r.rank||i+1,r.teamAccountNames||[],r.pointsEarned||0)),date:begin||null};
 }
 async function kassCumul(wids){
-  const pl={}; let tbF=null; const dates=[];
+  const pl={};let tbF=null;const dates=[];
   for(const wid of wids){
-    const {results,tb,begin}=await kassAll(wid);
-    if(!tbF&&tb) tbF=tb; dates.push(begin||null);
+    const{results,tb,begin}=await kassAll(wid);
+    if(!tbF&&tb)tbF=tb;dates.push(begin||null);
     for(const res of results){
       const mb=res.teamAccountNames||[];
       const key=mb.map(m=>(m.id||'').toLowerCase().replace(/-/g,'')).sort().join('|');
-      if(!pl[key]) pl[key]={pts:0,mb,stats:{}};
+      if(!pl[key])pl[key]={pts:0,mb,stats:{}};
       pl[key].pts+=res.pointsEarned||0;
-      for(const s of (res.sessionHistory||[]))
-        for(const[k,v] of Object.entries(s.trackedStats||{})){if(!pl[key].stats[k])pl[key].stats[k]=[];pl[key].stats[k].push(v);}
+      for(const s of(res.sessionHistory||[]))
+        for(const[k,v]of Object.entries(s.trackedStats||{})){if(!pl[key].stats[k])pl[key].stats[k]=[];pl[key].stats[k].push(v);}
     }
   }
-  if(!tbF) tbF={components:[{trackedStat:'VICTORY_ROYALE_STAT',aggregation:'sum',multiplier:1},{trackedStat:'TEAM_ELIMS_STAT_INDEX',aggregation:'sum',multiplier:1},{trackedStat:'PLACEMENT_STAT_INDEX',aggregation:'avg',multiplier:1}]};
+  if(!tbF)tbF={components:[{trackedStat:'VICTORY_ROYALE_STAT',aggregation:'sum',multiplier:1},{trackedStat:'TEAM_ELIMS_STAT_INDEX',aggregation:'sum',multiplier:1},{trackedStat:'PLACEMENT_STAT_INDEX',aggregation:'avg',multiplier:1}]};
   const list=Object.values(pl).map(p=>({...p,tb:tbF.components.map(c=>{const vals=p.stats[c.trackedStat]||[];if(!vals.length)return 0;const raw=c.aggregation==='avg'?vals.reduce((a,b)=>a+b,0)/vals.length:vals.reduce((a,b)=>a+b,0);return raw*(c.multiplier||1);})}));
   list.sort((a,b)=>{if(b.pts!==a.pts)return b.pts-a.pts;for(let i=0;i<a.tb.length;i++)if(b.tb[i]!==a.tb[i])return b.tb[i]-a.tb[i];return 0;});
-  return {
-    lines: list.map((p,i)=>{
-      const pp=p.mb.map(m=>{const eid=(m.id||'').toLowerCase().replace(/-/g,'');return `${eid}{{!}}${getName(eid)||m.name||eid}`;}).join(',');
-      return `${i+1}\t${pp}\t${p.pts}`;
-    }),
-    dates
-  };
+  return{lines:list.map((p,i)=>toLine(i+1,p.mb,p.pts)),dates};
 }
-function tsToDate(ts){
-  if(!ts)return null; const n=Number(ts); if(!isFinite(n))return null;
-  const sec=n>1e12?n/1000:n; const d=new Date(sec*1000); if(isNaN(d.getTime()))return null;
-  return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;
-}
-async function wlsFetch(id){
-  const r=await fetchWithRetry(`https://api.wls.gg/v5/leaderboards/${id.trim()}`,{headers:{"Accept":"application/json"}},true);
-  return r.json();
-}
+
+// ============================================================
+//  WLS API
+// ============================================================
+function tsToDate(ts){if(!ts)return null;const n=Number(ts);if(!isFinite(n))return null;const sec=n>1e12?n/1000:n;const d=new Date(sec*1000);if(isNaN(d.getTime()))return null;return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;}
+async function wlsFetch(id){const r=await fetchWithRetry(`https://api.wls.gg/v5/leaderboards/${id.trim()}`,{headers:{"Accept":"application/json"}},true);return r.json();}
+function toLineWLS(rank,ml,pts){const p=ml.map(m=>{const eid=(m.ingame_id||'').toLowerCase().replace(/-/g,'');return `${eid}{{!}}${getName(eid)||m.name||eid}`;}).join(',');return `${rank}\t${p}\t${pts}`;}
 async function wlsSimple(id){
-  const data=await wlsFetch(id); const teams=data.teams||[];
+  const data=await wlsFetch(id);const teams=data.teams||[];
   if(!teams.length)return{lines:null,date:null};
   teams.sort((a,b)=>(a.place||999)-(b.place||999));
-  let date=null;
-  if(teams[0]?.sessions){const s0=Object.values(teams[0].sessions)[0];if(s0?.start_time)date=tsToDate(s0.start_time);}
-  return {
-    lines: teams.map(t=>{
-      const ml=Object.values(t.members||{});
-      const p=ml.map(m=>{const eid=(m.ingame_id||'').toLowerCase().replace(/-/g,'');return `${eid}{{!}}${getName(eid)||m.name||eid}`;}).join(',');
-      return `${t.place}\t${p}\t${t.points||0}`;
-    }),
-    date
-  };
+  let date=null;if(teams[0]?.sessions){const s0=Object.values(teams[0].sessions)[0];if(s0?.start_time)date=tsToDate(s0.start_time);}
+  return{lines:teams.map(t=>toLineWLS(t.place,Object.values(t.members||{}),t.points||0)),date};
 }
 async function wlsCumul(ids){
-  const players={}; const dates=[];
+  const players={};const dates=[];
   for(const id of ids){
-    const data=await wlsFetch(id); const teams=data.teams||[];
-    let dStr=null;
-    if(teams.length&&teams[0].sessions){const s0=Object.values(teams[0].sessions)[0];if(s0?.start_time)dStr=tsToDate(s0.start_time);}
+    const data=await wlsFetch(id);const teams=data.teams||[];
+    let dStr=null;if(teams.length&&teams[0].sessions){const s0=Object.values(teams[0].sessions)[0];if(s0?.start_time)dStr=tsToDate(s0.start_time);}
     dates.push(dStr);
-    for(const team of teams){
-      const ml=Object.values(team.members||{});
-      const key=ml.map(m=>(m.ingame_id||'').toLowerCase()).sort().join('|');
-      if(!players[key])players[key]={pts:0,members:ml};
-      players[key].pts+=team.points||0;
-    }
+    for(const team of teams){const ml=Object.values(team.members||{});const key=ml.map(m=>(m.ingame_id||'').toLowerCase()).sort().join('|');if(!players[key])players[key]={pts:0,members:ml};players[key].pts+=team.points||0;}
   }
   const list=Object.values(players).sort((a,b)=>b.pts-a.pts);
-  return {
-    lines: list.map((p,i)=>{
-      const pp=p.members.map(m=>{const eid=(m.ingame_id||'').toLowerCase().replace(/-/g,'');return `${eid}{{!}}${getName(eid)||m.name||eid}`;}).join(',');
-      return `${i+1}\t${pp}\t${p.pts}`;
-    }),
-    dates
-  };
+  return{lines:list.map((p,i)=>toLineWLS(i+1,p.members,p.pts)),dates};
 }
 
 // ============================================================
 //  DATE BLOCK
 // ============================================================
 function parseToYMD(raw){if(!raw)return null;const m=String(raw).match(/(\d{4}-\d{2}-\d{2})/);return m?m[1]:tsToDate(raw);}
-function makeDateRow(label,raw){
-  const ymd=parseToYMD(raw)||'?';
-  return `<div class="date-row">${label?`<span class="date-label">${label}</span>`:''}<span class="date-value">${ymd}</span><button class="date-copy-btn" onclick="copyDate('${ymd}',this)">${t('dateCopyBtn')}</button></div>`;
-}
+function makeDateRow(label,raw){const ymd=parseToYMD(raw)||'?';return `<div class="date-row">${label?`<span class="date-label">${label}</span>`:''}<span class="date-value">${ymd}</span><button class="date-copy-btn" onclick="copyDate('${ymd}',this)">📋 Copier</button></div>`;}
 function copyDate(val,btn){navigator.clipboard.writeText(val);const o=btn.textContent;btn.textContent='✅';setTimeout(()=>btn.textContent=o,1500);}
 function showDateBlock(info){
   const el=document.getElementById('date-block');
   if(!info){el.classList.add('hidden');return;}
-  let html=`<div style="font-size:0.78rem;font-weight:700;color:#94a3b8;margin-bottom:2px">${t('dateTitle')}</div>`;
-  if(Array.isArray(info)){html+=makeDateRow(t('dateDay1'),info[0]);html+=makeDateRow(t('dateDay2'),info[1]);}
+  let html=`<div style="font-size:0.78rem;font-weight:700;color:#94a3b8;margin-bottom:2px">📅 Date de l'événement</div>`;
+  if(Array.isArray(info)){html+=makeDateRow('Jour 1 :',info[0]);html+=makeDateRow('Jour 2 :',info[1]);}
   else html+=makeDateRow('',info);
-  el.innerHTML=html; el.classList.remove('hidden');
+  el.innerHTML=html;el.classList.remove('hidden');
 }
 
 // ============================================================
 //  UI HELPERS
 // ============================================================
-function cp(id,fid){navigator.clipboard.writeText(document.getElementById(id).value);const el=document.getElementById(fid);el.textContent=t('copiedMsg');setTimeout(()=>el.textContent='',2000);}
-function toStep2(){document.getElementById('i2').value=document.getElementById('r1').value;document.getElementById('b2').classList.add('blue');document.getElementById('card2').scrollIntoView({behavior:'smooth'});}
-function loadTF(){const f=document.getElementById('tf').files[0];if(!f)return;document.getElementById('file-name-display').textContent=f.name;f.text().then(txt=>document.getElementById('tt').value=txt);}
+function cp(id,fid){navigator.clipboard.writeText(document.getElementById(id).value);const el=document.getElementById(fid);el.textContent='✅ Copié !';setTimeout(()=>el.textContent='',2000);}
 function getWid(txt){txt=(txt||'').trim();const m=txt.match(/[?&]window=([a-zA-Z0-9_-]+)/);return m?m[1]:txt;}
-function getRange(){const f=parseInt(document.getElementById('rank-from').value,10)||1,t2=parseInt(document.getElementById('rank-to').value,10)||100;return{from:Math.max(1,f),to:Math.max(f,t2)};}
+function getRange(){const f=parseInt(document.getElementById('rank-from').value,10)||1,t=parseInt(document.getElementById('rank-to').value,10)||100;return{from:Math.max(1,f),to:Math.max(f,t)};}
 function filterByRank(lines){const{from,to}=getRange();return lines.filter(line=>{const r=parseInt(line.split('\t')[0],10);return!isNaN(r)&&r>=from&&r<=to;});}
 function detectDlm(lines){const c=['\t',',',';'];let best='\t',bs=-1;for(const d of c){const a=lines.reduce((s,l)=>s+(l.split(d).length-1),0)/lines.length;if(a>bs){bs=a;best=d;}}return best;}
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function toStep2(){
+  document.getElementById('pseudo-input').value=document.getElementById('r1').value;
+  document.getElementById('b2').className='badge purple';
+  document.getElementById('card2').scrollIntoView({behavior:'smooth'});
+}
+function toStep3(){
+  const corrected=document.getElementById('pseudo-result').value||document.getElementById('pseudo-input').value;
+  document.getElementById('i3').value=corrected;
+  document.getElementById('b3').classList.add('blue');
+  document.getElementById('card3').scrollIntoView({behavior:'smooth'});
+}
+function loadTF(){const f=document.getElementById('tf').files[0];if(!f)return;document.getElementById('file-name-display').textContent=f.name;f.text().then(txt=>document.getElementById('tt').value=txt);}
 
 // ============================================================
 //  GENERATE
 // ============================================================
 async function generate(){
   const btn=document.getElementById('bg'),ldr=document.getElementById('ld1');
-  btn.disabled=true; ldr.style.display='inline';
+  btn.disabled=true;ldr.style.display='inline';
   document.getElementById('o1').classList.add('hidden');
   document.getElementById('date-block').classList.add('hidden');
   _proxyIndex=0;
   try{
-    let lines=null; let info=null; const st=document.getElementById('st1');
+    let lines=null,info=null;
+    const st=document.getElementById('st1');
 
     if(_api==='file'){
       if(_mode==='simple'){
         const content=await readFileInput('fi1');
-        if(!content){alert(t('errNoFile'));return;}
+        if(!content){alert('Choisis un fichier HTML !');return;}
         const entries=parseHTMLFile(content);
-        if(!entries){st.className='alert err';st.innerHTML=t('errFileParse');document.getElementById('o1').classList.remove('hidden');return;}
+        if(!entries){st.className='alert err';st.textContent='❌ Impossible de lire les données';document.getElementById('o1').classList.remove('hidden');return;}
         info=(entries.find(e=>e.date)||{}).date||null;
         lines=entries.map(e=>fileEntryToLine(e.rank,e.ids,e.pts));
-      } else {
+      }else{
         const c1=await readFileInput('fi2'),c2=await readFileInput('fi3');
-        if(!c1||!c2){alert(t('errNoBothFiles'));return;}
+        if(!c1||!c2){alert('Choisis les deux fichiers HTML !');return;}
         const e1=parseHTMLFile(c1),e2=parseHTMLFile(c2);
-        if(!e1||!e2){st.className='alert err';st.innerHTML=t('errFileParse');document.getElementById('o1').classList.remove('hidden');return;}
+        if(!e1||!e2){st.className='alert err';st.textContent='❌ Impossible de lire les données';document.getElementById('o1').classList.remove('hidden');return;}
         info=[(e1.find(e=>e.date)||{}).date||null,(e2.find(e=>e.date)||{}).date||null];
         const teams={};
         for(const e of[...e1,...e2]){const key=e.ids.slice().sort().join('|');if(!teams[key])teams[key]={ids:e.ids,pts:0};teams[key].pts+=e.pts;}
@@ -836,27 +681,27 @@ async function generate(){
         lines=sorted.map((p,i)=>fileEntryToLine(i+1,p.ids,p.pts));
       }
       const filtered=filterByRank(lines);
-      st.className='alert ok'; st.innerHTML=t('generatedOkFile',filtered.length,Object.keys(dict).length);
+      st.className='alert ok';
+      st.innerHTML=`✅ <b>${filtered.length} équipes extraites du fichier HTML</b> · ${Object.keys(dict).length} pseudos dans le dict`;
       document.getElementById('r1').value=filtered.join('\n');
-    } else if(_api==='wls'){
+    }else if(_api==='wls'){
       let res;
-      if(_mode==='simple'){const id=document.getElementById('wid1').value.trim();if(!id){alert(t('errNoWid'));return;}res=await wlsSimple(id);info=res.date||null;}
-      else{const d1=document.getElementById('wd1').value.trim(),d2=document.getElementById('wd2').value.trim();if(!d1||!d2){alert(t('errNoBothWid'));return;}res=await wlsCumul([d1,d2]);info=res.dates||null;}
-      if(!res.lines){st.className='alert err';st.textContent=t('noResult');document.getElementById('o1').classList.remove('hidden');return;}
+      if(_mode==='simple'){const id=document.getElementById('wid1').value.trim();if(!id){alert('Entre un ID !');return;}res=await wlsSimple(id);info=res.date||null;}
+      else{const d1=document.getElementById('wd1').value.trim(),d2=document.getElementById('wd2').value.trim();if(!d1||!d2){alert('Entre les deux IDs !');return;}res=await wlsCumul([d1,d2]);info=res.dates||null;}
+      if(!res.lines){st.className='alert err';st.textContent='❌ Aucun résultat';document.getElementById('o1').classList.remove('hidden');return;}
       const filtered=filterByRank(res.lines);
-      st.className='alert ok'; st.innerHTML=t('generatedOk',filtered.length,Object.keys(dict).length,'WLS.gg');
+      st.className='alert ok';st.innerHTML=`✅ <b>${filtered.length} lignes générées</b> · ${Object.keys(dict).length} pseudos · via WLS.gg`;
       document.getElementById('r1').value=filtered.join('\n');
-    } else {
+    }else{
       let res;
-      if(_mode==='simple'){const wid=getWid(document.getElementById('wid1').value);if(!wid){alert(t('errNoWid'));return;}res=await kassSimple(wid);info=res.date||null;}
-      else{const d1=getWid(document.getElementById('wd1').value),d2=getWid(document.getElementById('wd2').value);if(!d1||!d2){alert(t('errNoBothWid'));return;}res=await kassCumul([d1,d2]);info=res.dates||null;}
-      if(!res.lines){st.className='alert err';st.textContent=t('noResult');document.getElementById('o1').classList.remove('hidden');return;}
+      if(_mode==='simple'){const wid=getWid(document.getElementById('wid1').value);if(!wid){alert('Entre un ID !');return;}res=await kassSimple(wid);info=res.date||null;}
+      else{const d1=getWid(document.getElementById('wd1').value),d2=getWid(document.getElementById('wd2').value);if(!d1||!d2){alert('Entre les deux IDs !');return;}res=await kassCumul([d1,d2]);info=res.dates||null;}
+      if(!res.lines){st.className='alert err';st.textContent='❌ Aucun résultat';document.getElementById('o1').classList.remove('hidden');return;}
       const filtered=filterByRank(res.lines);
-      st.className='alert ok'; st.innerHTML=t('generatedOk',filtered.length,Object.keys(dict).length,'Kass507.lat');
+      st.className='alert ok';st.innerHTML=`✅ <b>${filtered.length} lignes générées</b> · ${Object.keys(dict).length} pseudos · via Kass507.lat`;
       document.getElementById('r1').value=filtered.join('\n');
     }
-
-    document.getElementById('b1').className='badge green'; document.getElementById('b1').textContent='✓';
+    document.getElementById('b1').className='badge green';document.getElementById('b1').textContent='✓';
     document.getElementById('card1').classList.add('done');
     showDateBlock(info);
     document.getElementById('o1').classList.remove('hidden');
@@ -868,153 +713,262 @@ async function generate(){
 }
 
 // ============================================================
-//  ADD TEAMS — LOGIQUE CORRIGÉE
+//  ÉTAPE 2 : CORRECTEUR DE PSEUDOS
 // ============================================================
-function addTeams(){
-  const input=document.getElementById('i2').value.trim();
-  const csv=document.getElementById('tt').value.trim();
-  if(!input){alert(t('errNoInput'));return;}
-  if(!csv){alert(t('errNoCSV'));return;}
+let _pseudoRows = []; // { rank, eid, currentName, fixedName, inDict }
 
-  const csvLines=csv.split(/\r?\n/).filter(l=>l.trim());
-  if(csvLines.length<2){alert(t('errCSVEmpty'));return;}
+function analyzePseudos(){
+  const input = document.getElementById('pseudo-input').value.trim();
+  if(!input){alert('Colle le classement à analyser !');return;}
 
-  const dlm=detectDlm(csvLines);
-  const hdrs=csvLines[0].split(dlm).map(h=>h.trim().replace(/^\uFEFF/,''));
-  const idxTeam=hdrs.indexOf('DataTeam');
-  const idxDP=hdrs.indexOf('DataPlayer');
-  const idxPP=hdrs.indexOf('PlayerPage');
+  _pseudoRows = [];
+  const lines = input.split('\n').filter(l => l.trim());
 
-  if(idxTeam<0||(idxDP<0&&idxPP<0)){alert(`${t('errCols')}\n${hdrs.join(' | ')}`);return;}
+  for(const line of lines){
+    const parts = line.split('\t');
+    if(parts.length < 2) continue;
+    const rank = parts[0].trim();
+    const playersPart = parts[1] || '';
+    const entries = playersPart.split(',').map(e => e.trim()).filter(Boolean);
 
-  // Construit le mapping + la liste des entrées pour le rapport
-  const playerToTeam={};  // nom_joueur -> DataTeam
-  const csvEntries=[];    // { team, pp, dp, originalLine }
-
-  for(let i=1;i<csvLines.length;i++){
-    const cols=csvLines[i].split(dlm).map(c=>c.trim());
-    const team=idxTeam<cols.length?cols[idxTeam]:'';
-    if(!team)continue;
-    const dp=idxDP>=0&&idxDP<cols.length?cols[idxDP]:'';
-    const pp=idxPP>=0&&idxPP<cols.length?cols[idxPP]:'';
-    csvEntries.push({team,dp,pp,originalLine:csvLines[i]});
-    // PlayerPage = clé principale
-    if(pp) playerToTeam[pp]=team;
-    // DataPlayer = fallback (seulement si différent de PP)
-    if(dp&&dp!==pp) playerToTeam[dp]=team;
-  }
-
-  const totalCSV=csvEntries.length;
-  if(totalCSV===0){
-    document.getElementById('st2').className='alert err';
-    document.getElementById('st2').innerHTML=t('teams0');
-    document.getElementById('st2-missing').classList.add('hidden');
-    document.getElementById('o2').classList.remove('hidden');
-    return;
-  }
-
-  const usedNames=new Set();
-
-  const result=input.split('\n').map(line=>{
-    if(!line.includes('TournamentResults/Line')) return line;
-
-    // Extrait players=
-    const m=line.match(/\|players=\s*([^|]+)/);
-    if(!m) return line;
-    const playersField=m[1];
-
-    // Parse chaque entrée "epicid{{!}}NomJoueur"
-    const entries=playersField.split(',').map(e=>e.trim()).filter(Boolean);
-
-    // Pour chaque slot : team ou chaîne vide
-    const teamSlots=entries.map(entry=>{
-      const parts=entry.split('{{!}}');
-      if(parts.length<2) return '';
-      const name=parts[1].trim();
-      const team=playerToTeam[name]||'';
-      if(team) usedNames.add(name);
-      return team;
-    });
-
-    // Si aucun joueur de la ligne n'a de team → teams= reste vide
-    const hasAnyTeam=teamSlots.some(s=>s!=='');
-    const teamsStr=hasAnyTeam?teamSlots.join(','):'';
-
-    // Injecte dans teams=
-    if(/\|teams?=/.test(line)){
-      return line.replace(/\|teams?=[^|]*/,'|teams='+teamsStr);
-    } else {
-      const re=/(\|prize=[^|]*)/;
-      if(re.test(line)) return line.replace(re,`$1\t|teams=${teamsStr}`);
-      return line.replace(/}}$/,`|teams=${teamsStr}}}`);
+    for(const entry of entries){
+      const bits = entry.split('{{!}}');
+      if(bits.length < 2) continue;
+      const eid  = bits[0].trim();
+      const name = bits[1].trim();
+      const dictName = getName(eid);
+      _pseudoRows.push({
+        rank,
+        eid,
+        currentName: name,
+        fixedName: dictName || name,
+        inDict: !!dictName,
+        isNotFound: name === 'not found' || !dictName
+      });
     }
+  }
+
+  const found    = _pseudoRows.filter(r => r.inDict).length;
+  const notFound = _pseudoRows.filter(r => !r.inDict).length;
+
+  document.getElementById('pseudo-stats').innerHTML =
+    `📊 <b>${_pseudoRows.length} joueurs analysés</b> · ` +
+    `<span style="color:#4ade80">✅ ${found} trouvés dans le dict</span> · ` +
+    `<span style="color:#fbbf24">⚠️ ${notFound} non trouvés</span>`;
+
+  const tbody = document.getElementById('pseudo-tbody');
+  tbody.innerHTML = '';
+
+  for(let i=0; i<_pseudoRows.length; i++){
+    const row = _pseudoRows[i];
+    const statusClass = row.inDict ? 'ps-found' : 'ps-notfound';
+    const statusText  = row.inDict ? '✅ Dict' : '⚠️ Manuel';
+    tbody.innerHTML += `
+      <tr>
+        <td style="color:#64748b">${row.rank}</td>
+        <td><code style="font-size:10px">${row.eid.slice(0,8)}…</code></td>
+        <td class="pseudo-old">${escHtml(row.currentName)}</td>
+        <td><input class="pseudo-input" id="fix-${i}" value="${escHtml(row.fixedName)}" oninput="markManual(${i})"></td>
+        <td><span class="pseudo-status ${statusClass}" id="ps-${i}">${statusText}</span></td>
+      </tr>`;
+  }
+
+  document.getElementById('pseudo-table-wrap').classList.remove('hidden');
+  document.getElementById('pseudo-result-wrap').classList.add('hidden');
+}
+
+function markManual(i){
+  const inp = document.getElementById(`fix-${i}`);
+  const sp  = document.getElementById(`ps-${i}`);
+  if(inp.value.trim() !== _pseudoRows[i].fixedName || !_pseudoRows[i].inDict){
+    sp.className = 'pseudo-status ps-manual';
+    sp.textContent = '✏️ Manuel';
+  }
+}
+
+function applyPseudoFixes(){
+  const input = document.getElementById('pseudo-input').value.trim();
+  if(!input) return;
+
+  // Construit un mapping eid -> nom corrigé
+  const fixes = {};
+  for(let i=0; i<_pseudoRows.length; i++){
+    const val = document.getElementById(`fix-${i}`)?.value.trim();
+    if(val) fixes[_pseudoRows[i].eid] = val;
+  }
+
+  const result = input.split('\n').map(line => {
+    const parts = line.split('\t');
+    if(parts.length < 2) return line;
+    const playersPart = parts[1];
+    const entries = playersPart.split(',').map(entry => {
+      const bits = entry.trim().split('{{!}}');
+      if(bits.length < 2) return entry;
+      const eid  = bits[0].trim();
+      const name = fixes[eid] || bits[1].trim();
+      return `${eid}{{!}}${name}`;
+    });
+    parts[1] = entries.join(',');
+    return parts.join('\t');
   }).join('\n');
 
-  // Rapport : combien d'entrées CSV matchées ?
-  let addedCount=0;
-  const notFoundLines=[];
-  for(const entry of csvEntries){
-    const ppOk=entry.pp&&usedNames.has(entry.pp);
-    const dpOk=entry.dp&&usedNames.has(entry.dp);
-    if(ppOk||dpOk) addedCount++;
-    else notFoundLines.push(entry.originalLine);
-  }
-
-  document.getElementById('r2').value=result;
-  const st2=document.getElementById('st2');
-  const st2m=document.getElementById('st2-missing');
-
-  if(addedCount===0){
-    st2.className='alert err'; st2.innerHTML=t('teams0');
-  } else {
-    st2.className='alert ok'; st2.innerHTML=t('teamsOk',addedCount,totalCSV);
-  }
-
-  if(notFoundLines.length>0){
-    st2m.className='alert warn'; st2m.innerHTML=t('teamsMissing',notFoundLines); st2m.classList.remove('hidden');
-  } else {
-    st2m.classList.add('hidden');
-  }
-
-  document.getElementById('o2').classList.remove('hidden');
+  document.getElementById('pseudo-result').value = result;
+  document.getElementById('pseudo-result-wrap').classList.remove('hidden');
   document.getElementById('b2').className='badge green';
   document.getElementById('b2').textContent='✓';
   document.getElementById('card2').classList.add('done');
 }
 
 // ============================================================
+//  ÉTAPE 3 : ADD TEAMS — logique corrigée
+// ============================================================
+function addTeams(){
+  const input = document.getElementById('i3').value.trim();
+  const csv   = document.getElementById('tt').value.trim();
+  if(!input){alert('Rien à traiter !');return;}
+  if(!csv){alert('Ajoute le CSV des équipes !');return;}
+
+  const csvLines = csv.split(/\r?\n/).filter(l => l.trim());
+  if(csvLines.length < 2){alert('CSV vide !');return;}
+
+  const dlm  = detectDlm(csvLines);
+  const hdrs = csvLines[0].split(dlm).map(h => h.trim().replace(/^\uFEFF/,''));
+  const idxTeam = hdrs.indexOf('DataTeam');
+  const idxDP   = hdrs.indexOf('DataPlayer');
+  const idxPP   = hdrs.indexOf('PlayerPage');
+
+  if(idxTeam < 0 || (idxDP < 0 && idxPP < 0)){
+    alert(`Colonnes introuvables — il faut au moins DataTeam + (DataPlayer ou PlayerPage)\n${hdrs.join(' | ')}`);
+    return;
+  }
+
+  const playerToTeam = {};
+  const csvEntries   = [];
+
+  for(let i=1; i<csvLines.length; i++){
+    const cols = csvLines[i].split(dlm).map(c => c.trim());
+    const team = idxTeam < cols.length ? cols[idxTeam] : '';
+    if(!team) continue;
+    const dp = idxDP >= 0 && idxDP < cols.length ? cols[idxDP] : '';
+    const pp = idxPP >= 0 && idxPP < cols.length ? cols[idxPP] : '';
+    csvEntries.push({team, dp, pp, originalLine: csvLines[i]});
+    if(pp) playerToTeam[pp] = team;
+    if(dp && dp !== pp) playerToTeam[dp] = team;
+  }
+
+  const totalCSV = csvEntries.length;
+  if(totalCSV === 0){
+    document.getElementById('st3').className='alert err';
+    document.getElementById('st3').textContent='❌ Aucun joueur trouvé dans le CSV';
+    document.getElementById('st3-missing').classList.add('hidden');
+    document.getElementById('o3').classList.remove('hidden');
+    return;
+  }
+
+  const usedNames = new Set();
+
+  const result = input.split('\n').map(line => {
+    if(!line.includes('TournamentResults/Line')) return line;
+
+    const m = line.match(/\|players=\s*([^|]+)/);
+    if(!m) return line;
+    const playersField = m[1];
+
+    const entries = playersField.split(',').map(e => e.trim()).filter(Boolean);
+
+    // Un slot par joueur : team ou '' si pas de team
+    const teamSlots = entries.map(entry => {
+      const parts = entry.split('{{!}}');
+      if(parts.length < 2) return '';
+      const name = parts[1].trim();
+      const team = playerToTeam[name] || '';
+      if(team) usedNames.add(name);
+      return team;
+    });
+
+    // Si aucun joueur n'a de team → teams= reste vide
+    const hasAnyTeam = teamSlots.some(s => s !== '');
+    const teamsStr   = hasAnyTeam ? teamSlots.join(',') : '';
+
+    if(/\|teams?=/.test(line)){
+      return line.replace(/\|teams?=[^|]*/,'|teams='+teamsStr);
+    }else{
+      const re = /(\|prize=[^|]*)/;
+      if(re.test(line)) return line.replace(re,`$1\t|teams=${teamsStr}`);
+      return line.replace(/}}$/,`|teams=${teamsStr}}}`);
+    }
+  }).join('\n');
+
+  // Rapport
+  let addedCount = 0;
+  const notFoundLines = [];
+  for(const entry of csvEntries){
+    const ppOk = entry.pp && usedNames.has(entry.pp);
+    const dpOk = entry.dp && usedNames.has(entry.dp);
+    if(ppOk || dpOk) addedCount++;
+    else notFoundLines.push(entry.originalLine);
+  }
+
+  document.getElementById('r3').value = result;
+  const st3  = document.getElementById('st3');
+  const st3m = document.getElementById('st3-missing');
+
+  if(addedCount === 0){
+    st3.className='alert err';
+    st3.textContent='❌ Aucun joueur du CSV trouvé dans le code wiki';
+  }else{
+    st3.className='alert ok';
+    st3.innerHTML=`✅ <b>${addedCount}/${totalCSV} joueurs avec équipe ajoutés</b> dans le code`;
+  }
+
+  if(notFoundLines.length > 0){
+    st3m.className='alert warn';
+    st3m.innerHTML=`⚠️ ${notFoundLines.length} joueur${notFoundLines.length>1?'s':''} du CSV non trouvé${notFoundLines.length>1?'s':''} dans le code :<div class="missing-lines">${notFoundLines.map(l=>`<div>${escHtml(l)}</div>`).join('')}</div>`;
+    st3m.classList.remove('hidden');
+  }else{
+    st3m.classList.add('hidden');
+  }
+
+  document.getElementById('o3').classList.remove('hidden');
+  document.getElementById('b3').className='badge green';
+  document.getElementById('b3').textContent='✓';
+  document.getElementById('card3').classList.add('done');
+}
+
+// ============================================================
 //  DICT UI
 // ============================================================
 function renderDictList(){
-  const d=loadLocalDict(); const el=document.getElementById('dict-list'); const entries=Object.entries(d);
-  if(!entries.length){el.innerHTML=`<p style="font-size:.82rem;color:#475569">${t('dictNone')}</p>`;return;}
-  el.innerHTML=`<p style="font-size:.82rem;color:#64748b;margin-bottom:8px"><b>${t('dictCount',entries.length)}</b></p>
+  const d=loadLocalDict();const el=document.getElementById('dict-list');const entries=Object.entries(d);
+  if(!entries.length){el.innerHTML=`<p style="font-size:.82rem;color:#475569">Aucune entrée pour l'instant.</p>`;return;}
+  el.innerHTML=`<p style="font-size:.82rem;color:#64748b;margin-bottom:8px"><b>${entries.length} entrée(s) dans le cache local :</b></p>
     <div style="background:#0f172a;border-radius:8px;padding:10px;font-family:monospace;font-size:12px;max-height:200px;overflow-y:auto">
       ${entries.map(([eid,name])=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid #1e293b">
         <span style="color:#e2e8f0">${name.replace(/_/g,' ')} <span style="color:#475569">= ${eid}</span></span>
         <button onclick="dictRemove('${eid}')" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:1rem;padding:0 6px">✕</button>
       </div>`).join('')}
     </div>
-    <button onclick="dictClear()" style="margin-top:8px;background:none;border:1px solid #ef4444;color:#ef4444;border-radius:6px;padding:5px 12px;font-size:.8rem;cursor:pointer">${t('dictClearBtn')}</button>`;
+    <button onclick="dictClear()" style="margin-top:8px;background:none;border:1px solid #ef4444;color:#ef4444;border-radius:6px;padding:5px 12px;font-size:.8rem;cursor:pointer">🗑️ Tout effacer</button>`;
 }
 async function dictAdd(){
-  const raw=document.getElementById('dict-new').value.trim(); const msg=document.getElementById('dict-msg');
+  const raw=document.getElementById('dict-new').value.trim();const msg=document.getElementById('dict-msg');
   if(!raw)return;
   const rawLines=raw.split(/\r?\n/).map(l=>l.trim()).filter(l=>l&&l.includes('='));
-  if(!rawLines.length){msg.style.color='#fca5a5';msg.textContent=t('dictErrFormat');return;}
+  if(!rawLines.length){msg.style.color='#fca5a5';msg.textContent='❌ Aucune ligne valide — utilise le format Pseudo=EpicID';return;}
   const entries={};
   for(const line of rawLines){const i=line.indexOf('=');const name=line.slice(0,i).trim().replace(/ /g,'_');const eid=line.slice(i+1).trim().toLowerCase().replace(/-/g,'');if(name&&eid)entries[eid]=name;}
   const count=Object.keys(entries).length;
-  if(!count){msg.style.color='#fca5a5';msg.textContent=t('dictErrMissing');return;}
-  msg.style.color='#60a5fa';msg.textContent=t('dictSaving');
-  const local=loadLocalDict(); Object.assign(local,entries); Object.assign(dict,entries); saveLocalDict(local);
-  document.getElementById('dict-new').value=''; renderDictList();
+  if(!count){msg.style.color='#fca5a5';msg.textContent='❌ Pseudo ou ID manquant';return;}
+  msg.style.color='#60a5fa';msg.textContent='⏳ Sauvegarde...';
+  const local=loadLocalDict();Object.assign(local,entries);Object.assign(dict,entries);saveLocalDict(local);
+  document.getElementById('dict-new').value='';renderDictList();
   const ok=await saveToCloud(entries);
-  msg.style.color=ok?'#4ade80':'#fbbf24'; msg.textContent=ok?t('dictOk',count):t('dictWarn',count);
+  msg.style.color=ok?'#4ade80':'#fbbf24';
+  msg.textContent=ok?`✅ ${count} entrée${count>1?'s':''} ajoutée${count>1?'s':''} ☁️`:`⚠️ ${count} entrée${count>1?'s':''} sauvegardée${count>1?'s':''} localement`;
   setTimeout(()=>msg.textContent='',5000);
 }
 function dictRemove(eid){const d=loadLocalDict();delete d[eid];delete dict[eid];saveLocalDict(d);renderDictList();}
-function dictClear(){if(!confirm(t('dictClearConfirm')))return;localStorage.removeItem('custom_dict');renderDictList();autoLoadDict();}
+function dictClear(){if(!confirm('Supprimer toutes les entrées locales ?'))return;localStorage.removeItem('custom_dict');renderDictList();autoLoadDict();}
 </script>
 </body>
 </html>
