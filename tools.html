@@ -306,10 +306,10 @@
       <div class="badge" style="background:#e11d48;color:#fff;font-size:1.1rem">🔍</div>
       <div class="card-title">Rechercher un Epic ID / Pseudo</div>
     </div>
-    <p style="font-size:.85rem;color:#64748b;margin-bottom:14px">Cherche dans toutes les bases (GitHub, Cloud, Local) — par Epic Account ID <b>ou</b> par pseudo.</p>
+    <p style="font-size:.85rem;color:#64748b;margin-bottom:14px">Cherche dans toutes les bases (GitHub, Cloud, Local) — par Epic ID <b>ou</b> par pseudo. Les entrées GitHub peuvent être <b>exclues</b> localement, Cloud/Local peuvent être <b>supprimées</b>.</p>
     <div style="display:flex;gap:10px;align-items:flex-end">
       <div style="flex:1">
-        <label>Epic ID ou Pseudo</label>
+        <label>Epic ID (32 chars) ou Pseudo</label>
         <input type="text" id="search-eid" placeholder="abc123def456... ou MrSavage" oninput="searchEpic()">
       </div>
       <button class="btn btn-b" onclick="searchEpic()" style="height:38px;white-space:nowrap">🔍 Chercher</button>
@@ -342,7 +342,7 @@ let _proxyIdx = 0;
 let _api = 'kass', _mode = 'simple', _fileMode = 'single';
 let _lang = localStorage.getItem('lang') || 'fr';
 let dict = {}, dateInfo = null;
-let _githubDict = {}, _cloudDict = {}, _localDictCache = {};
+let _githubDict = {}, _cloudDict = {}, _localDictCache = {}, _blacklist = new Set();
 
 // ============================================================
 //  I18N
@@ -904,14 +904,24 @@ function saveLocalDict(d){localStorage.setItem('custom_dict',JSON.stringify(d));
 async function loadDict(){
   const el=document.getElementById('dict-status');el.className='alert inf';el.innerHTML='⏳ '+s('loading');
   let fCount=0,cCount=0;
-  try{const r=await fetchTO(GITHUB_DICT+'?t='+Date.now(),{},8000);if(r.ok){_githubDict=parseDictTxt(await r.text());fCount=Object.keys(_githubDict).length;Object.assign(dict,_githubDict);}}catch{}
-  try{_cloudDict=await fetchCloud();cCount=Object.keys(_cloudDict).length;Object.assign(dict,_cloudDict);}catch{}
-  _localDictCache=localDict();Object.assign(dict,_localDictCache);
+  // Charger la blacklist locale
+  try{const bl=JSON.parse(localStorage.getItem('dict_blacklist')||'[]');_blacklist=new Set(bl);}catch{_blacklist=new Set();}
+  try{const r=await fetchTO(GITHUB_DICT+'?t='+Date.now(),{},8000);if(r.ok){_githubDict=parseDictTxt(await r.text());fCount=Object.keys(_githubDict).length;}}catch{}
+  try{_cloudDict=await fetchCloud();cCount=Object.keys(_cloudDict).length;}catch{}
+  _localDictCache=localDict();
+  rebuildDict();
   const tot=Object.keys(dict).length;
   el.className=tot>0?'alert ok':'alert warn';
   el.innerHTML=tot>0?s('pseudosOk',tot,fCount,cCount):s('noDict');
   renderDictList();
 }
+function rebuildDict(){
+  dict={};
+  for(const k of Object.keys(_githubDict)){if(!_blacklist.has(k))dict[k]=_githubDict[k];}
+  Object.assign(dict,_cloudDict);
+  Object.assign(dict,_localDictCache);
+}
+function saveBlacklist(){localStorage.setItem('dict_blacklist',JSON.stringify([..._blacklist]));}
 loadDict();
 
 async function dictAdd(){
@@ -946,9 +956,9 @@ function searchEpic(){
   if(!raw){out.innerHTML='';return;}
   var q=raw.toLowerCase().replace(/-/g,'');
   var sources=[
-    {d:_githubDict,     lbl:'GitHub',  icon:'🐙',canDel:false,key:'github'},
-    {d:_cloudDict,      lbl:'Cloud',   icon:'☁️', canDel:true, key:'cloud'},
-    {d:_localDictCache, lbl:'Local',   icon:'💾', canDel:true, key:'local'}
+    {d:_githubDict,     lbl:'GitHub', icon:'🐙', canDel:false, canExcl:true,  key:'github'},
+    {d:_cloudDict,      lbl:'Cloud',  icon:'☁️',  canDel:true,  canExcl:false, key:'cloud'},
+    {d:_localDictCache, lbl:'Local',  icon:'💾', canDel:true,  canExcl:false, key:'local'}
   ];
   var byId={};
   for(var si=0;si<sources.length;si++){
@@ -960,13 +970,13 @@ function searchEpic(){
       var ec=eid.toLowerCase().replace(/-/g,'');
       if(ec.indexOf(q)===-1&&pseudo.toLowerCase().indexOf(q)===-1)continue;
       if(!byId[ec])byId[ec]={eid:eid,rows:[]};
-      byId[ec].rows.push({lbl:sc.lbl,icon:sc.icon,pseudo:pseudo,canDel:sc.canDel,key:sc.key});
+      byId[ec].rows.push({lbl:sc.lbl,icon:sc.icon,pseudo:pseudo,canDel:sc.canDel,canExcl:sc.canExcl,key:sc.key,excluded:_blacklist.has(eid)||_blacklist.has(ec)});
     }
   }
   var ids=Object.keys(byId);
   if(!ids.length){out.innerHTML='<div class="alert err">❌ Aucun résultat pour <b>'+escHtml(raw)+'</b></div>';return;}
   var html='<div style="font-size:.8rem;color:#64748b;margin-bottom:8px">'+ids.length+' résultat'+(ids.length>1?'s':'')+' trouvé'+(ids.length>1?'s':'')+'</div>';
-  html+='<div id="search-results-wrap" style="background:#0f172a;border:1px solid #334155;border-radius:8px;overflow:hidden">';
+  html+='<div style="background:#0f172a;border:1px solid #334155;border-radius:8px;overflow:hidden">';
   for(var ii=0;ii<ids.length;ii++){
     var row=byId[ids[ii]];
     var allP=row.rows.map(function(r){return r.pseudo;});
@@ -978,13 +988,19 @@ function searchEpic(){
     html+='</div>';
     for(var ri=0;ri<row.rows.length;ri++){
       var rr=row.rows[ri];
+      var excl=rr.excluded;
       html+='<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-top:1px solid #1e293b">';
-      html+='<span style="font-size:.74rem;min-width:88px;color:#94a3b8;flex-shrink:0">'+rr.icon+' '+rr.lbl+'</span>';
-      html+='<b style="color:#4ade80;font-size:.87rem;flex:1">'+escHtml(rr.pseudo)+'</b>';
+      html+='<span style="font-size:.74rem;min-width:80px;color:#94a3b8;flex-shrink:0">'+rr.icon+' '+rr.lbl+'</span>';
+      html+='<b style="color:'+(excl?'#475569':'#4ade80')+';font-size:.87rem;flex:1'+(excl?';text-decoration:line-through':'')+'">'+(excl?'<s>':'')+escHtml(rr.pseudo)+(excl?'</s>':'')+' '+(excl?'<span style="font-size:.7rem;color:#f59e0b">[exclu]</span>':'')+' </b>';
       if(rr.canDel){
-        html+='<button class="del-btn" data-eid="'+escHtml(row.eid)+'" data-src="'+rr.key+'" '
-             +'style="background:#1f0a0a;border:1px solid #ef4444;color:#fca5a5;border-radius:6px;'
-             +'padding:3px 10px;font-size:.72rem;cursor:pointer" onclick="delBtnClick(this)">🗑️ Supprimer</button>';
+        html+='<button class="del-btn" data-eid="'+escHtml(row.eid)+'" data-src="'+rr.key+'" style="background:#1f0a0a;border:1px solid #ef4444;color:#fca5a5;border-radius:6px;padding:3px 10px;font-size:.72rem;cursor:pointer" onclick="delBtnClick(this)">🗑️ Supprimer</button>';
+      }
+      if(rr.canExcl){
+        if(excl){
+          html+='<button data-eid="'+escHtml(row.eid)+'" style="background:#052e16;border:1px solid #22c55e;color:#4ade80;border-radius:6px;padding:3px 10px;font-size:.72rem;cursor:pointer" onclick="unexcludeBtnClick(this)">✅ Réintégrer</button>';
+        }else{
+          html+='<button data-eid="'+escHtml(row.eid)+'" style="background:#1c1200;border:1px solid #f59e0b;color:#fbbf24;border-radius:6px;padding:3px 10px;font-size:.72rem;cursor:pointer" onclick="excludeBtnClick(this)">🚫 Exclure</button>';
+        }
       }
       html+='</div>';
     }
@@ -994,23 +1010,39 @@ function searchEpic(){
   out.innerHTML=html;
 }
 
+function excludeBtnClick(btn){
+  var eid=btn.getAttribute('data-eid');
+  var ec=eid.toLowerCase().replace(/-/g,'');
+  if(!confirm('Exclure "'+eid+'" du dictionnaire GitHub ? (restockable à tout moment)'))return;
+  _blacklist.add(eid);_blacklist.add(ec);
+  saveBlacklist();rebuildDict();
+  searchEpic();
+}
+function unexcludeBtnClick(btn){
+  var eid=btn.getAttribute('data-eid');
+  var ec=eid.toLowerCase().replace(/-/g,'');
+  _blacklist.delete(eid);_blacklist.delete(ec);
+  saveBlacklist();rebuildDict();
+  searchEpic();
+}
+
 async function delBtnClick(btn){
   var eid=btn.getAttribute('data-eid');
   var source=btn.getAttribute('data-src');
-  var eidClean=eid.toLowerCase().replace(/-/g,'');
+  var ec=eid.toLowerCase().replace(/-/g,'');
   if(!confirm('Supprimer "'+eid+'" de '+source+' ?'))return;
   btn.disabled=true;btn.textContent='⏳';
   try{
     if(source==='local'){
-      var loc=localDict();delete loc[eidClean];delete loc[eid];saveLocalDict(loc);_localDictCache=loc;
+      var loc=localDict();delete loc[ec];delete loc[eid];saveLocalDict(loc);_localDictCache=loc;
     }else if(source==='cloud'){
-      var cur=await fetchCloud();delete cur[eidClean];delete cur[eid];
+      var cur=await fetchCloud();delete cur[ec];delete cur[eid];
       var resp=await fetchTO('https://api.jsonbin.io/v3/b/'+JSONBIN_ID,
         {method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':JSONBIN_KEY,'X-Bin-Versioning':'false'},body:JSON.stringify(cur)},8000);
       if(!resp.ok)throw new Error('Erreur cloud '+resp.status);
       _cloudDict=cur;
     }
-    dict={};Object.assign(dict,_githubDict);Object.assign(dict,_cloudDict);Object.assign(dict,_localDictCache);
+    rebuildDict();
     var line=btn.parentElement;
     if(line)line.innerHTML='<span style="color:#4ade80;font-size:.78rem">✅ Supprimé de '+source+'</span>';
     renderDictList();
