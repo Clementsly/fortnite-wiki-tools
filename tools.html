@@ -306,7 +306,7 @@
       <div class="badge" style="background:#e11d48;color:#fff;font-size:1.1rem">🔍</div>
       <div class="card-title">Rechercher un Epic ID / Pseudo</div>
     </div>
-    <p style="font-size:.85rem;color:#64748b;margin-bottom:14px">Cherche dans toutes les bases (GitHub, Cloud, Local) — par Epic ID <b>ou</b> par pseudo. Les entrées GitHub peuvent être <b>exclues</b> localement, Cloud/Local peuvent être <b>supprimées</b>.</p>
+    <p style="font-size:.85rem;color:#64748b;margin-bottom:14px">Cherche dans toutes les bases (GitHub, Cloud, Local) — par Epic ID <b>ou</b> par pseudo. Entrées GitHub : <b>🚫 Exclure</b> (masquage local). Cloud/Local : <b>🗑️ Supprimer</b> définitivement.</p>
     <div style="display:flex;gap:10px;align-items:flex-end">
       <div style="flex:1">
         <label>Epic ID (32 chars) ou Pseudo</label>
@@ -904,7 +904,6 @@ function saveLocalDict(d){localStorage.setItem('custom_dict',JSON.stringify(d));
 async function loadDict(){
   const el=document.getElementById('dict-status');el.className='alert inf';el.innerHTML='⏳ '+s('loading');
   let fCount=0,cCount=0;
-  // Charger la blacklist locale
   try{const bl=JSON.parse(localStorage.getItem('dict_blacklist')||'[]');_blacklist=new Set(bl);}catch{_blacklist=new Set();}
   try{const r=await fetchTO(GITHUB_DICT+'?t='+Date.now(),{},8000);if(r.ok){_githubDict=parseDictTxt(await r.text());fCount=Object.keys(_githubDict).length;}}catch{}
   try{_cloudDict=await fetchCloud();cCount=Object.keys(_cloudDict).length;}catch{}
@@ -917,7 +916,11 @@ async function loadDict(){
 }
 function rebuildDict(){
   dict={};
-  for(const k of Object.keys(_githubDict)){if(!_blacklist.has(k))dict[k]=_githubDict[k];}
+  // GitHub : on exclut les entrées blacklistées
+  for(const k of Object.keys(_githubDict)){
+    if(!_blacklist.has(k)&&!_blacklist.has(k.toLowerCase().replace(/-/g,'')))dict[k]=_githubDict[k];
+  }
+  // Cloud et Local : toujours prioritaires, jamais filtrés par la blacklist
   Object.assign(dict,_cloudDict);
   Object.assign(dict,_localDictCache);
 }
@@ -956,9 +959,9 @@ function searchEpic(){
   if(!raw){out.innerHTML='';return;}
   var q=raw.toLowerCase().replace(/-/g,'');
   var sources=[
-    {d:_githubDict,     lbl:'GitHub', icon:'🐙', canDel:false, canExcl:true,  key:'github'},
-    {d:_cloudDict,      lbl:'Cloud',  icon:'☁️',  canDel:true,  canExcl:false, key:'cloud'},
-    {d:_localDictCache, lbl:'Local',  icon:'💾', canDel:true,  canExcl:false, key:'local'}
+    {d:_githubDict,     lbl:'GitHub', icon:'🐙', isGithub:true,  canDel:false, key:'github'},
+    {d:_cloudDict,      lbl:'Cloud',  icon:'☁️',  isGithub:false, canDel:true,  key:'cloud'},
+    {d:_localDictCache, lbl:'Local',  icon:'💾', isGithub:false, canDel:true,  key:'local'}
   ];
   var byId={};
   for(var si=0;si<sources.length;si++){
@@ -970,7 +973,9 @@ function searchEpic(){
       var ec=eid.toLowerCase().replace(/-/g,'');
       if(ec.indexOf(q)===-1&&pseudo.toLowerCase().indexOf(q)===-1)continue;
       if(!byId[ec])byId[ec]={eid:eid,rows:[]};
-      byId[ec].rows.push({lbl:sc.lbl,icon:sc.icon,pseudo:pseudo,canDel:sc.canDel,canExcl:sc.canExcl,key:sc.key,excluded:_blacklist.has(eid)||_blacklist.has(ec)});
+      // KEY FIX: excluded uniquement pour les entrées GitHub
+      var isExcluded=sc.isGithub&&(_blacklist.has(eid)||_blacklist.has(ec));
+      byId[ec].rows.push({lbl:sc.lbl,icon:sc.icon,pseudo:pseudo,canDel:sc.canDel,isGithub:sc.isGithub,key:sc.key,excluded:isExcluded});
     }
   }
   var ids=Object.keys(byId);
@@ -979,8 +984,9 @@ function searchEpic(){
   html+='<div style="background:#0f172a;border:1px solid #334155;border-radius:8px;overflow:hidden">';
   for(var ii=0;ii<ids.length;ii++){
     var row=byId[ids[ii]];
-    var allP=row.rows.map(function(r){return r.pseudo;});
-    var uniq=allP.filter(function(v,i,a){return a.indexOf(v)===i;});
+    // Conflit = plusieurs pseudos différents dans les sources NON-exclues
+    var activePseudos=row.rows.filter(function(r){return !r.excluded;}).map(function(r){return r.pseudo;});
+    var uniq=activePseudos.filter(function(v,i,a){return a.indexOf(v)===i;});
     html+='<div style="padding:10px 14px;border-bottom:1px solid #1e293b">';
     html+='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">';
     html+='<code style="color:#60a5fa;font-size:.75rem;user-select:all">'+escHtml(row.eid)+'</code>';
@@ -991,15 +997,16 @@ function searchEpic(){
       var excl=rr.excluded;
       html+='<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-top:1px solid #1e293b">';
       html+='<span style="font-size:.74rem;min-width:80px;color:#94a3b8;flex-shrink:0">'+rr.icon+' '+rr.lbl+'</span>';
-      html+='<b style="color:'+(excl?'#475569':'#4ade80')+';font-size:.87rem;flex:1'+(excl?';text-decoration:line-through':'')+'">'+(excl?'<s>':'')+escHtml(rr.pseudo)+(excl?'</s>':'')+' '+(excl?'<span style="font-size:.7rem;color:#f59e0b">[exclu]</span>':'')+' </b>';
-      if(rr.canDel){
-        html+='<button class="del-btn" data-eid="'+escHtml(row.eid)+'" data-src="'+rr.key+'" style="background:#1f0a0a;border:1px solid #ef4444;color:#fca5a5;border-radius:6px;padding:3px 10px;font-size:.72rem;cursor:pointer" onclick="delBtnClick(this)">🗑️ Supprimer</button>';
-      }
-      if(rr.canExcl){
-        if(excl){
-          html+='<button data-eid="'+escHtml(row.eid)+'" style="background:#052e16;border:1px solid #22c55e;color:#4ade80;border-radius:6px;padding:3px 10px;font-size:.72rem;cursor:pointer" onclick="unexcludeBtnClick(this)">✅ Réintégrer</button>';
-        }else{
+      if(excl){
+        html+='<span style="color:#475569;font-size:.87rem;flex:1;text-decoration:line-through">'+escHtml(rr.pseudo)+' <span style="font-size:.7rem;color:#f59e0b">[exclu]</span></span>';
+        html+='<button data-eid="'+escHtml(row.eid)+'" style="background:#052e16;border:1px solid #22c55e;color:#4ade80;border-radius:6px;padding:3px 10px;font-size:.72rem;cursor:pointer" onclick="unexcludeBtnClick(this)">✅ Réintégrer</button>';
+      }else{
+        html+='<b style="color:#4ade80;font-size:.87rem;flex:1">'+escHtml(rr.pseudo)+'</b>';
+        if(rr.isGithub){
           html+='<button data-eid="'+escHtml(row.eid)+'" style="background:#1c1200;border:1px solid #f59e0b;color:#fbbf24;border-radius:6px;padding:3px 10px;font-size:.72rem;cursor:pointer" onclick="excludeBtnClick(this)">🚫 Exclure</button>';
+        }
+        if(rr.canDel){
+          html+='<button class="del-btn" data-eid="'+escHtml(row.eid)+'" data-src="'+rr.key+'" style="background:#1f0a0a;border:1px solid #ef4444;color:#fca5a5;border-radius:6px;padding:3px 10px;font-size:.72rem;cursor:pointer;margin-left:4px" onclick="delBtnClick(this)">🗑️ Supprimer</button>';
         }
       }
       html+='</div>';
@@ -1013,17 +1020,15 @@ function searchEpic(){
 function excludeBtnClick(btn){
   var eid=btn.getAttribute('data-eid');
   var ec=eid.toLowerCase().replace(/-/g,'');
-  if(!confirm('Exclure "'+eid+'" du dictionnaire GitHub ? (restockable à tout moment)'))return;
+  if(!confirm('Exclure "'+eid+'" du dictionnaire GitHub ?\n(Cloud/Local ne sont pas affectés)'))return;
   _blacklist.add(eid);_blacklist.add(ec);
-  saveBlacklist();rebuildDict();
-  searchEpic();
+  saveBlacklist();rebuildDict();searchEpic();
 }
 function unexcludeBtnClick(btn){
   var eid=btn.getAttribute('data-eid');
   var ec=eid.toLowerCase().replace(/-/g,'');
   _blacklist.delete(eid);_blacklist.delete(ec);
-  saveBlacklist();rebuildDict();
-  searchEpic();
+  saveBlacklist();rebuildDict();searchEpic();
 }
 
 async function delBtnClick(btn){
