@@ -300,19 +300,19 @@
     <div id="dict-list" style="margin-top:16px"></div>
   </div>
 
-  <!-- CARD RECHERCHE EPIC ID -->
+  <!-- CARD RECHERCHE -->
   <div class="card">
     <div class="card-head">
-      <div class="badge" style="background:#e11d48;color:#fff">🔍</div>
+      <div class="badge" style="background:#e11d48;color:#fff;font-size:1.1rem">🔍</div>
       <div class="card-title">Rechercher un Epic ID / Pseudo</div>
     </div>
-    <p style="font-size:.85rem;color:#64748b;margin-bottom:14px">Cherche dans toutes les bases (GitHub, Cloud, Local) — par Epic Account ID <b>ou</b> par pseudo. Si un ID a plusieurs pseudos liés tu peux en supprimer.</p>
+    <p style="font-size:.85rem;color:#64748b;margin-bottom:14px">Cherche dans toutes les bases (GitHub, Cloud, Local) — par Epic Account ID <b>ou</b> par pseudo.</p>
     <div style="display:flex;gap:10px;align-items:flex-end">
       <div style="flex:1">
-        <label>Epic ID (32 chars) ou Pseudo</label>
+        <label>Epic ID ou Pseudo</label>
         <input type="text" id="search-eid" placeholder="abc123def456... ou MrSavage" oninput="searchEpic()">
       </div>
-      <button class="btn btn-b" onclick="searchEpic()" style="height:38px;margin-bottom:0;white-space:nowrap">🔍 Chercher</button>
+      <button class="btn btn-b" onclick="searchEpic()" style="height:38px;white-space:nowrap">🔍 Chercher</button>
     </div>
     <div id="search-out" style="margin-top:14px"></div>
   </div>
@@ -936,74 +936,55 @@ function renderDictList(){
   html+='<button class="btn" style="background:#1f0a0a;color:#fca5a5;border:1px solid #ef4444;font-size:.78rem;padding:5px 14px;margin-top:8px" onclick="clearLocal()">🗑️ Vider le cache local</button>';
   el.innerHTML=html;
 }
-function clearLocal(){if(!confirm('Vider le cache local ?'))return;localStorage.removeItem('custom_dict');_localDictCache={};dict={};Object.assign(dict,_githubDict);Object.assign(dict,_cloudDict);renderDictList();}
+function clearLocal(){if(!confirm('Vider le cache local ?'))return;localStorage.removeItem('custom_dict');renderDictList();}
 
-// ============================================================
-//  RECHERCHE EPIC ID / PSEUDO + SUPPRESSION
-// ============================================================
+function escHtml(v){return(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
 function searchEpic(){
   var raw=(document.getElementById('search-eid').value||'').trim();
   var out=document.getElementById('search-out');
   if(!raw){out.innerHTML='';return;}
   var q=raw.toLowerCase().replace(/-/g,'');
-
   var sources=[
-    {d:_githubDict,  key:'github', label:'🐙 GitHub', canDel:false},
-    {d:_cloudDict,   key:'cloud',  label:'☁️ Cloud',  canDel:true},
-    {d:_localDictCache, key:'local', label:'💾 Local', canDel:true}
+    {d:_githubDict,     lbl:'GitHub',  icon:'🐙',canDel:false,key:'github'},
+    {d:_cloudDict,      lbl:'Cloud',   icon:'☁️', canDel:true, key:'cloud'},
+    {d:_localDictCache, lbl:'Local',   icon:'💾', canDel:true, key:'local'}
   ];
-
-  // Regrouper par epicId
   var byId={};
   for(var si=0;si<sources.length;si++){
-    var src=sources[si];
-    var keys=Object.keys(src.d);
-    for(var ki=0;ki<keys.length;ki++){
-      var eid=keys[ki];
-      var pseudo=src.d[eid];
-      var eidClean=eid.toLowerCase().replace(/-/g,'');
-      var pseudoClean=(pseudo||'').toLowerCase().replace(/_/g,' ');
-      if(eidClean.indexOf(q)===-1 && pseudoClean.indexOf(q.replace(/_/g,' '))===-1) continue;
-      if(!byId[eidClean]) byId[eidClean]={epicId:eid, entries:{}};
-      byId[eidClean].entries[src.key]=pseudo.replace(/_/g,' ');
+    var sc=sources[si];
+    var ks=Object.keys(sc.d);
+    for(var ki=0;ki<ks.length;ki++){
+      var eid=ks[ki];
+      var pseudo=(sc.d[eid]||'').replace(/_/g,' ');
+      var ec=eid.toLowerCase().replace(/-/g,'');
+      if(ec.indexOf(q)===-1&&pseudo.toLowerCase().indexOf(q)===-1)continue;
+      if(!byId[ec])byId[ec]={eid:eid,rows:[]};
+      byId[ec].rows.push({lbl:sc.lbl,icon:sc.icon,pseudo:pseudo,canDel:sc.canDel,key:sc.key});
     }
   }
-
   var ids=Object.keys(byId);
-  if(ids.length===0){
-    out.innerHTML='<div class="alert err">❌ Aucun résultat pour <b>'+escHtml(raw)+'</b></div>';
-    return;
-  }
-
-  var html='<div style="font-size:.8rem;color:#64748b;margin-bottom:8px">'+ids.length+' résultat'+(ids.length>1?'s':'')+' trouvé'+(ids.length>1?'s':'')+' — <a href="#" onclick="document.getElementById('search-out').innerHTML='';document.getElementById('search-eid').value='';return false;" style="color:#ef4444;font-size:.78rem">✖ Effacer</a></div>';
-  html+='<div style="background:#0f172a;border:1px solid #334155;border-radius:8px;overflow:hidden">';
-
+  if(!ids.length){out.innerHTML='<div class="alert err">❌ Aucun résultat pour <b>'+escHtml(raw)+'</b></div>';return;}
+  var html='<div style="font-size:.8rem;color:#64748b;margin-bottom:8px">'+ids.length+' résultat'+(ids.length>1?'s':'')+' trouvé'+(ids.length>1?'s':'')+'</div>';
+  html+='<div id="search-results-wrap" style="background:#0f172a;border:1px solid #334155;border-radius:8px;overflow:hidden">';
   for(var ii=0;ii<ids.length;ii++){
     var row=byId[ids[ii]];
-    var rowSources=sources.filter(function(s){return row.entries[s.key]!==undefined;});
-    var pseudoVals=rowSources.map(function(s){return row.entries[s.key];});
-    var uniquePseudos=pseudoVals.filter(function(v,i,a){return a.indexOf(v)===i;});
-    var hasConflict=uniquePseudos.length>1;
-
+    var allP=row.rows.map(function(r){return r.pseudo;});
+    var uniq=allP.filter(function(v,i,a){return a.indexOf(v)===i;});
     html+='<div style="padding:10px 14px;border-bottom:1px solid #1e293b">';
-    html+='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">';
-    html+='<code style="color:#60a5fa;font-size:.76rem;user-select:all;word-break:break-all">'+escHtml(row.epicId)+'</code>';
-    if(hasConflict) html+='<span style="font-size:.7rem;background:#1c1200;border:1px solid #f59e0b;color:#fbbf24;padding:1px 7px;border-radius:10px">⚠️ Conflit de pseudos</span>';
+    html+='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">';
+    html+='<code style="color:#60a5fa;font-size:.75rem;user-select:all">'+escHtml(row.eid)+'</code>';
+    if(uniq.length>1)html+='<span style="font-size:.7rem;background:#1c1200;border:1px solid #f59e0b;color:#fbbf24;padding:1px 7px;border-radius:10px">⚠️ Conflit</span>';
     html+='</div>';
-
-    for(var si2=0;si2<sources.length;si2++){
-      var src2=sources[si2];
-      if(row.entries[src2.key]===undefined) continue;
-      var pseudo2=row.entries[src2.key];
+    for(var ri=0;ri<row.rows.length;ri++){
+      var rr=row.rows[ri];
       html+='<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-top:1px solid #1e293b">';
-      html+='<span style="font-size:.74rem;min-width:82px;color:#94a3b8;flex-shrink:0">'+src2.label+'</span>';
-      html+='<b style="color:#4ade80;font-size:.88rem;flex:1">'+escHtml(pseudo2)+'</b>';
-      if(src2.canDel){
-        var eidEsc=row.epicId.replace(/\/g,'\\').replace(/'/g,"\'");
-        html+='<button onclick="deleteEntry(''+eidEsc+'',''+src2.key+'',this)" '
+      html+='<span style="font-size:.74rem;min-width:88px;color:#94a3b8;flex-shrink:0">'+rr.icon+' '+rr.lbl+'</span>';
+      html+='<b style="color:#4ade80;font-size:.87rem;flex:1">'+escHtml(rr.pseudo)+'</b>';
+      if(rr.canDel){
+        html+='<button class="del-btn" data-eid="'+escHtml(row.eid)+'" data-src="'+rr.key+'" '
              +'style="background:#1f0a0a;border:1px solid #ef4444;color:#fca5a5;border-radius:6px;'
-             +'padding:3px 10px;font-size:.72rem;cursor:pointer;white-space:nowrap">'
-             +'🗑️ Supprimer</button>';
+             +'padding:3px 10px;font-size:.72rem;cursor:pointer" onclick="delBtnClick(this)">🗑️ Supprimer</button>';
       }
       html+='</div>';
     }
@@ -1013,35 +994,27 @@ function searchEpic(){
   out.innerHTML=html;
 }
 
-async function deleteEntry(eid,source,btn){
+async function delBtnClick(btn){
+  var eid=btn.getAttribute('data-eid');
+  var source=btn.getAttribute('data-src');
   var eidClean=eid.toLowerCase().replace(/-/g,'');
-  if(!confirm('Supprimer "'+eid+'" de '+source+' ?')) return;
-  btn.disabled=true; btn.textContent='⏳';
+  if(!confirm('Supprimer "'+eid+'" de '+source+' ?'))return;
+  btn.disabled=true;btn.textContent='⏳';
   try{
     if(source==='local'){
-      var local=localDict();
-      delete local[eidClean]; delete local[eid];
-      saveLocalDict(local); _localDictCache=local;
-    } else if(source==='cloud'){
-      var cur=await fetchCloud();
-      delete cur[eidClean]; delete cur[eid];
-      var r=await fetchTO('https://api.jsonbin.io/v3/b/'+JSONBIN_ID,
-        {method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':JSONBIN_KEY,'X-Bin-Versioning':'false'},
-         body:JSON.stringify(cur)},8000);
-      if(!r.ok) throw new Error('Erreur cloud '+r.status);
+      var loc=localDict();delete loc[eidClean];delete loc[eid];saveLocalDict(loc);_localDictCache=loc;
+    }else if(source==='cloud'){
+      var cur=await fetchCloud();delete cur[eidClean];delete cur[eid];
+      var resp=await fetchTO('https://api.jsonbin.io/v3/b/'+JSONBIN_ID,
+        {method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':JSONBIN_KEY,'X-Bin-Versioning':'false'},body:JSON.stringify(cur)},8000);
+      if(!resp.ok)throw new Error('Erreur cloud '+resp.status);
       _cloudDict=cur;
     }
-    dict={}; Object.assign(dict,_githubDict); Object.assign(dict,_cloudDict); Object.assign(dict,_localDictCache);
-    var row=btn.closest('div[style*="border-bottom"]');
-    if(row){
-      var line=btn.parentElement;
-      line.innerHTML='<span style="color:#4ade80;font-size:.78rem;padding:4px 0">✅ Supprimé de '+source+'</span>';
-    }
+    dict={};Object.assign(dict,_githubDict);Object.assign(dict,_cloudDict);Object.assign(dict,_localDictCache);
+    var line=btn.parentElement;
+    if(line)line.innerHTML='<span style="color:#4ade80;font-size:.78rem">✅ Supprimé de '+source+'</span>';
     renderDictList();
-  }catch(e){
-    btn.disabled=false; btn.textContent='🗑️ Supprimer';
-    alert('❌ Erreur : '+e.message);
-  }
+  }catch(e){btn.disabled=false;btn.textContent='🗑️ Supprimer';alert('Erreur : '+e.message);}
 }
 </script>
 </body>
