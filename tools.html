@@ -300,6 +300,24 @@
     <div id="dict-list" style="margin-top:16px"></div>
   </div>
 
+
+  <!-- CARD RECHERCHE EPIC ID -->
+  <div class="card">
+    <div class="card-head">
+      <div class="badge" style="background:#e11d48;color:#fff;font-size:1rem">🔍</div>
+      <div class="card-title">Rechercher un Epic ID / Pseudo</div>
+    </div>
+    <p style="font-size:.85rem;color:#64748b;margin-bottom:14px">Cherche dans toutes les bases (GitHub, Cloud, Local) — par Epic Account ID <b>ou</b> par pseudo. Si un ID a plusieurs pseudos liés, tu peux en supprimer.</p>
+    <div style="display:flex;gap:10px;align-items:flex-end">
+      <div style="flex:1">
+        <label>Epic ID (32 chars) ou Pseudo</label>
+        <input type="text" id="search-eid" placeholder="abc123def456... ou MrSavage" oninput="searchEpic()">
+      </div>
+      <button class="btn btn-b" onclick="searchEpic()" style="height:38px;white-space:nowrap">🔍 Chercher</button>
+    </div>
+    <div id="search-out" style="margin-top:14px"></div>
+  </div>
+
   <footer class="footer">
     <img src="https://raw.githubusercontent.com/Clementsly/fortnite-wiki-tools/main/Design%20sans%20titre%20(6).png" alt="Clem">
     <div>
@@ -325,6 +343,7 @@ let _proxyIdx = 0;
 let _api = 'kass', _mode = 'simple', _fileMode = 'single';
 let _lang = localStorage.getItem('lang') || 'fr';
 let dict = {}, dateInfo = null;
+let _githubDict = {}, _cloudDict = {}, _localDictCache = {};
 
 // ============================================================
 //  I18N
@@ -886,14 +905,127 @@ function saveLocalDict(d){localStorage.setItem('custom_dict',JSON.stringify(d));
 async function loadDict(){
   const el=document.getElementById('dict-status');el.className='alert inf';el.innerHTML='⏳ '+s('loading');
   let fCount=0,cCount=0;
-  try{const r=await fetchTO(GITHUB_DICT+'?t='+Date.now(),{},8000);if(r.ok){const d=parseDictTxt(await r.text());fCount=Object.keys(d).length;Object.assign(dict,d);}}catch{}
-  try{const c=await fetchCloud();cCount=Object.keys(c).length;Object.assign(dict,c);}catch{}
-  Object.assign(dict,localDict());
+  try{const r=await fetchTO(GITHUB_DICT+'?t='+Date.now(),{},8000);if(r.ok){_githubDict=parseDictTxt(await r.text());fCount=Object.keys(_githubDict).length;Object.assign(dict,_githubDict);}}catch{}
+  try{_cloudDict=await fetchCloud();cCount=Object.keys(_cloudDict).length;Object.assign(dict,_cloudDict);}catch{}
+  _localDictCache=localDict();Object.assign(dict,_localDictCache);
   const tot=Object.keys(dict).length;
   el.className=tot>0?'alert ok':'alert warn';
   el.innerHTML=tot>0?s('pseudosOk',tot,fCount,cCount):s('noDict');
   renderDictList();
 }
+
+// ============================================================
+//  RECHERCHE EPIC ID / PSEUDO + SUPPRESSION
+// ============================================================
+function searchEpic(){
+  const raw=(document.getElementById('search-eid').value||'').trim();
+  const out=document.getElementById('search-out');
+  if(!raw){out.innerHTML='';return;}
+  const q=raw.toLowerCase().replace(/-/g,'');
+
+  // epicId → { pseudo_github, pseudo_cloud, pseudo_local }
+  const byId=new Map();
+
+  const allSources=[
+    {dict:_githubDict, key:'github', label:'🐙 GitHub',  canDel:false},
+    {dict:_cloudDict,  key:'cloud',  label:'☁️ Cloud',   canDel:true},
+    {dict:_localDictCache, key:'local', label:'💾 Local', canDel:true},
+  ];
+
+  for(const {dict:d,key} of allSources){
+    for(const [eid,pseudo] of Object.entries(d)){
+      const eidClean=eid.toLowerCase().replace(/-/g,'');
+      const pseudoClean=pseudo.toLowerCase().replace(/_/g,' ');
+      if(!eidClean.includes(q)&&!pseudoClean.includes(q.replace(/_/g,' ')))continue;
+      if(!byId.has(eidClean))byId.set(eidClean,{epicId:eid,entries:{}});
+      byId.get(eidClean).entries[key]=pseudo.replace(/_/g,' ');
+    }
+  }
+
+  if(byId.size===0){
+    out.innerHTML='<div class="alert err">❌ Aucun résultat pour <b>'+escHtml(raw)+'</b></div>';
+    return;
+  }
+
+  const rows=[...byId.values()];
+  let html=`<div style="font-size:.8rem;color:#64748b;margin-bottom:8px">${rows.length} résultat${rows.length>1?'s':''} trouvé${rows.length>1?'s':''}</div>`;
+  html+=`<div style="background:#0f172a;border:1px solid #334155;border-radius:8px;overflow:hidden">`;
+
+  for(const r of rows){
+    const sources=allSources.filter(s=>r.entries[s.key]);
+    // Detect conflict : multiple sources with different pseudos
+    const pseudos=new Set(sources.map(s=>r.entries[s.key]));
+    const hasConflict=pseudos.size>1;
+    const hasDeletable=sources.some(s=>s.canDel&&r.entries[s.key]);
+
+    html+=`<div style="padding:10px 14px;border-bottom:1px solid #1e293b">`;
+    html+=`<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px">`;
+    html+=`<code style="color:#60a5fa;font-size:.78rem;user-select:all">${escHtml(r.epicId)}</code>`;
+    if(hasConflict)html+=`<span style="font-size:.72rem;background:#1c1200;border:1px solid #f59e0b;color:#fbbf24;padding:1px 7px;border-radius:10px">⚠️ Conflit</span>`;
+    html+=`</div>`;
+
+    for(const src of allSources){
+      if(!r.entries[src.key])continue;
+      const pseudo=r.entries[src.key];
+      html+=`<div style="display:flex;align-items:center;gap:8px;padding:3px 0">`;
+      html+=`<span style="font-size:.75rem;min-width:80px;color:#94a3b8">${src.label}</span>`;
+      html+=`<b style="color:#4ade80;font-size:.88rem">${escHtml(pseudo)}</b>`;
+      if(src.canDel){
+        const eidEsc=r.epicId.replace(/'/g,"\'");
+        html+=`<button onclick="deleteEntry('${eidEsc}','${src.key}',this)"
+          style="margin-left:auto;background:#1f0a0a;border:1px solid #ef4444;color:#fca5a5;
+          border-radius:6px;padding:2px 10px;font-size:.72rem;cursor:pointer;transition:.15s"
+          onmouseover="this.style.background='#3f0a0a'" onmouseout="this.style.background='#1f0a0a'">
+          🗑️ Supprimer
+        </button>`;
+      }
+      html+=`</div>`;
+    }
+    html+=`</div>`;
+  }
+  html+=`</div>`;
+  out.innerHTML=html;
+}
+
+async function deleteEntry(eid,source,btn){
+  const eidClean=eid.toLowerCase().replace(/-/g,'');
+  const confirmed=confirm(`Supprimer l'entrée "${eid}" de la source ${source} ?`);
+  if(!confirmed)return;
+
+  btn.disabled=true;btn.textContent='⏳';
+
+  if(source==='local'){
+    const local=localDict();
+    delete local[eidClean];
+    // also try original key
+    delete local[eid];
+    saveLocalDict(local);
+    _localDictCache=local;
+  } else if(source==='cloud'){
+    try{
+      const cur=await fetchCloud();
+      delete cur[eidClean];
+      delete cur[eid];
+      const r=await fetchTO('https://api.jsonbin.io/v3/b/'+JSONBIN_ID,{method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':JSONBIN_KEY,'X-Bin-Versioning':'false'},body:JSON.stringify(cur)},8000);
+      if(!r.ok)throw new Error('cloud save failed');
+      _cloudDict=cur;
+    }catch(e){
+      btn.disabled=false;btn.textContent='🗑️ Supprimer';
+      alert('❌ Erreur suppression cloud : '+e.message);
+      return;
+    }
+  }
+
+  // Rebuild merged dict
+  dict={};
+  Object.assign(dict,_githubDict);
+  Object.assign(dict,_cloudDict);
+  Object.assign(dict,_localDictCache);
+
+  btn.closest('div[style*="display:flex"]').innerHTML=`<span style="color:#4ade80;font-size:.8rem">✅ Supprimé</span>`;
+  renderDictList();
+}
+
 loadDict();
 
 async function dictAdd(){
@@ -922,4 +1054,5 @@ function clearLocal(){if(!confirm('Vider le cache local ?'))return;localStorage.
 </script>
 </body>
 </html>
+
 
