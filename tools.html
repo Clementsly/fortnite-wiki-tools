@@ -499,18 +499,21 @@ function getMname(m){return typeof m==='string'?null:(m.name||null);}
 
 function fmtLine(rank,members,pts,teamsMap={}){
   const p=members.map(m=>{const eid=getMid(m);const name=resolveName(eid,getMname(m));return eid+'{{!}}'+name;}).join(',');
-  const t=members.map(m=>{const eid=getMid(m);const name=resolveName(eid,getMname(m));return (teamsMap[eid] || teamsMap[name] || '');}).join(',');
-  return rank+'\t'+t+'\t'+p+'\t'+pts;
+  const tArr=members.map(m=>{const eid=getMid(m);const name=resolveName(eid,getMname(m));return (teamsMap[eid] || teamsMap[name] || '');});
+  const t = tArr.some(x=>x!=='') ? tArr.join(',') : '';
+  return rank+'	'+t+'	'+p+'	'+pts;
 }
 function fmtLineWLS(rank,mlist,pts,teamsMap={}){
   const p=mlist.map(m=>{const eid=(m.ingame_id||'').toLowerCase().replace(/-/g,'');const name=resolveName(eid,m.name);return eid+'{{!}}'+name;}).join(',');
-  const t=mlist.map(m=>{const eid=(m.ingame_id||'').toLowerCase().replace(/-/g,'');const name=resolveName(eid,m.name);return (teamsMap[eid] || teamsMap[name] || '');}).join(',');
-  return rank+'\t'+t+'\t'+p+'\t'+pts;
+  const tArr=mlist.map(m=>{const eid=(m.ingame_id||'').toLowerCase().replace(/-/g,'');const name=resolveName(eid,m.name);return (teamsMap[eid] || teamsMap[name] || '');});
+  const t = tArr.some(x=>x!=='') ? tArr.join(',') : '';
+  return rank+'	'+t+'	'+p+'	'+pts;
 }
 function fmtFileLine(rank,ids,pts,teamsMap={}){
   const p=ids.map(eid=>{const name=resolveName(eid,null);return eid+'{{!}}'+name;}).join(',');
-  const t=ids.map(eid=>{const name=resolveName(eid,null);return (teamsMap[eid] || teamsMap[name] || '');}).join(',');
-  return rank+'\t'+t+'\t'+p+'\t'+pts;
+  const tArr=ids.map(eid=>{const name=resolveName(eid,null);return (teamsMap[eid] || teamsMap[name] || '');});
+  const t = tArr.some(x=>x!=='') ? tArr.join(',') : '';
+  return rank+'	'+t+'	'+p+'	'+pts;
 }
 
 // ============================================================
