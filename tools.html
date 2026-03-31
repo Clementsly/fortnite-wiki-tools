@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>⚡ Fortnite Wiki Tools</title>
+  <title>âš¡ Fortnite Wiki Tools</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh;padding:28px 20px}
@@ -63,9 +63,13 @@
     .plc-row input[type=number]{width:90px;text-align:center}
     .btn-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:16px}
     .btn{padding:9px 22px;border:none;border-radius:8px;font-size:.9rem;font-weight:600;cursor:pointer;transition:.15s}
-    .btn-b{background:#3b82f6;color:#fff}.btn-b:hover{background:#2563eb}.btn-b:disabled{background:#1e3a5f;color:#64748b;cursor:not-allowed}
-    .btn-g{background:#22c55e;color:#fff}.btn-g:hover{background:#16a34a}
-    .btn-p{background:#8b5cf6;color:#fff}.btn-p:hover{background:#7c3aed}
+    .btn-b{background:#3b82f6;color:#fff}
+    .btn-b:hover{background:#2563eb}
+    .btn-b:disabled{background:#1e3a5f;color:#64748b;cursor:not-allowed}
+    .btn-g{background:#22c55e;color:#fff}
+    .btn-g:hover{background:#16a34a}
+    .btn-p{background:#8b5cf6;color:#fff}
+    .btn-p:hover{background:#7c3aed}
     .loader{display:none;font-size:.85rem;color:#60a5fa}
     .alert{padding:10px 14px;border-radius:8px;font-size:.88rem;margin:8px 0}
     .ok{background:#052e16;border:1px solid #22c55e;color:#4ade80}
@@ -97,275 +101,1062 @@
 </head>
 <body>
 <div class="container">
+
   <div class="topbar">
     <div>
-      <h1>⚡ Fortnite Wiki Tools</h1>
-      <p class="sub" id="sub-txt">Classement API/Fichier → Équipes · Tout en 3 étapes</p>
+      <h1>âš¡ Fortnite Wiki Tools</h1>
+      <p class="sub" id="sub-txt">Classement API/Fichier â†’ Ã‰quipes Â· Tout en 3 Ã©tapes</p>
     </div>
-    <button class="lang-btn" onclick="toggleLang()"><span id="lflag">🇬🇧</span><span id="llbl">English</span></button>
+    <button class="lang-btn" onclick="toggleLang()">
+      <span id="lflag">ðŸ‡¬ðŸ‡§</span>
+      <span id="llbl">English</span>
+    </button>
   </div>
 
   <div class="api-box">
-    <div class="sec-lbl" id="api-lbl">🔌 Choix de l'API</div>
+    <div class="sec-lbl" id="api-lbl">ðŸ”Œ Choix de l'API</div>
     <div class="api-btns">
-      <button class="api-btn ak" id="btn-kass" onclick="selApi('kass')"><b>🟢 Kass507.lat</b><span class="tag-g" id="api-rec-tag">✅ RECOMMANDÉE</span><span class="api-desc" id="api-rec-desc">Fonctionne sur tous les events depuis Nov. 2025</span></button>
-      <button class="api-btn" id="btn-wls" onclick="selApi('wls')"><b>🔴 WLS.gg</b><span class="tag-r" id="api-wls-tag">🎯 TOURNOIS WLS</span><span class="api-desc" id="api-wls-desc">Pour les événements organisés via WLS</span></button>
+      <button class="api-btn ak" id="btn-kass" onclick="selApi('kass')">
+        <b>ðŸŸ¢ Kass507.lat</b>
+        <span class="tag-g" id="api-rec-tag">âœ… RECOMMANDÃ‰E</span>
+        <span class="api-desc" id="api-rec-desc">Fonctionne sur tous les events depuis Nov. 2025</span>
+      </button>
+      <button class="api-btn" id="btn-wls" onclick="selApi('wls')">
+        <b>ðŸ”´ WLS.gg</b>
+        <span class="tag-r" id="api-wls-tag">ðŸŽ¯ TOURNOIS WLS</span>
+        <span class="api-desc" id="api-wls-desc">Pour les Ã©vÃ©nements organisÃ©s via WLS</span>
+      </button>
     </div>
   </div>
 
-  <div id="dict-status" class="alert inf" style="margin-bottom:16px">⏳ Chargement du dictionnaire...</div>
+  <div id="dict-status" class="alert inf" style="margin-bottom:16px">â³ Chargement du dictionnaire...</div>
 
+  <!-- CARD 1 -->
   <div class="card" id="card1">
-    <div class="card-head"><div class="badge b" id="b1">1</div><div class="card-title" id="s1-title">Générer le classement</div></div>
+    <div class="card-head">
+      <div class="badge b" id="b1">1</div>
+      <div class="card-title" id="s1-title">GÃ©nÃ©rer le classement</div>
+    </div>
     <div class="tabs">
-      <button class="tab on" id="t-simple" onclick="setMode('simple')">🏆 Simple</button>
-      <button class="tab" id="t-cumul" onclick="setMode('cumul')">📊 Cumulé (Day1+Day2)</button>
-      <button class="tab on-v" id="t-file" onclick="setMode('file')">📁 Fichier HTML</button>
+      <button class="tab on"   id="t-simple" onclick="setMode('simple')">ðŸ† Simple</button>
+      <button class="tab"      id="t-cumul"  onclick="setMode('cumul')">ðŸ“Š CumulÃ© (Day1+Day2)</button>
+      <button class="tab on-v" id="t-file"   onclick="setMode('file')">ðŸ“ Fichier HTML</button>
     </div>
-    <div id="m-simple"><label id="wid-lbl">WindowID ou URL Fortnite Tracker</label><input type="text" id="wid1" placeholder="S39_SoloSeriesCupFinal_Day1_ME"><p class="hint" id="wid-hint">💡 Colle l'URL complète — le WindowID est extrait automatiquement</p></div>
-    <div id="m-cumul" class="hidden"><div class="grid2"><div><label id="lbl-d1">Day 1</label><input type="text" id="wd1" placeholder="...Day1_ME"></div><div><label id="lbl-d2">Day 2</label><input type="text" id="wd2" placeholder="...Day2_ME"></div></div></div>
+    <div id="m-simple">
+      <label id="wid-lbl">WindowID ou URL Fortnite Tracker</label>
+      <input type="text" id="wid1" placeholder="S39_SoloSeriesCupFinal_Day1_ME">
+      <p class="hint" id="wid-hint">ðŸ’¡ Colle l'URL complÃ¨te â€” le WindowID est extrait automatiquement</p>
+    </div>
+    <div id="m-cumul" class="hidden">
+      <div class="grid2">
+        <div><label id="lbl-d1">Day 1</label><input type="text" id="wd1" placeholder="...Day1_ME"></div>
+        <div><label id="lbl-d2">Day 2</label><input type="text" id="wd2" placeholder="...Day2_ME"></div>
+      </div>
+    </div>
     <div id="m-file" class="hidden">
-      <div class="tabs" style="margin-bottom:14px"><button class="tab on-v" id="tf-s" onclick="setFileMode('single')">📄 1 fichier</button><button class="tab" id="tf-c" onclick="setFileMode('double')">📄📄 2 fichiers (cumulé)</button></div>
-      <div id="fz-single"><label id="file-lbl1">Fichier HTML Fortnite Tracker</label><div class="drop-zone" id="dz1" onclick="document.getElementById('fi1').click()" ondragover="dzOver(event,'dz1')" ondragleave="dzLeave('dz1')" ondrop="dzDrop(event,'dz1','fi1','dz1t')"><div class="dz-icon">📂</div><div class="dz-title" id="dz1t">Glisse ton fichier ici ou clique pour choisir</div><div class="dz-sub">Export HTML de Fortnite Tracker (.html / .htm / .txt)</div></div><input type="file" id="fi1" accept=".html,.htm,.txt" onchange="dzChosen('fi1','dz1','dz1t')"></div>
-      <div id="fz-double" class="hidden"><div class="grid2"><div><label>Fichier Day 1</label><div class="drop-zone" id="dz1b" onclick="document.getElementById('fi1b').click()" ondragover="dzOver(event,'dz1b')" ondragleave="dzLeave('dz1b')" ondrop="dzDrop(event,'dz1b','fi1b','dz1bt')"><div class="dz-icon">📂</div><div class="dz-title" id="dz1bt">Glisse ou clique</div><div class="dz-sub">Day 1 HTML</div></div><input type="file" id="fi1b" accept=".html,.htm,.txt" onchange="dzChosen('fi1b','dz1b','dz1bt')"></div><div><label>Fichier Day 2</label><div class="drop-zone" id="dz2b" onclick="document.getElementById('fi2b').click()" ondragover="dzOver(event,'dz2b')" ondragleave="dzLeave('dz2b')" ondrop="dzDrop(event,'dz2b','fi2b','dz2bt')"><div class="dz-icon">📂</div><div class="dz-title" id="dz2bt">Glisse ou clique</div><div class="dz-sub">Day 2 HTML</div></div><input type="file" id="fi2b" accept=".html,.htm,.txt" onchange="dzChosen('fi2b','dz2b','dz2bt')"></div></div></div>
-      <p class="hint" style="margin-top:8px" id="file-hint">💡 Sauvegarde la page Fortnite Tracker avec <b>Ctrl+S</b> — le fichier .html contient les données JSON intégrées</p>
+      <div class="tabs" style="margin-bottom:14px">
+        <button class="tab on-v" id="tf-s" onclick="setFileMode('single')">ðŸ“„ 1 fichier</button>
+        <button class="tab"      id="tf-c" onclick="setFileMode('double')">ðŸ“„ðŸ“„ 2 fichiers (cumulÃ©)</button>
+      </div>
+      <div id="fz-single">
+        <label id="file-lbl1">Fichier HTML Fortnite Tracker</label>
+        <div class="drop-zone" id="dz1" onclick="document.getElementById('fi1').click()" ondragover="dzOver(event,'dz1')" ondragleave="dzLeave('dz1')" ondrop="dzDrop(event,'dz1','fi1','dz1t')">
+          <div class="dz-icon">ðŸ“‚</div>
+          <div class="dz-title" id="dz1t">Glisse ton fichier ici ou clique pour choisir</div>
+          <div class="dz-sub">Export HTML de Fortnite Tracker (.html / .htm / .txt)</div>
+        </div>
+        <input type="file" id="fi1" accept=".html,.htm,.txt" onchange="dzChosen('fi1','dz1','dz1t')">
+      </div>
+      <div id="fz-double" class="hidden">
+        <div class="grid2">
+          <div>
+            <label>Fichier Day 1</label>
+            <div class="drop-zone" id="dz1b" onclick="document.getElementById('fi1b').click()" ondragover="dzOver(event,'dz1b')" ondragleave="dzLeave('dz1b')" ondrop="dzDrop(event,'dz1b','fi1b','dz1bt')">
+              <div class="dz-icon">ðŸ“‚</div><div class="dz-title" id="dz1bt">Glisse ou clique</div><div class="dz-sub">Day 1 HTML</div>
+            </div>
+            <input type="file" id="fi1b" accept=".html,.htm,.txt" onchange="dzChosen('fi1b','dz1b','dz1bt')">
+          </div>
+          <div>
+            <label>Fichier Day 2</label>
+            <div class="drop-zone" id="dz2b" onclick="document.getElementById('fi2b').click()" ondragover="dzOver(event,'dz2b')" ondragleave="dzLeave('dz2b')" ondrop="dzDrop(event,'dz2b','fi2b','dz2bt')">
+              <div class="dz-icon">ðŸ“‚</div><div class="dz-title" id="dz2bt">Glisse ou clique</div><div class="dz-sub">Day 2 HTML</div>
+            </div>
+            <input type="file" id="fi2b" accept=".html,.htm,.txt" onchange="dzChosen('fi2b','dz2b','dz2bt')">
+          </div>
+        </div>
+      </div>
+      <p class="hint" style="margin-top:8px" id="file-hint">ðŸ’¡ Sauvegarde la page Fortnite Tracker avec <b>Ctrl+S</b> â€” le fichier .html contient les donnÃ©es JSON intÃ©grÃ©es</p>
     </div>
-    <label id="plc-lbl">Placement</label><div class="plc-row"><span id="plc-from">De</span><input type="number" id="rk-from" value="1" min="1" max="9999"><span id="plc-to">à</span><input type="number" id="rk-to" value="100" min="1" max="9999"></div><p class="hint" id="plc-hint">💡 Filtre les rangs à inclure dans le résultat</p>
-    <div class="btn-row"><button class="btn btn-b" onclick="generate()" id="gen-btn">🚀 Générer</button><span class="loader" id="ld1">⏳ Chargement...</span></div>
-    <div id="o1" class="hidden"><div class="divider"></div><div id="st1" class="alert ok"></div><label id="gen-lbl">Classement généré</label><textarea id="r1" rows="12" readonly></textarea><div id="date-block" class="hidden"></div><div class="btn-row"><button class="btn btn-g" onclick="cp('r1','cm1')" id="copy1-btn">📋 Copier</button><button class="btn btn-p" onclick="toStep2()" id="step2-btn">➡️ Ajouter les équipes</button><span id="cm1" style="font-size:.85rem;color:#4ade80"></span></div></div>
+    <label id="plc-lbl">Placement</label>
+    <div class="plc-row">
+      <span id="plc-from">De</span>
+      <input type="number" id="rk-from" value="1" min="1" max="9999">
+      <span id="plc-to">Ã </span>
+      <input type="number" id="rk-to" value="100" min="1" max="9999">
+    </div>
+    <p class="hint" id="plc-hint">ðŸ’¡ Filtre les rangs Ã  inclure dans le rÃ©sultat</p>
+    <div class="btn-row">
+      <button class="btn btn-b" onclick="generate()" id="gen-btn">ðŸš€ GÃ©nÃ©rer</button>
+      <span class="loader" id="ld1">â³ Chargement...</span>
+    </div>
+    <div id="o1" class="hidden">
+      <div class="divider"></div>
+      <div id="st1" class="alert ok"></div>
+      <label id="gen-lbl">Classement gÃ©nÃ©rÃ©</label>
+      <textarea id="r1" rows="12" readonly></textarea>
+      <div id="date-block" class="hidden"></div>
+      <div class="btn-row">
+        <button class="btn btn-g" onclick="cp('r1','cm1')" id="copy1-btn">ðŸ“‹ Copier</button>
+        <button class="btn btn-p" onclick="toStep2()" id="step2-btn">âž¡ï¸ Ajouter les Ã©quipes</button>
+        <span id="cm1" style="font-size:.85rem;color:#4ade80"></span>
+      </div>
+    </div>
   </div>
 
+  <!-- CARD 2 -->
   <div class="card" id="card2">
-    <div class="card-head"><div class="badge" id="b2">2</div><div class="card-title" id="s2-title">Ajouter les équipes</div></div>
-    <label id="s2-in-lbl">Classement ou code wiki à traiter</label>
-    <textarea id="i2" rows="10" placeholder="Colle ici le résultat de l'étape 1..."></textarea>
-    <p class="hint" id="s2-hint">Compatible avec le format classement (rank↹players↹points) ET le format wiki</p>
-    <label id="csv-lbl">Équipes — CSV ou TSV</label>
+    <div class="card-head">
+      <div class="badge" id="b2">2</div>
+      <div class="card-title" id="s2-title">Ajouter les Ã©quipes</div>
+    </div>
+    <label id="s2-in-lbl">Classement ou code wiki Ã  traiter</label>
+    <textarea id="i2" rows="10" placeholder="Colle ici le rÃ©sultat de l'Ã©tape 1..."></textarea>
+    <p class="hint" id="s2-hint">Compatible avec le format classement (rankâ†¹playersâ†¹points) ET le format wiki</p>
+    <label id="csv-lbl">Ã‰quipes â€” CSV ou TSV</label>
     <textarea id="tt" rows="7" placeholder="DataTeam&#9;PlayerTeam&#9;DataPlayer&#9;PlayerPage&#10;BIG Clan&#9;&#9;Malibuca&#9;Malibuca"></textarea>
-    <div class="file-row"><button class="file-btn" onclick="document.getElementById('tf-csv').click()" id="file-btn-csv">📂 Choisir un fichier</button><span class="file-name" id="tfn-csv">Aucun fichier choisi</span></div>
+    <div class="file-row">
+      <button class="file-btn" onclick="document.getElementById('tf-csv').click()" id="file-btn-csv">ðŸ“‚ Choisir un fichier</button>
+      <span class="file-name" id="tfn-csv">Aucun fichier choisi</span>
+    </div>
     <input type="file" id="tf-csv" accept=".csv,.tsv,.txt" onchange="loadTxt('tf-csv','tt','tfn-csv')">
-    <div class="btn-row"><button class="btn btn-b" onclick="addTeams()" id="teams-btn">🏅 Ajouter les équipes</button></div>
-    <div id="o2" class="hidden"><div class="divider"></div><div id="st2" class="alert ok"></div><div id="st2m" class="alert warn hidden"></div><label id="res-lbl">Résultat final</label><textarea id="r2" rows="12" readonly></textarea><div class="btn-row"><button class="btn btn-g" onclick="cp('r2','cm2')" id="copy2-btn">📋 Copier</button><span id="cm2" style="font-size:.85rem;color:#4ade80"></span></div></div>
+    <div class="btn-row">
+      <button class="btn btn-b" onclick="addTeams()" id="teams-btn">ðŸ… Ajouter les Ã©quipes</button>
+    </div>
+    <div id="o2" class="hidden">
+      <div class="divider"></div>
+      <div id="st2" class="alert ok"></div>
+      <div id="st2m" class="alert warn hidden"></div>
+      <label id="res-lbl">RÃ©sultat final</label>
+      <textarea id="r2" rows="12" readonly></textarea>
+      <div class="btn-row">
+        <button class="btn btn-g" onclick="cp('r2','cm2')" id="copy2-btn">ðŸ“‹ Copier</button>
+        <span id="cm2" style="font-size:.85rem;color:#4ade80"></span>
+      </div>
+    </div>
   </div>
 
+  <!-- CARD 3 -->
   <div class="card" id="card3">
-    <div class="card-head"><div class="badge v">3</div><div class="card-title" id="s3-title">Mise à jour des pseudos</div></div>
+    <div class="card-head">
+      <div class="badge v">3</div>
+      <div class="card-title" id="s3-title">Mise Ã  jour des pseudos</div>
+    </div>
     <p style="font-size:.85rem;color:#64748b;margin-bottom:10px" id="s3-desc">Remplace les anciens pseudos dans ton code wiki en te basant sur l'EpicID.</p>
-    <div class="fmt-prev"><span class="ch">WrongId&#9;PlayerPage&#9;FortniteId</span><br><span class="cw">lil vortecca</span>&#9;<span class="cp">VortexM</span>&#9;<span class="ci">645f6ea499ae4550a46b111ae8d64115</span><br><span class="cw">t01letwater</span>&#9;<span class="cp">Jace</span>&#9;<span class="ci">ad53e398b5884b15a797ba0a61658cc4</span></div>
-    <p class="hint" style="margin-bottom:14px" id="s3-hint">💡 TSV 3 colonnes : mauvais pseudo · nouveau pseudo (nom de page wiki) · EpicID. L'en-tête est ignorée automatiquement.</p>
-    <label id="s3-code-lbl">Code wiki à modifier</label><textarea id="pu-code" rows="10" placeholder="{{TournamentResults/Line|players= EpicID{{!}}AncienPseudo, ...}}"></textarea>
-    <label id="s3-tsv-lbl">Table des mises à jour (TSV)</label><textarea id="pu-upd" rows="10" placeholder="WrongId&#9;PlayerPage&#9;FortniteId&#10;lil vortecca&#9;VortexM&#9;645f6ea499ae4550a46b111ae8d64115"></textarea>
-    <div class="file-row"><button class="file-btn" onclick="document.getElementById('puf').click()" id="file-btn-pu">📂 Choisir un fichier</button><span class="file-name" id="pfn">Aucun fichier choisi</span></div>
+    <div class="fmt-prev">
+      <span class="ch">WrongId&#9;PlayerPage&#9;FortniteId</span><br>
+      <span class="cw">lil vortecca</span>&#9;<span class="cp">VortexM</span>&#9;<span class="ci">645f6ea499ae4550a46b111ae8d64115</span><br>
+      <span class="cw">t01letwater</span>&#9;<span class="cp">Jace</span>&#9;<span class="ci">ad53e398b5884b15a797ba0a61658cc4</span>
+    </div>
+    <p class="hint" style="margin-bottom:14px" id="s3-hint">ðŸ’¡ TSV 3 colonnes : mauvais pseudo Â· nouveau pseudo (nom de page wiki) Â· EpicID. L'en-tÃªte est ignorÃ©e automatiquement.</p>
+    <label id="s3-code-lbl">Code wiki Ã  modifier</label>
+    <textarea id="pu-code" rows="10" placeholder="{{TournamentResults/Line|players= EpicID{{!}}AncienPseudo, ...}}"></textarea>
+    <label id="s3-tsv-lbl">Table des mises Ã  jour (TSV)</label>
+    <textarea id="pu-upd" rows="10" placeholder="WrongId&#9;PlayerPage&#9;FortniteId&#10;lil vortecca&#9;VortexM&#9;645f6ea499ae4550a46b111ae8d64115"></textarea>
+    <div class="file-row">
+      <button class="file-btn" onclick="document.getElementById('puf').click()" id="file-btn-pu">ðŸ“‚ Choisir un fichier</button>
+      <span class="file-name" id="pfn">Aucun fichier choisi</span>
+    </div>
     <input type="file" id="puf" accept=".csv,.tsv,.txt" onchange="loadTxt('puf','pu-upd','pfn')">
-    <div class="btn-row"><button class="btn btn-p" onclick="applyPseudo()" id="pu-btn">🔄 Mettre à jour</button></div>
-    <div id="pu-out" class="hidden"><div class="divider"></div><div id="pu-st" class="alert ok"></div><div id="pu-miss" class="alert warn hidden"></div><label id="s3-res-lbl">Code wiki mis à jour</label><textarea id="pu-res" rows="14" readonly></textarea><div class="btn-row"><button class="btn btn-g" onclick="cp('pu-res','pu-cm')" id="copy3-btn">📋 Copier</button><span id="pu-cm" style="font-size:.85rem;color:#4ade80"></span></div></div>
+    <div class="btn-row">
+      <button class="btn btn-p" onclick="applyPseudo()" id="pu-btn">ðŸ”„ Mettre Ã  jour</button>
+    </div>
+    <div id="pu-out" class="hidden">
+      <div class="divider"></div>
+      <div id="pu-st" class="alert ok"></div>
+      <div id="pu-miss" class="alert warn hidden"></div>
+      <label id="s3-res-lbl">Code wiki mis Ã  jour</label>
+      <textarea id="pu-res" rows="14" readonly></textarea>
+      <div class="btn-row">
+        <button class="btn btn-g" onclick="cp('pu-res','pu-cm')" id="copy3-btn">ðŸ“‹ Copier</button>
+        <span id="pu-cm" style="font-size:.85rem;color:#4ade80"></span>
+      </div>
+    </div>
   </div>
 
-  <footer class="footer"><img src="https://raw.githubusercontent.com/Clementsly/fortnite-wiki-tools/main/Design%20sans%20titre%20(6).png" alt="Clem"><div><div class="made" id="made-by">Créé par</div><div class="author">Clem</div><a href="https://x.com/clemclx" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.911-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>@clemclx</a></div></footer>
+  <!-- CARD + DICT -->
+  <div class="card">
+    <div class="card-head">
+      <div class="badge a">+</div>
+      <div class="card-title" id="dict-title">Ajouter un joueur Ã  la database</div>
+    </div>
+    <p style="font-size:.85rem;color:#64748b;margin-bottom:14px" id="dict-desc">Les entrÃ©es sont sauvegardÃ©es dans le <b>cloud partagÃ©</b> â€” visibles par tout le monde instantanÃ©ment.</p>
+    <label id="dict-lbl">Format : PseudoWiki=EpicAccountID (une entrÃ©e par ligne)</label>
+    <textarea id="dict-new" rows="5" placeholder="Parz=abc123def456abc123def456abc123de&#10;PlayerName=def456abc123def456abc123def456ab"></textarea>
+    <p class="hint" id="dict-hint">ðŸ’¡ L'Epic Account ID (32 chars) se trouve dans l'URL Fortnite Tracker</p>
+    <div class="btn-row" style="margin-top:12px">
+      <button class="btn btn-b" onclick="dictAdd()" id="dict-add-btn">âž• Ajouter</button>
+      <span id="dict-msg" style="font-size:.85rem"></span>
+    </div>
+    <div id="dict-list" style="margin-top:16px"></div>
+  </div>
+
+  <!-- CARD RECHERCHE -->
+  <div class="card">
+    <div class="card-head">
+      <div class="badge" style="background:#e11d48;color:#fff;font-size:1.1rem">ðŸ”</div>
+      <div class="card-title">Rechercher un Epic ID / Pseudo</div>
+    </div>
+    <p style="font-size:.85rem;color:#64748b;margin-bottom:14px">Cherche dans toutes les bases (GitHub, Cloud, Local) â€” par Epic ID <b>ou</b> par pseudo. EntrÃ©es GitHub : <b>ðŸš« Exclure</b> (masquage local). Cloud/Local : <b>ðŸ—‘ï¸ Supprimer</b> dÃ©finitivement.</p>
+    <div style="display:flex;gap:10px;align-items:flex-end">
+      <div style="flex:1">
+        <label>Epic ID (32 chars) ou Pseudo</label>
+        <input type="text" id="search-eid" placeholder="abc123def456... ou MrSavage" oninput="searchEpic()">
+      </div>
+      <button class="btn btn-b" onclick="searchEpic()" style="height:38px;white-space:nowrap">ðŸ” Chercher</button>
+    </div>
+    <div id="search-out" style="margin-top:14px"></div>
+  </div>
+
+  <footer class="footer">
+    <img src="https://raw.githubusercontent.com/Clementsly/fortnite-wiki-tools/main/Design%20sans%20titre%20(6).png" alt="Clem">
+    <div>
+      <div class="made" id="made-by">CrÃ©Ã© par</div>
+      <div class="author">Clem</div>
+      <a href="https://x.com/clemclx" target="_blank">
+        <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.911-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        @clemclx
+      </a>
+    </div>
+  </footer>
 </div>
 
 <script>
+// ============================================================
+//  CONFIG
+// ============================================================
 const GITHUB_DICT = "https://raw.githubusercontent.com/Clementsly/fortnite-wiki-tools/refs/heads/main/fortnite_dict.txt";
-const PROXIES = ["https://corsproxy.io/?","https://api.allorigins.win/raw?url=","https://corsproxy.org/?"];
-let _proxyIdx = 0, _api='kass', _mode='simple', _fileMode='single', _lang='fr';
+const JSONBIN_ID  = "699cd8d6d0ea881f40d31e4a";
+const JSONBIN_KEY = "$2a$10$Uxd5kmWUdHQG2q40rB1m8uOe2GftztNasNvtMAHQ8m8J8OGkrMbGO";
+const PROXIES     = ["https://corsproxy.io/?","https://api.allorigins.win/raw?url=","https://corsproxy.org/?"];
+let _proxyIdx = 0;
+let _api = 'kass', _mode = 'simple', _fileMode = 'single';
+let _lang = localStorage.getItem('lang') || 'fr';
 let dict = {}, dateInfo = null;
+let _githubDict = {}, _cloudDict = {}, _localDictCache = {}, _blacklist = new Set();
 
+// ============================================================
+//  I18N
+// ============================================================
 const STRINGS = {
-  fr:{sub:'Classement API/Fichier → Équipes · Tout en 3 étapes',apiLbl:'🔌 Choix de l\'API',apiRecTag:'✅ RECOMMANDÉE',apiRecDesc:'Fonctionne sur tous les events depuis Nov. 2025',apiWlsTag:'🎯 TOURNOIS WLS',apiWlsDesc:'Pour les événements organisés via WLS',loading:'Chargement du dictionnaire...',s1Title:'Générer le classement',widLbl:'WindowID ou URL Fortnite Tracker',widHint:'💡 Colle l\'URL complète — le WindowID est extrait automatiquement',wlsLbl:'WLS Leaderboard ID',wlsHint:'💡 L\'ID numérique du leaderboard WLS',fileHint:'💡 Sauvegarde la page Fortnite Tracker avec Ctrl+S — le fichier .html contient les données JSON intégrées',plcLbl:'Placement',plcFrom:'De',plcTo:'à',plcHint:'💡 Filtre les rangs à inclure dans le résultat',genBtn:'🚀 Générer',genLbl:'Classement généré',copyBtn:'📋 Copier',step2Btn:'➡️ Ajouter les équipes',s2Title:'Ajouter les équipes',s2InLbl:'Classement ou code wiki à traiter',s2Hint:'Compatible avec le format classement (rank↹players↹points) ET le format wiki',csvLbl:'Équipes — CSV ou TSV',fileBtn:'📂 Choisir un fichier',teamsBtn:'🏅 Ajouter les équipes',resLbl:'Résultat final',s3Title:'Mise à jour des pseudos',s3Desc:'Remplace les anciens pseudos dans ton code wiki en te basant sur l\'EpicID.',s3Hint:'💡 TSV 3 colonnes : mauvais pseudo · nouveau pseudo (nom de page wiki) · EpicID. L\'en-tête est ignorée automatiquement.',s3CodeLbl:'Code wiki à modifier',s3TsvLbl:'Table des mises à jour (TSV)',s3Btn:'🔄 Mettre à jour',s3ResLbl:'Code wiki mis à jour',madeBy:'Créé par',copied:'✅ Copié !',errNoId:'Entre un ID !',errNoBoth:'Entre les deux IDs !',errNoCsv:'Ajoute le CSV des équipes !',errCsvEmpty:'CSV vide !',errCols:'Colonnes introuvables :',errNoFile:'Choisis un fichier HTML !',errNoBothF:'Choisis les deux fichiers HTML !',errFileParse:'❌ Impossible de lire les données — vérifie que c\'est bien un export HTML Fortnite Tracker',genOk:(n,tot,api)=>`✅ <b>${n} lignes générées</b> · ${tot} pseudos dans le dict · via ${api}`,genOkFile:(n,tot)=>`✅ <b>${n} équipes extraites du fichier HTML</b> · ${tot} pseudos dans le dict`,noRes:'❌ Aucun résultat — vérifie l\'ID.',dateTitle:'📅 Date de l\'événement',dateDay1:'Jour 1 :',dateDay2:'Jour 2 :',dateCopy:'📋 Copier'},
-  en:{sub:'API/File Leaderboard → Teams · All in 3 steps',apiLbl:'🔌 API Selection',apiRecTag:'✅ RECOMMENDED',apiRecDesc:'Works on all events since Nov. 2025',apiWlsTag:'🎯 WLS TOURNAMENTS',apiWlsDesc:'For events organized through WLS',loading:'Loading dictionary...',s1Title:'Generate leaderboard',widLbl:'WindowID or Fortnite Tracker URL',widHint:'💡 Paste the full URL — WindowID is extracted automatically',wlsLbl:'WLS Leaderboard ID',wlsHint:'💡 The numeric WLS leaderboard ID',fileHint:'💡 Save the Fortnite Tracker page with Ctrl+S — the .html file contains embedded JSON data',plcLbl:'Placement',plcFrom:'From',plcTo:'to',plcHint:'💡 Filter which ranks to include',genBtn:'🚀 Generate',genLbl:'Generated leaderboard',copyBtn:'📋 Copy',step2Btn:'➡️ Add teams',s2Title:'Add teams',s2InLbl:'Leaderboard or wiki code to process',s2Hint:'Compatible with leaderboard format AND wiki format',csvLbl:'Teams — CSV or TSV',fileBtn:'📂 Choose a file',teamsBtn:'🏅 Add teams',resLbl:'Final result',s3Title:'Pseudo Update',s3Desc:'Replace old nicknames in your wiki code using EpicID.',s3Hint:'💡 3-column TSV: wrong name · new wiki page name · EpicID. Header row is ignored automatically.',s3CodeLbl:'Wiki code to update',s3TsvLbl:'Updates table (TSV)',s3Btn:'🔄 Update',s3ResLbl:'Updated wiki code',madeBy:'Created by',copied:'✅ Copied!',errNoId:'Enter an ID!',errNoBoth:'Enter both IDs!',errNoCsv:'Add the teams CSV!',errCsvEmpty:'CSV is empty!',errCols:'Columns not found:',errNoFile:'Choose an HTML file!',errNoBothF:'Choose both HTML files!',errFileParse:'❌ Cannot read data — make sure this is a Fortnite Tracker HTML export',genOk:(n,tot,api)=>`✅ <b>${n} lines generated</b> · ${tot} in dict · via ${api}`,genOkFile:(n,tot)=>`✅ <b>${n} teams extracted from HTML file</b> · ${tot} in dict`,noRes:'❌ No results — check the ID.',dateTitle:'📅 Event date',dateDay1:'Day 1:',dateDay2:'Day 2:',dateCopy:'📋 Copy'}
+  fr:{
+    sub:'Classement API/Fichier â†’ Ã‰quipes Â· Tout en 3 Ã©tapes',
+    apiLbl:'ðŸ”Œ Choix de l\'API',apiRecTag:'âœ… RECOMMANDÃ‰E',apiRecDesc:'Fonctionne sur tous les events depuis Nov. 2025',
+    apiWlsTag:'ðŸŽ¯ TOURNOIS WLS',apiWlsDesc:'Pour les Ã©vÃ©nements organisÃ©s via WLS',
+    loading:'Chargement du dictionnaire...',s1Title:'GÃ©nÃ©rer le classement',
+    widLbl:'WindowID ou URL Fortnite Tracker',widHint:'ðŸ’¡ Colle l\'URL complÃ¨te â€” le WindowID est extrait automatiquement',
+    wlsLbl:'WLS Leaderboard ID',wlsHint:'ðŸ’¡ L\'ID numÃ©rique du leaderboard WLS',
+    fileLbl1:'Fichier HTML Fortnite Tracker',
+    fileHint:'ðŸ’¡ Sauvegarde la page Fortnite Tracker avec Ctrl+S â€” le fichier .html contient les donnÃ©es JSON intÃ©grÃ©es',
+    dzTitle:'Glisse ton fichier ici ou clique pour choisir',
+    plcLbl:'Placement',plcFrom:'De',plcTo:'Ã ',plcHint:'ðŸ’¡ Filtre les rangs Ã  inclure dans le rÃ©sultat',
+    genBtn:'ðŸš€ GÃ©nÃ©rer',genLbl:'Classement gÃ©nÃ©rÃ©',copyBtn:'ðŸ“‹ Copier',step2Btn:'âž¡ï¸ Ajouter les Ã©quipes',
+    s2Title:'Ajouter les Ã©quipes',s2InLbl:'Classement ou code wiki Ã  traiter',
+    s2Hint:'Compatible avec le format classement (rankâ†¹playersâ†¹points) ET le format wiki',
+    csvLbl:'Ã‰quipes â€” CSV ou TSV',fileBtn:'ðŸ“‚ Choisir un fichier',fileNone:'Aucun fichier choisi',
+    teamsBtn:'ðŸ… Ajouter les Ã©quipes',resLbl:'RÃ©sultat final',
+    s3Title:'Mise Ã  jour des pseudos',s3Desc:'Remplace les anciens pseudos dans ton code wiki en te basant sur l\'EpicID.',
+    s3Hint:'ðŸ’¡ TSV 3 colonnes : mauvais pseudo Â· nouveau pseudo (nom de page wiki) Â· EpicID. L\'en-tÃªte est ignorÃ©e automatiquement.',
+    s3CodeLbl:'Code wiki Ã  modifier',s3TsvLbl:'Table des mises Ã  jour (TSV)',s3Btn:'ðŸ”„ Mettre Ã  jour',s3ResLbl:'Code wiki mis Ã  jour',
+    dictTitle:'Ajouter un joueur Ã  la database',
+    dictDesc:'Les entrÃ©es sont sauvegardÃ©es dans le <b>cloud partagÃ©</b> â€” visibles par tout le monde instantanÃ©ment.',
+    dictLbl:'Format : PseudoWiki=EpicAccountID (une entrÃ©e par ligne)',
+    dictHint:'ðŸ’¡ L\'Epic Account ID (32 chars) se trouve dans l\'URL Fortnite Tracker',
+    dictAddBtn:'âž• Ajouter',madeBy:'CrÃ©Ã© par',copied:'âœ… CopiÃ© !',
+    noRes:'âŒ Aucun rÃ©sultat â€” vÃ©rifie l\'ID.',errNoId:'Entre un ID !',errNoBoth:'Entre les deux IDs !',
+    errNoCsv:'Ajoute le CSV des Ã©quipes !',errCsvEmpty:'CSV vide !',errCols:'Colonnes introuvables :',
+    errNoFile:'Choisis un fichier HTML !',errNoBothF:'Choisis les deux fichiers HTML !',
+    errFileParse:'âŒ Impossible de lire les donnÃ©es â€” vÃ©rifie que c\'est bien un export HTML Fortnite Tracker',
+    dictErrFmt:'âŒ Aucune ligne valide â€” utilise Pseudo=EpicID',dictSaving:'â³ Sauvegarde...',
+    dictOk:(n)=>`âœ… ${n} entrÃ©e${n>1?'s':''} ajoutÃ©e${n>1?'s':''} â˜ï¸`,
+    dictWarn:(n)=>`âš ï¸ ${n} entrÃ©e${n>1?'s':''} sauvegardÃ©e${n>1?'s':''} localement`,
+    pseudosOk:(tot,f,c)=>{let m=`âœ… <b>${tot} pseudos chargÃ©s</b>`;if(f>0)m+=` Â· ${f} depuis GitHub`;if(c>0)m+=` Â· ${c} cloud â˜ï¸`;return m;},
+    noDict:'âš ï¸ Aucun pseudo chargÃ© â€” l\'outil fonctionne quand mÃªme',
+    genOk:(n,tot,api)=>`âœ… <b>${n} lignes gÃ©nÃ©rÃ©es</b> Â· ${tot} pseudos dans le dict Â· via ${api}`,
+    genOkFile:(n,tot)=>`âœ… <b>${n} Ã©quipes extraites du fichier HTML</b> Â· ${tot} pseudos dans le dict`,
+    puOk:(n,t)=>`âœ… <b>${n} remplacement${n>1?'s':''} effectuÃ©${n>1?'s':''}</b> sur ${t} entrÃ©es`,
+    puMiss:(l)=>`âš ï¸ ${l.length} non trouvÃ©${l.length>1?'s':''} : <code>${l.slice(0,6).join(', ')}${l.length>6?'â€¦':''}</code>`,
+    puErrCode:'Entre le code wiki !',puErrUpd:'Entre la table des mises Ã  jour !',
+    puErrParse:'Aucune ligne valide â€” vÃ©rifie le format TSV (3 colonnes).',
+    dateTitle:'ðŸ“… Date de l\'Ã©vÃ©nement',dateDay1:'Jour 1 :',dateDay2:'Jour 2 :',dateCopy:'ðŸ“‹ Copier',
+  },
+  en:{
+    sub:'API/File Leaderboard â†’ Teams Â· All in 3 steps',
+    apiLbl:'ðŸ”Œ API Selection',apiRecTag:'âœ… RECOMMENDED',apiRecDesc:'Works on all events since Nov. 2025',
+    apiWlsTag:'ðŸŽ¯ WLS TOURNAMENTS',apiWlsDesc:'For events organized through WLS',
+    loading:'Loading dictionary...',s1Title:'Generate leaderboard',
+    widLbl:'WindowID or Fortnite Tracker URL',widHint:'ðŸ’¡ Paste the full URL â€” WindowID is extracted automatically',
+    wlsLbl:'WLS Leaderboard ID',wlsHint:'ðŸ’¡ The numeric WLS leaderboard ID',
+    fileLbl1:'Fortnite Tracker HTML File',
+    fileHint:'ðŸ’¡ Save the Fortnite Tracker page with Ctrl+S â€” the .html file contains embedded JSON data',
+    dzTitle:'Drop your file here or click to choose',
+    plcLbl:'Placement',plcFrom:'From',plcTo:'to',plcHint:'ðŸ’¡ Filter which ranks to include',
+    genBtn:'ðŸš€ Generate',genLbl:'Generated leaderboard',copyBtn:'ðŸ“‹ Copy',step2Btn:'âž¡ï¸ Add teams',
+    s2Title:'Add teams',s2InLbl:'Leaderboard or wiki code to process',
+    s2Hint:'Compatible with leaderboard format AND wiki format',
+    csvLbl:'Teams â€” CSV or TSV',fileBtn:'ðŸ“‚ Choose a file',fileNone:'No file chosen',
+    teamsBtn:'ðŸ… Add teams',resLbl:'Final result',
+    s3Title:'Pseudo Update',s3Desc:'Replace old nicknames in your wiki code using EpicID.',
+    s3Hint:'ðŸ’¡ 3-column TSV: wrong name Â· new wiki page name Â· EpicID. Header row is ignored automatically.',
+    s3CodeLbl:'Wiki code to update',s3TsvLbl:'Updates table (TSV)',s3Btn:'ðŸ”„ Update',s3ResLbl:'Updated wiki code',
+    dictTitle:'Add a player to the database',
+    dictDesc:'Entries are saved in the <b>shared cloud</b> â€” visible to everyone instantly.',
+    dictLbl:'Format: WikiNickname=EpicAccountID (one per line)',
+    dictHint:'ðŸ’¡ The Epic Account ID (32 chars) is in the Fortnite Tracker URL',
+    dictAddBtn:'âž• Add',madeBy:'Created by',copied:'âœ… Copied!',
+    noRes:'âŒ No results â€” check the ID.',errNoId:'Enter an ID!',errNoBoth:'Enter both IDs!',
+    errNoCsv:'Add the teams CSV!',errCsvEmpty:'CSV is empty!',errCols:'Columns not found:',
+    errNoFile:'Choose an HTML file!',errNoBothF:'Choose both HTML files!',
+    errFileParse:'âŒ Cannot read data â€” make sure this is a Fortnite Tracker HTML export',
+    dictErrFmt:'âŒ No valid lines â€” use Nickname=EpicID format',dictSaving:'â³ Saving...',
+    dictOk:(n)=>`âœ… ${n} entr${n>1?'ies':'y'} added â˜ï¸`,
+    dictWarn:(n)=>`âš ï¸ ${n} entr${n>1?'ies':'y'} saved locally`,
+    pseudosOk:(tot,f,c)=>{let m=`âœ… <b>${tot} nicknames loaded</b>`;if(f>0)m+=` Â· ${f} from GitHub`;if(c>0)m+=` Â· ${c} cloud â˜ï¸`;return m;},
+    noDict:'âš ï¸ No nicknames loaded â€” tool still works',
+    genOk:(n,tot,api)=>`âœ… <b>${n} lines generated</b> Â· ${tot} in dict Â· via ${api}`,
+    genOkFile:(n,tot)=>`âœ… <b>${n} teams extracted from HTML file</b> Â· ${tot} in dict`,
+    puOk:(n,t)=>`âœ… <b>${n} replacement${n>1?'s':''} made</b> out of ${t} entries`,
+    puMiss:(l)=>`âš ï¸ ${l.length} not found: <code>${l.slice(0,6).join(', ')}${l.length>6?'â€¦':''}</code>`,
+    puErrCode:'Enter the wiki code!',puErrUpd:'Enter the updates table!',
+    puErrParse:'No valid rows â€” check TSV format (3 columns).',
+    dateTitle:'ðŸ“… Event date',dateDay1:'Day 1:',dateDay2:'Day 2:',dateCopy:'ðŸ“‹ Copy',
+  }
 };
-function s(k,...a){const v=STRINGS[_lang][k];return typeof v==='function'?v(...a):(v!==undefined?v:k)}
+
+function s(k,...a){const v=STRINGS[_lang][k];return typeof v==='function'?v(...a):(v!==undefined?v:k);}
 function applyLang(){
-  const ids={'sub-txt':'sub','api-lbl':'apiLbl','api-rec-tag':'apiRecTag','api-rec-desc':'apiRecDesc','api-wls-tag':'apiWlsTag','api-wls-desc':'apiWlsDesc','file-hint':'fileHint','plc-lbl':'plcLbl','plc-from':'plcFrom','plc-to':'plcTo','plc-hint':'plcHint','gen-lbl':'genLbl','s2-title':'s2Title','s2-in-lbl':'s2InLbl','s2-hint':'s2Hint','csv-lbl':'csvLbl','res-lbl':'resLbl','s3-title':'s3Title','s3-desc':'s3Desc','s3-hint':'s3Hint','s3-code-lbl':'s3CodeLbl','s3-tsv-lbl':'s3TsvLbl','s3-res-lbl':'s3ResLbl','made-by':'madeBy'};
-  for(const[id,key]of Object.entries(ids)){const el=document.getElementById(id);if(el)el.innerHTML=s(key)}
-  const btns={'gen-btn':'genBtn','copy1-btn':'copyBtn','step2-btn':'step2Btn','teams-btn':'teamsBtn','copy2-btn':'copyBtn','pu-btn':'s3Btn','copy3-btn':'copyBtn','file-btn-csv':'fileBtn','file-btn-pu':'fileBtn'};
-  for(const[id,key]of Object.entries(btns)){const el=document.getElementById(id);if(el)el.innerHTML=s(key)}
+  const ids={'sub-txt':'sub','api-lbl':'apiLbl','api-rec-tag':'apiRecTag','api-rec-desc':'apiRecDesc','api-wls-tag':'apiWlsTag','api-wls-desc':'apiWlsDesc','file-hint':'fileHint','plc-lbl':'plcLbl','plc-from':'plcFrom','plc-to':'plcTo','plc-hint':'plcHint','gen-lbl':'genLbl','s2-title':'s2Title','s2-in-lbl':'s2InLbl','s2-hint':'s2Hint','csv-lbl':'csvLbl','res-lbl':'resLbl','s3-title':'s3Title','s3-desc':'s3Desc','s3-hint':'s3Hint','s3-code-lbl':'s3CodeLbl','s3-tsv-lbl':'s3TsvLbl','s3-res-lbl':'s3ResLbl','dict-title':'dictTitle','dict-desc':'dictDesc','dict-lbl':'dictLbl','dict-hint':'dictHint','made-by':'madeBy'};
+  for(const[id,key]of Object.entries(ids)){const el=document.getElementById(id);if(el)el.innerHTML=s(key);}
+  const btns={'gen-btn':'genBtn','copy1-btn':'copyBtn','step2-btn':'step2Btn','teams-btn':'teamsBtn','copy2-btn':'copyBtn','pu-btn':'s3Btn','copy3-btn':'copyBtn','dict-add-btn':'dictAddBtn','file-btn-csv':'fileBtn','file-btn-pu':'fileBtn'};
+  for(const[id,key]of Object.entries(btns)){const el=document.getElementById(id);if(el)el.innerHTML=s(key);}
+  const wl=document.getElementById('wid-lbl');if(wl)wl.textContent=_api==='wls'?s('wlsLbl'):s('widLbl');
+  const wh=document.getElementById('wid-hint');if(wh)wh.textContent=_api==='wls'?s('wlsHint'):s('widHint');
 }
-function toggleLang(){_lang=_lang==='fr'?'en':'fr';document.getElementById('llbl').textContent=_lang==='fr'?'English':'Français';document.getElementById('lflag').textContent=_lang==='fr'?'🇬🇧':'🇫🇷';applyLang()}
-function selApi(api){_api=api;document.getElementById('btn-kass').className='api-btn'+(api==='kass'?' ak':'');document.getElementById('btn-wls').className='api-btn'+(api==='wls'?' aw':'')}
-function setMode(m){_mode=m;['simple','cumul','file'].forEach(x=>{document.getElementById('m-'+x).classList.toggle('hidden',x!==m);const btn=document.getElementById('t-'+x);if(btn)btn.className='tab'+(x===m?(x==='file'?' on-v':' on'):'')})}
-function setFileMode(m){_fileMode=m;document.getElementById('fz-single').classList.toggle('hidden',m!=='single');document.getElementById('fz-double').classList.toggle('hidden',m!=='double');document.getElementById('tf-s').className='tab'+(m==='single'?' on-v':'');document.getElementById('tf-c').className='tab'+(m==='double'?' on-v':'')}
-function dzOver(e,id){e.preventDefault();document.getElementById(id).classList.add('drag')}
-function dzLeave(id){document.getElementById(id).classList.remove('drag')}
-function dzDrop(e,dzId,inputId,titleId){e.preventDefault();dzLeave(dzId);const f=e.dataTransfer.files[0];if(!f)return;const dt=new DataTransfer();dt.items.add(f);document.getElementById(inputId).files=dt.files;dzSetOk(dzId,titleId,f.name)}
-function dzChosen(inputId,dzId,titleId){const f=document.getElementById(inputId).files[0];if(!f)return;dzSetOk(dzId,titleId,f.name)}
-function dzSetOk(dzId,titleId,name){const dz=document.getElementById(dzId);dz.classList.add('ok');dz.classList.remove('drag');const t2=document.getElementById(titleId);if(t2)t2.textContent='✅ '+name}
-function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
-function getWid(v){v=(v||'').trim();const m=v.match(/[?&]window=([a-zA-Z0-9_-]+)/);return m?m[1]:v}
-function getRange(){const f=parseInt(document.getElementById('rk-from').value)||1,t2=parseInt(document.getElementById('rk-to').value)||100;return{from:Math.max(1,f),to:Math.max(f,t2)}}
-function filterRank(lines){const{from,to}=getRange();return lines.filter(l=>{const r=parseInt(l.split('\t')[0]);return !isNaN(r)&&r>=from&&r<=to})}
-function cp(id,fid){navigator.clipboard.writeText(document.getElementById(id).value);const el=document.getElementById(fid);el.textContent=s('copied');setTimeout(()=>el.textContent='',2000)}
-function loadTxt(inputId,targetId,nameId){const f=document.getElementById(inputId).files[0];if(!f)return;document.getElementById(nameId).textContent=f.name;f.text().then(txt=>document.getElementById(targetId).value=txt)}
-function toStep2(){document.getElementById('i2').value=document.getElementById('r1').value;document.getElementById('b2').classList.add('b');document.getElementById('card2').scrollIntoView({behavior:'smooth'})}
-function detectDlm(lines){const cands=['\t',',',';'];let best='\t',bestScore=-1;for(const d of cands){const avg=lines.reduce((x,l)=>x+(l.split(d).length-1),0)/lines.length;if(avg>bestScore){bestScore=avg;best=d}}return best}
-function markDone(badgeId,cardId){const b=document.getElementById(badgeId);b.className='badge g';b.textContent='✓';document.getElementById(cardId).classList.add('done')}
-function escHtml(v){return(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
-function getName(eid){const r=dict[eid];return r?r.replace(/_/g,' '):null}
-function resolveName(eid,apiName){return getName(eid)||apiName||'not found'}
-function getMid(m){return typeof m==='string'?m.toLowerCase().replace(/-/g,''):((m.id||'').toLowerCase().replace(/-/g,''))}
-function getMname(m){return typeof m==='string'?null:(m.name||null)}
-function normalizeTeamName(v){return (v||'').trim()}
-function buildTeamsFieldFromMembers(members, teamsMap, getId, getNameFn){
-  return members.map(m=>{
-    const eid = (getId(m)||'').toLowerCase().replace(/-/g,'');
-    const rawName = getNameFn(m);
-    const resolvedName = resolveName(eid, rawName);
-    return normalizeTeamName(teamsMap[eid] || teamsMap[resolvedName] || rawName && teamsMap[rawName] || '');
-  }).join(',');
+function toggleLang(){_lang=_lang==='fr'?'en':'fr';localStorage.setItem('lang',_lang);document.getElementById('llbl').textContent=_lang==='fr'?'English':'FranÃ§ais';document.getElementById('lflag').textContent=_lang==='fr'?'ðŸ‡¬ðŸ‡§':'ðŸ‡«ðŸ‡·';applyLang();}
+if(_lang==='en'){document.getElementById('llbl').textContent='FranÃ§ais';document.getElementById('lflag').textContent='ðŸ‡«ðŸ‡·';applyLang();}
+
+// ============================================================
+//  API / MODE
+// ============================================================
+function selApi(api){
+  _api=api;
+  document.getElementById('btn-kass').className='api-btn'+(api==='kass'?' ak':'');
+  document.getElementById('btn-wls').className='api-btn'+(api==='wls'?' aw':'');
+  const wls=api==='wls';
+  const wl=document.getElementById('wid-lbl');if(wl)wl.textContent=wls?s('wlsLbl'):s('widLbl');
+  const wh=document.getElementById('wid-hint');if(wh)wh.textContent=wls?s('wlsHint'):s('widHint');
+  const wi=document.getElementById('wid1');if(wi)wi.placeholder=wls?'797505610768728064':'S39_SoloSeriesCupFinal_Day1_ME';
+  document.getElementById('lbl-d1').textContent=wls?s('wlsLbl')+' 1':'Day 1';
+  document.getElementById('lbl-d2').textContent=wls?s('wlsLbl')+' 2':'Day 2';
+  document.getElementById('wd1').placeholder=wls?'797505610768728064':'...Day1_ME';
+  document.getElementById('wd2').placeholder=wls?'797505610768728064':'...Day2_ME';
 }
+function setMode(m){_mode=m;['simple','cumul','file'].forEach(x=>{document.getElementById('m-'+x).classList.toggle('hidden',x!==m);const btn=document.getElementById('t-'+x);if(btn)btn.className='tab'+(x===m?(x==='file'?' on-v':' on'):'');});}
+function setFileMode(m){_fileMode=m;document.getElementById('fz-single').classList.toggle('hidden',m!=='single');document.getElementById('fz-double').classList.toggle('hidden',m!=='double');document.getElementById('tf-s').className='tab'+(m==='single'?' on-v':'');document.getElementById('tf-c').className='tab'+(m==='double'?' on-v':'');}
+
+// ============================================================
+//  DRAG & DROP
+// ============================================================
+function dzOver(e,id){e.preventDefault();document.getElementById(id).classList.add('drag');}
+function dzLeave(id){document.getElementById(id).classList.remove('drag');}
+function dzDrop(e,dzId,inputId,titleId){e.preventDefault();dzLeave(dzId);const f=e.dataTransfer.files[0];if(!f)return;const dt=new DataTransfer();dt.items.add(f);document.getElementById(inputId).files=dt.files;dzSetOk(dzId,titleId,f.name);}
+function dzChosen(inputId,dzId,titleId){const f=document.getElementById(inputId).files[0];if(!f)return;dzSetOk(dzId,titleId,f.name);}
+function dzSetOk(dzId,titleId,name){const dz=document.getElementById(dzId);dz.classList.add('ok');dz.classList.remove('drag');const t2=document.getElementById(titleId);if(t2)t2.textContent='âœ… '+name;}
+
+// ============================================================
+//  UTILS
+// ============================================================
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+function getWid(v){v=(v||'').trim();const m=v.match(/[?&]window=([a-zA-Z0-9_-]+)/);return m?m[1]:v;}
+function getRange(){const f=parseInt(document.getElementById('rk-from').value)||1,t2=parseInt(document.getElementById('rk-to').value)||100;return{from:Math.max(1,f),to:Math.max(f,t2)};}
+function filterRank(lines){const{from,to}=getRange();return lines.filter(l=>{const r=parseInt(l.split('\t')[0]);return!isNaN(r)&&r>=from&&r<=to;});}
+function cp(id,fid){navigator.clipboard.writeText(document.getElementById(id).value);const el=document.getElementById(fid);el.textContent=s('copied');setTimeout(()=>el.textContent='',2000);}
+function loadTxt(inputId,targetId,nameId){const f=document.getElementById(inputId).files[0];if(!f)return;document.getElementById(nameId).textContent=f.name;f.text().then(txt=>document.getElementById(targetId).value=txt);}
+function toStep2(){document.getElementById('i2').value=document.getElementById('r1').value;document.getElementById('b2').classList.add('b');document.getElementById('card2').scrollIntoView({behavior:'smooth'});}
+function detectDlm(lines){const cands=['\t',',',';'];let best='\t',bestScore=-1;for(const d of cands){const avg=lines.reduce((x,l)=>x+(l.split(d).length-1),0)/lines.length;if(avg>bestScore){bestScore=avg;best=d;}}return best;}
+function markDone(badgeId,cardId){const b=document.getElementById(badgeId);b.className='badge g';b.textContent='âœ“';document.getElementById(cardId).classList.add('done');}
+
+// ============================================================
+//  DICT / NAME RESOLUTION
+// ============================================================
+function getName(eid){const r=dict[eid];return r?r.replace(/_/g,' '):null;}
+function resolveName(eid,apiName){return getName(eid)||apiName||'not found';}
+
+// ============================================================
+//  FORMAT LINES
+// ============================================================
+function getMid(m){return typeof m==='string'?m.toLowerCase().replace(/-/g,''):((m.id||'').toLowerCase().replace(/-/g,''));}
+function getMname(m){return typeof m==='string'?null:(m.name||null);}
+
 function fmtLine(rank,members,pts,teamsMap={}){
-  const p=members.map(m=>{const eid=getMid(m);const name=resolveName(eid,getMname(m));return eid+'{{!}}'+name}).join(',');
-  const t=buildTeamsFieldFromMembers(members,teamsMap,m=>getMid(m),m=>getMname(m));
-  return rank+'\t'+t+'\t'+p+'\t'+pts;
+  const p=members.map(m=>{const eid=getMid(m);const name=resolveName(eid,getMname(m));return eid+'{{!}}'+name;}).join(',');
+  const tArr=members.map(m=>{const eid=getMid(m);const name=resolveName(eid,getMname(m));return (teamsMap[eid] || teamsMap[name] || '');});
+  const t = tArr.some(x=>x!=='') ? tArr.join(',') : '';
+  return rank+'	'+t+'	'+p+'	'+pts;
 }
 function fmtLineWLS(rank,mlist,pts,teamsMap={}){
-  const p=mlist.map(m=>{const eid=(m.ingame_id||'').toLowerCase().replace(/-/g,'');const name=resolveName(eid,m.name);return eid+'{{!}}'+name}).join(',');
-  const t=buildTeamsFieldFromMembers(mlist,teamsMap,m=>(m.ingame_id||''),m=>m.name||null);
-  return rank+'\t'+t+'\t'+p+'\t'+pts;
+  const p=mlist.map(m=>{const eid=(m.ingame_id||'').toLowerCase().replace(/-/g,'');const name=resolveName(eid,m.name);return eid+'{{!}}'+name;}).join(',');
+  const tArr=mlist.map(m=>{const eid=(m.ingame_id||'').toLowerCase().replace(/-/g,'');const name=resolveName(eid,m.name);return (teamsMap[eid] || teamsMap[name] || '');});
+  const t = tArr.some(x=>x!=='') ? tArr.join(',') : '';
+  return rank+'	'+t+'	'+p+'	'+pts;
 }
 function fmtFileLine(rank,ids,pts,teamsMap={}){
-  const p=ids.map(eid=>{const name=resolveName(eid,null);return eid+'{{!}}'+name}).join(',');
-  const t=ids.map(eid=>{const name=resolveName(eid,null);return normalizeTeamName(teamsMap[eid] || teamsMap[name] || '')}).join(',');
-  return rank+'\t'+t+'\t'+p+'\t'+pts;
+  const p=ids.map(eid=>{const name=resolveName(eid,null);return eid+'{{!}}'+name;}).join(',');
+  const tArr=ids.map(eid=>{const name=resolveName(eid,null);return (teamsMap[eid] || teamsMap[name] || '');});
+  const t = tArr.some(x=>x!=='') ? tArr.join(',') : '';
+  return rank+'	'+t+'	'+p+'	'+pts;
 }
-async function fetchWikiTeams(eids){
-  const teamsMap={}; if(!eids||!eids.length) return teamsMap;
-  const unique=[...new Set(eids.filter(Boolean).map(x=>String(x).toLowerCase().replace(/-/g,'')))];
-  const chunkSize=25;
-  for(let i=0;i<unique.length;i+=chunkSize){
-    const chunk=unique.slice(i,i+chunkSize);
-    const whereList=chunk.map(id=>`'${id}'`).join(',');
-    const url=`https://fortnite-esports.fandom.com/api.php?action=cargoquery&tables=Players=P&fields=P.FortniteID,P.Team,P._pageName=PlayerPage&where=P.FortniteID IN (${whereList})&format=json&limit=500&origin=*`;
-    let success=false,retries=0;
-    while(!success&&retries<5){
-      try{
-        const r=await fetch(url); if(!r.ok) throw new Error('HTTP '+r.status);
-        const data=await r.json();
-        if(data.error&&data.error.code==='ratelimited'){await sleep(1000*(retries+1));retries++;continue}
-        if(data.cargoquery){
-          data.cargoquery.forEach(item=>{
-            const d=item.title||{};
-            const team=normalizeTeamName(d.Team||'');
-            if(d.FortniteID) teamsMap[String(d.FortniteID).toLowerCase().replace(/-/g,'')] = team;
-            if(d.PlayerPage) teamsMap[d.PlayerPage] = team;
-          })
+
+// ============================================================
+//  HTML FILE PARSER
+// ============================================================
+
+async function fetchWikiTeams(eids) {
+  const teamsMap = {};
+  if(!eids || !eids.length) return teamsMap;
+  const unique = [...new Set(eids.filter(Boolean))];
+  const chunkSize = 25; // On rÃ©duit la taille des paquets pour allÃ©ger la requÃªte
+
+  for(let i=0; i<unique.length; i+=chunkSize) {
+    const chunk = unique.slice(i, i+chunkSize);
+    const whereList = chunk.map(id => `'${id}'`).join(',');
+    const url = `https://fortnite-esports.fandom.com/api.php?action=cargoquery&tables=Players=P&fields=P.FortniteID,P.Team,P._pageName=PlayerPage&where=P.FortniteID IN (${whereList})&format=json&limit=500&origin=*`;
+
+    let success = false;
+    let retries = 0;
+
+    while(!success && retries < 5) { // Jusqu'Ã  5 tentatives par paquet
+      try {
+        const r = await fetch(url);
+        if(!r.ok) throw new Error("HTTP " + r.status);
+        const data = await r.json();
+
+        // DÃ©tection explicite du rate limit Fandom
+        if(data.error && data.error.code === 'ratelimited') {
+          console.warn(`Rate limit atteint, attente de ${1000 * (retries + 1)}ms...`);
+          await sleep(1000 * (retries + 1)); // Attente exponentielle (1s, 2s, 3s...)
+          retries++;
+          continue; 
         }
-        success=true;
-      }catch(e){await sleep(1000);retries++}
+
+        // SuccÃ¨s
+        if(data.cargoquery) {
+          data.cargoquery.forEach(item => {
+             const d = item.title;
+             if(d && d.FortniteID) teamsMap[d.FortniteID.toLowerCase()] = d.Team || '';
+             if(d && d.PlayerPage) teamsMap[d.PlayerPage] = d.Team || '';
+          });
+        }
+        success = true;
+      } catch(e) {
+        console.warn("Erreur fetch wiki:", e);
+        await sleep(1000);
+        retries++;
+      }
     }
-    await sleep(350)
+
+    // Petite pause de prÃ©vention anti-spam entre chaque paquet rÃ©ussi
+    await sleep(350);
   }
   return teamsMap;
 }
-function parseHTMLLeaderboard(content){const positions=[];let idx=0;while(true){const pos=content.indexOf('"teamAccountIds"',idx);if(pos===-1)break;positions.push(pos);idx=pos+1}if(!positions.length)return null;const results=[];for(let i=0;i<positions.length;i++){const pos=positions[i];const chunkStart=i>0?positions[i-1]+50:0;const chunk=content.slice(chunkStart,pos+400);const taM=content.slice(pos,pos+500).match(/"teamAccountIds"\s*:\s*\[([^\]]+)\]/);if(!taM)continue;const ids=taM[1].split(',').map(x=>x.trim().replace(/"/g,'').replace(/-/g,'').toLowerCase()).filter(x=>x.length>0);if(!ids.length)continue;let rankVal=-1;const rankRe=/"rank"\s*:\s*(\d+)/g;let rm;while((rm=rankRe.exec(chunk))!==null)rankVal=parseInt(rm[1]);if(rankVal<1)continue;let ptsVal=-1;const peRe=/"pointsEarned"\s*:\s*(\d+)(?!\.\d)/g;let pm;while((pm=peRe.exec(chunk))!==null)ptsVal=parseInt(pm[1]);if(ptsVal<0)continue;const dateM=chunk.match(/"endTime"\s*:\s*"(\d{4}-\d{2}-\d{2})/);results.push({rank:rankVal,pts:ptsVal,ids,date:dateM?dateM[1]:null})}const seen=new Set(),unique=[];for(const r of results){if(!seen.has(r.rank)){seen.add(r.rank);unique.push(r)}}unique.sort((a,b)=>a.rank-b.rank);return unique.length?unique:null}
-function readFile(inputId){return new Promise((res,rej)=>{const f=document.getElementById(inputId).files[0];if(!f)return res(null);const reader=new FileReader();reader.onload=e=>res(e.target.result);reader.onerror=()=>rej(new Error('Erreur lecture fichier'));reader.readAsText(f,'utf-8')})}
-async function runFileSimple(){const content=await readFile('fi1');if(!content)throw new Error(s('errNoFile'));const entries=parseHTMLLeaderboard(content);if(!entries)throw new Error(s('errFileParse'));const date=(entries.find(e=>e.date)||{}).date||null;const eids=[];entries.forEach(e=>e.ids.forEach(id=>eids.push(id)));const tmap=await fetchWikiTeams(eids);return{lines:entries.map(e=>fmtFileLine(e.rank,e.ids,e.pts,tmap)),date}}
-async function runFileCumul(){const c1=await readFile('fi1b'),c2=await readFile('fi2b');if(!c1||!c2)throw new Error(s('errNoBothF'));const e1=parseHTMLLeaderboard(c1),e2=parseHTMLLeaderboard(c2);if(!e1||!e2)throw new Error(s('errFileParse'));const date1=(e1.find(e=>e.date)||{}).date||null,date2=(e2.find(e=>e.date)||{}).date||null;const teams={};for(const e of[...e1,...e2]){const key=e.ids.slice().sort().join('|');if(!teams[key])teams[key]={ids:e.ids,pts:0};teams[key].pts+=e.pts}const list=Object.values(teams).sort((a,b)=>b.pts-a.pts);const eids=[];list.forEach(p=>p.ids.forEach(id=>eids.push(id)));const tmap=await fetchWikiTeams(eids);return{lines:list.map((p,i)=>fmtFileLine(i+1,p.ids,p.pts,tmap)),dates:[date1,date2]}}
-function fetchTO(url,opts,ms){ms=ms||8000;return Promise.race([fetch(url,opts||{}),new Promise((_,rej)=>setTimeout(()=>rej(new Error('Timeout '+ms+'ms')),ms))])}
-async function fetchRetry(url,opts,useProxy){let lastErr=null,ptried=0;for(let i=0;i<3;i++){const fu=useProxy?PROXIES[_proxyIdx]+encodeURIComponent(url):url;try{const r=await fetchTO(fu,opts||{},10000);if(r.ok)return r;if(r.status>=400&&r.status<500)throw new Error('HTTP '+r.status);if(useProxy&&ptried<PROXIES.length-1){_proxyIdx=(_proxyIdx+1)%PROXIES.length;ptried++}lastErr=new Error('Erreur '+r.status);await sleep((i+1)*2000)}catch(e){if(useProxy&&ptried<PROXIES.length-1){_proxyIdx=(_proxyIdx+1)%PROXIES.length;ptried++}lastErr=e;await sleep((i+1)*1500)}}throw lastErr||new Error('Échec après 3 tentatives')}
-async function kassPage(wid,pg){const url='https://kass507.lat/api/events/window?windowId='+encodeURIComponent(wid)+'&page='+pg;const r=await fetchRetry(url,{headers:{'x-api-key':'kass_A3u2Fle0YACnjklJwreWylDNRp-2beDZ','Accept':'application/json'}},true);return r.json()}
-async function kassAll(wid){let results=[],pg=0,tb=null,begin=null;while(true){let d;try{d=await kassPage(wid,pg)}catch(e){if(results.length>0)break;throw e}if(!d||!d.success)break;if(pg===0){const f=d.session&&d.session.rules&&d.session.rules.tiebreakerFormula;if(f)tb=f;begin=(d.session&&d.session.beginTime)||null}const pr=(d.session&&d.session.results)||d.results||[];if(!pr.length)break;results.push(...pr);if(pg>=((d.totalPages||1)-1))break;pg++}return{results,tb,begin}}
-async function runSimple(wid){const d=await kassAll(wid);if(!d.results.length)return{lines:null,date:null};d.results.sort((a,b)=>(a.rank||999)-(b.rank||999));const eids=[];d.results.forEach(r=>(r.teamAccountNames||r.teamAccounts||r.teamAccountIds||[]).forEach(m=>eids.push(getMid(m))));const tmap=await fetchWikiTeams(eids);return{lines:d.results.map((r,i)=>fmtLine(r.rank||i+1,r.teamAccountNames||r.teamAccounts||r.teamAccountIds||[],r.pointsEarned||r.points||0,tmap)),date:d.begin||null}}
-async function runCumul(wids){const pl={};let tbF=null;const dates=[];for(const wid of wids){const d=await kassAll(wid);if(!tbF&&d.tb)tbF=d.tb;dates.push(d.begin||null);for(const res of d.results){const mb=res.teamAccountNames||res.teamAccounts||res.teamAccountIds||[];const key=mb.map(m=>getMid(m)).sort().join('|');if(!pl[key])pl[key]={pts:0,mb,stats:{}};pl[key].pts+=res.pointsEarned||res.points||0;for(const sess of(res.sessionHistory||[])){const ts=sess.trackedStats||{};for(const k in ts){if(!pl[key].stats[k])pl[key].stats[k]=[];pl[key].stats[k].push(ts[k])}}}}if(!tbF)tbF={components:[{trackedStat:'VICTORY_ROYALE_STAT',aggregation:'sum',multiplier:1},{trackedStat:'TEAM_ELIMS_STAT_INDEX',aggregation:'sum',multiplier:1},{trackedStat:'PLACEMENT_STAT_INDEX',aggregation:'avg',multiplier:1}]};const list=Object.values(pl).map(p=>{const tb=tbF.components.map(c=>{const vals=p.stats[c.trackedStat]||[];if(!vals.length)return 0;const raw=c.aggregation==='avg'?vals.reduce((a,b)=>a+b,0)/vals.length:vals.reduce((a,b)=>a+b,0);return raw*(c.multiplier||1)});return{...p,tb}});list.sort((a,b)=>{if(b.pts!==a.pts)return b.pts-a.pts;for(let i=0;i<a.tb.length;i++)if(b.tb[i]!==a.tb[i])return b.tb[i]-a.tb[i];return 0});const eids=[];list.forEach(p=>p.mb.forEach(m=>eids.push(getMid(m))));const tmap=await fetchWikiTeams(eids);return{lines:list.map((p,i)=>fmtLine(i+1,p.mb,p.pts,tmap)),dates}}
-function tsYMD(ts){if(!ts)return null;const n=Number(ts);if(!isFinite(n))return null;const sec=n>1e12?n/1000:n;const d=new Date(sec*1000);if(isNaN(d.getTime()))return null;return d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0')}
-async function fetchWLS(id){const r=await fetchRetry('https://api.wls.gg/v5/leaderboards/'+id.trim(),{headers:{'Accept':'application/json'}},true);return r.json()}
-async function runSimpleWLS(id){const data=await fetchWLS(id);const teams=data.teams||[];if(!teams.length)return{lines:null,date:null};teams.sort((a,b)=>(a.place||999)-(b.place||999));let date=null;if(teams[0]&&teams[0].sessions){const s0=Object.values(teams[0].sessions)[0];if(s0&&s0.start_time)date=tsYMD(s0.start_time)}const eids=[];teams.forEach(t=>Object.values(t.members||{}).forEach(m=>eids.push((m.ingame_id||'').toLowerCase().replace(/-/g,''))));const tmap=await fetchWikiTeams(eids);return{lines:teams.map(t=>fmtLineWLS(t.place,Object.values(t.members||{}),t.points||0,tmap)),date}}
-async function runCumulWLS(ids){const players={};const dates=[];for(const id of ids){const data=await fetchWLS(id);const teams=data.teams||[];let d=null;if(teams.length&&teams[0].sessions){const s0=Object.values(teams[0].sessions)[0];if(s0&&s0.start_time)d=tsYMD(s0.start_time)}dates.push(d);for(const team of teams){const ml=Object.values(team.members||{});const key=ml.map(m=>(m.ingame_id||'').toLowerCase().replace(/-/g,'')).sort().join('|');if(!players[key])players[key]={pts:0,members:ml};players[key].pts+=team.points||0}}const list=Object.values(players).sort((a,b)=>b.pts-a.pts);const eids=[];list.forEach(p=>p.members.forEach(m=>eids.push((m.ingame_id||'').toLowerCase().replace(/-/g,''))));const tmap=await fetchWikiTeams(eids);return{lines:list.map((p,i)=>fmtLineWLS(i+1,p.members,p.pts,tmap)),dates}}
-function toYMD(raw){if(!raw)return null;const m=String(raw).match(/(\d{4}-\d{2}-\d{2})/);return m?m[1]:tsYMD(raw)}
-function makeDateRow(lbl,raw){const ymd=toYMD(raw)||'?';return'<div class="date-row">'+(lbl?'<span class="date-lbl">'+lbl+'</span>':'')+'<span class="date-val">'+ymd+'</span><button class="date-copy" onclick="cpDate(\''+ymd+'\',this)">'+s('dateCopy')+'</button></div>'}
-function cpDate(v,btn){navigator.clipboard.writeText(v);const o=btn.textContent;btn.textContent='✅';setTimeout(()=>btn.textContent=o,1500)}
-function showDate(info){const el=document.getElementById('date-block');if(!info){el.classList.add('hidden');return}let h='<div style="font-size:.78rem;font-weight:700;color:#94a3b8;margin-bottom:2px">'+s('dateTitle')+'</div>';if(Array.isArray(info)){h+=makeDateRow(s('dateDay1'),info[0]);h+=makeDateRow(s('dateDay2'),info[1])}else h+=makeDateRow('',info);el.innerHTML=h;el.classList.remove('hidden')}
-async function generate(){const btn=document.getElementById('gen-btn'),ldr=document.getElementById('ld1');btn.disabled=true;ldr.style.display='inline';document.getElementById('o1').classList.add('hidden');document.getElementById('date-block').classList.add('hidden');_proxyIdx=0;try{let res;const st=document.getElementById('st1');const apiLabel=_api==='kass'?'Kass507.lat':'WLS.gg';if(_mode==='file'){if(_fileMode==='single'){if(!document.getElementById('fi1').files.length){alert(s('errNoFile'));return}res=await runFileSimple();dateInfo=res.date||null}else{if(!document.getElementById('fi1b').files.length||!document.getElementById('fi2b').files.length){alert(s('errNoBothF'));return}res=await runFileCumul();dateInfo=res.dates||null}if(!res.lines||!res.lines.length){st.className='alert err';st.textContent=s('errFileParse')}else{const f=filterRank(res.lines);st.className='alert ok';st.innerHTML=s('genOkFile',f.length,Object.keys(dict).length);document.getElementById('r1').value=f.join('\n');markDone('b1','card1');showDate(dateInfo)}}else if(_api==='wls'){if(_mode==='simple'){const id=document.getElementById('wid1').value.trim();if(!id){alert(s('errNoId'));return}res=await runSimpleWLS(id);dateInfo=res.date||null}else{const i1=document.getElementById('wd1').value.trim(),i2=document.getElementById('wd2').value.trim();if(!i1||!i2){alert(s('errNoBoth'));return}res=await runCumulWLS([i1,i2]);dateInfo=res.dates||null}applyApiResult(res,st,apiLabel)}else{if(_mode==='simple'){const wid=getWid(document.getElementById('wid1').value);if(!wid){alert(s('errNoId'));return}res=await runSimple(wid);dateInfo=res.date||null}else{const d1=getWid(document.getElementById('wd1').value),d2=getWid(document.getElementById('wd2').value);if(!d1||!d2){alert(s('errNoBoth'));return}res=await runCumul([d1,d2]);dateInfo=res.dates||null}applyApiResult(res,st,apiLabel)}document.getElementById('o1').classList.remove('hidden')}catch(e){document.getElementById('st1').className='alert err';document.getElementById('st1').innerHTML='❌ '+e.message;document.getElementById('o1').classList.remove('hidden')}finally{btn.disabled=false;ldr.style.display='none'}}
-function applyApiResult(res,st,apiLabel){if(!res.lines){st.className='alert err';st.textContent=s('noRes')}else{const f=filterRank(res.lines);st.className='alert ok';st.innerHTML=s('genOk',f.length,Object.keys(dict).length,apiLabel);document.getElementById('r1').value=f.join('\n');markDone('b1','card1');showDate(dateInfo)}}
 
-function parseWikiPlayersField(playersField){
-  return playersField.split(',').map(e=>e.trim()).filter(Boolean).map(entry=>{
-    const parts=entry.split('{{!}}');
-    return {raw:entry,id:(parts[0]||'').trim().toLowerCase().replace(/-/g,''),name:(parts[1]||'').trim()};
+function parseHTMLLeaderboard(content){
+  const positions=[];let idx=0;
+  while(true){const pos=content.indexOf('"teamAccountIds"',idx);if(pos===-1)break;positions.push(pos);idx=pos+1;}
+  if(!positions.length)return null;
+  const results=[];
+  for(let i=0;i<positions.length;i++){
+    const pos=positions[i];
+    const chunkStart=i>0?positions[i-1]+50:0;
+    const chunk=content.slice(chunkStart,pos+400);
+    const taM=content.slice(pos,pos+500).match(/"teamAccountIds"\s*:\s*\[([^\]]+)\]/);
+    if(!taM)continue;
+    const ids=taM[1].split(',').map(x=>x.trim().replace(/"/g,'').replace(/-/g,'').toLowerCase()).filter(x=>x.length>0);
+    if(!ids.length)continue;
+    let rankVal=-1;
+    const rankRe=/"rank"\s*:\s*(\d+)/g;let rm;
+    while((rm=rankRe.exec(chunk))!==null)rankVal=parseInt(rm[1]);
+    if(rankVal<1)continue;
+    let ptsVal=-1;
+    const peRe=/"pointsEarned"\s*:\s*(\d+)(?!\.\d)/g;let pm;
+    while((pm=peRe.exec(chunk))!==null)ptsVal=parseInt(pm[1]);
+    if(ptsVal<0)continue;
+    const dateM=chunk.match(/"endTime"\s*:\s*"(\d{4}-\d{2}-\d{2})/);
+    results.push({rank:rankVal,pts:ptsVal,ids,date:dateM?dateM[1]:null});
+  }
+  const seen=new Set(),unique=[];
+  for(const r of results){if(!seen.has(r.rank)){seen.add(r.rank);unique.push(r);}}
+  unique.sort((a,b)=>a.rank-b.rank);
+  return unique.length?unique:null;
+}
+function readFile(inputId){
+  return new Promise((res,rej)=>{
+    const f=document.getElementById(inputId).files[0];if(!f)return res(null);
+    const reader=new FileReader();reader.onload=e=>res(e.target.result);reader.onerror=()=>rej(new Error('Erreur lecture fichier'));reader.readAsText(f,'utf-8');
   });
 }
-function buildCsvTeamLookup(csv){
-  const csvLines=csv.split(/\r?\n/).filter(l=>l.trim());
-  if(csvLines.length<2) throw new Error(s('errCsvEmpty'));
-  const dlm=detectDlm(csvLines);
-  const hdrs=csvLines[0].split(dlm).map(h=>h.trim().replace(/^\uFEFF/,''));
-  const iDataTeam=hdrs.indexOf('DataTeam');
-  const iPlayerTeam=hdrs.indexOf('PlayerTeam');
-  const iDataPlayer=hdrs.indexOf('DataPlayer');
-  const iPlayerPage=hdrs.indexOf('PlayerPage');
-  if(iDataTeam<0) throw new Error(s('errCols')+'\nColonne "DataTeam" introuvable.\n'+hdrs.join(' | '));
-  if(iPlayerPage<0 && iDataPlayer<0 && iPlayerTeam<0) throw new Error(s('errCols')+'\nAucune colonne joueur trouvée (PlayerPage / DataPlayer / PlayerTeam).\n'+hdrs.join(' | '));
-  const lookup=new Map(), csvEntries=[];
-  const norm=s=>String(s||'').trim();
-  for(let i=1;i<csvLines.length;i++){
-    const cols=csvLines[i].split(dlm).map(c=>c.trim());
-    const dataTeam=iDataTeam>=0&&cols[iDataTeam]?cols[iDataTeam]:'';
-    const playerTeam=iPlayerTeam>=0&&cols[iPlayerTeam]?cols[iPlayerTeam]:'';
-    const dataPlayer=iDataPlayer>=0&&cols[iDataPlayer]?cols[iDataPlayer]:'';
-    const playerPage=iPlayerPage>=0&&cols[iPlayerPage]?cols[iPlayerPage]:'';
-    if(!dataTeam) continue;
-    const entry={dataTeam,playerTeam,dataPlayer,playerPage,rawLine:csvLines[i]};
-    csvEntries.push(entry);
-    [playerPage,dataPlayer,playerTeam].forEach(k=>{ if(norm(k)) lookup.set(norm(k), dataTeam); });
+async function runFileSimple(){
+  const content=await readFile('fi1');if(!content)throw new Error(s('errNoFile'));
+  const entries=parseHTMLLeaderboard(content);if(!entries)throw new Error(s('errFileParse'));
+  const date=(entries.find(e=>e.date)||{}).date||null;
+  const eids=[]; entries.forEach(e=>e.ids.forEach(id=>eids.push(id)));
+  const tmap=await fetchWikiTeams(eids);
+  return{lines:entries.map(e=>fmtFileLine(e.rank,e.ids,e.pts,tmap)),date};
+}
+async function runFileCumul(){
+  const c1=await readFile('fi1b'),c2=await readFile('fi2b');if(!c1||!c2)throw new Error(s('errNoBothF'));
+  const e1=parseHTMLLeaderboard(c1),e2=parseHTMLLeaderboard(c2);if(!e1||!e2)throw new Error(s('errFileParse'));
+  const date1=(e1.find(e=>e.date)||{}).date||null,date2=(e2.find(e=>e.date)||{}).date||null;
+  const teams={};
+  for(const e of[...e1,...e2]){const key=e.ids.slice().sort().join('|');if(!teams[key])teams[key]={ids:e.ids,pts:0};teams[key].pts+=e.pts;}
+  const list=Object.values(teams).sort((a,b)=>b.pts-a.pts);
+  const eids=[]; list.forEach(p=>p.ids.forEach(id=>eids.push(id)));
+  const tmap=await fetchWikiTeams(eids);
+  return{lines:list.map((p,i)=>fmtFileLine(i+1,p.ids,p.pts,tmap)),dates:[date1,date2]};
+}
+
+// ============================================================
+//  NETWORK
+// ============================================================
+function fetchTO(url,opts,ms){ms=ms||8000;return Promise.race([fetch(url,opts||{}),new Promise((_,rej)=>setTimeout(()=>rej(new Error('Timeout '+ms+'ms')),ms))]);}
+async function fetchRetry(url,opts,useProxy){
+  let lastErr=null,ptried=0;
+  for(let i=0;i<3;i++){
+    const fu=useProxy?PROXIES[_proxyIdx]+encodeURIComponent(url):url;
+    try{const r=await fetchTO(fu,opts||{},10000);if(r.ok)return r;if(r.status>=400&&r.status<500)throw new Error('HTTP '+r.status);if(useProxy&&ptried<PROXIES.length-1){_proxyIdx=(_proxyIdx+1)%PROXIES.length;ptried++;}lastErr=new Error('Erreur '+r.status);await sleep((i+1)*2000);}
+    catch(e){if(useProxy&&ptried<PROXIES.length-1){_proxyIdx=(_proxyIdx+1)%PROXIES.length;ptried++;}lastErr=e;await sleep((i+1)*1500);}
   }
-  return {lookup,csvEntries};
+  throw lastErr||new Error('Ã‰chec aprÃ¨s 3 tentatives');
 }
-function findTeamForPlayer(id,name,lookup){
-  return normalizeTeamName(lookup.get(name) || lookup.get(id) || '');
+
+// ============================================================
+//  KASS API
+// ============================================================
+async function kassPage(wid,pg){
+  const url='https://kass507.lat/api/events/window?windowId='+encodeURIComponent(wid)+'&page='+pg;
+  const r=await fetchRetry(url,{headers:{'x-api-key':'kass_A3u2Fle0YACnjklJwreWylDNRp-2beDZ','Accept':'application/json'}},true);
+  return r.json();
 }
+async function kassAll(wid){
+  let results=[],pg=0,tb=null,begin=null;
+  while(true){
+    let d;try{d=await kassPage(wid,pg);}catch(e){if(results.length>0)break;throw e;}
+    if(!d||!d.success)break;
+    if(pg===0){const f=d.session&&d.session.rules&&d.session.rules.tiebreakerFormula;if(f)tb=f;begin=(d.session&&d.session.beginTime)||null;}
+    const pr=(d.session&&d.session.results)||d.results||[];if(!pr.length)break;
+    results.push(...pr);if(pg>=((d.totalPages||1)-1))break;pg++;
+  }
+  return{results,tb,begin};
+}
+async function runSimple(wid){
+  const d=await kassAll(wid);if(!d.results.length)return{lines:null,date:null};
+  d.results.sort((a,b)=>(a.rank||999)-(b.rank||999));
+  const eids=[]; d.results.forEach(r=>(r.teamAccountNames||r.teamAccounts||r.teamAccountIds||[]).forEach(m=>eids.push(getMid(m))));
+  const tmap=await fetchWikiTeams(eids);
+  return{lines:d.results.map((r,i)=>fmtLine(r.rank||i+1,r.teamAccountNames||r.teamAccounts||r.teamAccountIds||[],r.pointsEarned||r.points||0,tmap)),date:d.begin||null};
+}
+async function runCumul(wids){
+  const pl={};let tbF=null;const dates=[];
+  for(const wid of wids){
+    const d=await kassAll(wid);if(!tbF&&d.tb)tbF=d.tb;dates.push(d.begin||null);
+    for(const res of d.results){
+      const mb=res.teamAccountNames||res.teamAccounts||res.teamAccountIds||[];
+      const key=mb.map(m=>getMid(m)).sort().join('|');
+      if(!pl[key])pl[key]={pts:0,mb,stats:{}};
+      pl[key].pts+=res.pointsEarned||res.points||0;
+      for(const sess of(res.sessionHistory||[])){const ts=sess.trackedStats||{};for(const k in ts){if(!pl[key].stats[k])pl[key].stats[k]=[];pl[key].stats[k].push(ts[k]);}}
+    }
+  }
+  if(!tbF)tbF={components:[{trackedStat:'VICTORY_ROYALE_STAT',aggregation:'sum',multiplier:1},{trackedStat:'TEAM_ELIMS_STAT_INDEX',aggregation:'sum',multiplier:1},{trackedStat:'PLACEMENT_STAT_INDEX',aggregation:'avg',multiplier:1}]};
+  const list=Object.values(pl).map(p=>{const tb=tbF.components.map(c=>{const vals=p.stats[c.trackedStat]||[];if(!vals.length)return 0;const raw=c.aggregation==='avg'?vals.reduce((a,b)=>a+b,0)/vals.length:vals.reduce((a,b)=>a+b,0);return raw*(c.multiplier||1);});return{...p,tb};});
+  list.sort((a,b)=>{if(b.pts!==a.pts)return b.pts-a.pts;for(let i=0;i<a.tb.length;i++)if(b.tb[i]!==a.tb[i])return b.tb[i]-a.tb[i];return 0;});
+  const eids=[]; list.forEach(p=>p.mb.forEach(m=>eids.push(getMid(m))));
+  const tmap=await fetchWikiTeams(eids);
+  return{lines:list.map((p,i)=>fmtLine(i+1,p.mb,p.pts,tmap)),dates};
+}
+
+// ============================================================
+//  WLS API
+// ============================================================
+function tsYMD(ts){if(!ts)return null;const n=Number(ts);if(!isFinite(n))return null;const sec=n>1e12?n/1000:n;const d=new Date(sec*1000);if(isNaN(d.getTime()))return null;return d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0');}
+async function fetchWLS(id){const r=await fetchRetry('https://api.wls.gg/v5/leaderboards/'+id.trim(),{headers:{'Accept':'application/json'}},true);return r.json();}
+async function runSimpleWLS(id){
+  const data=await fetchWLS(id);const teams=data.teams||[];if(!teams.length)return{lines:null,date:null};
+  teams.sort((a,b)=>(a.place||999)-(b.place||999));
+  let date=null;if(teams[0]&&teams[0].sessions){const s0=Object.values(teams[0].sessions)[0];if(s0&&s0.start_time)date=tsYMD(s0.start_time);}
+  const eids=[]; teams.forEach(t=>Object.values(t.members||{}).forEach(m=>eids.push((m.ingame_id||'').toLowerCase().replace(/-/g,''))));
+  const tmap=await fetchWikiTeams(eids);
+  return{lines:teams.map(t=>fmtLineWLS(t.place,Object.values(t.members||{}),t.points||0,tmap)),date};
+}
+async function runCumulWLS(ids){
+  const players={};const dates=[];
+  for(const id of ids){
+    const data=await fetchWLS(id);const teams=data.teams||[];
+    let d=null;if(teams.length&&teams[0].sessions){const s0=Object.values(teams[0].sessions)[0];if(s0&&s0.start_time)d=tsYMD(s0.start_time);}
+    dates.push(d);
+    for(const team of teams){const ml=Object.values(team.members||{});const key=ml.map(m=>(m.ingame_id||'').toLowerCase()).sort().join('|');if(!players[key])players[key]={pts:0,members:ml};players[key].pts+=team.points||0;}
+  }
+  const list=Object.values(players).sort((a,b)=>b.pts-a.pts);
+  const eids=[]; list.forEach(p=>p.members.forEach(m=>eids.push((m.ingame_id||'').toLowerCase().replace(/-/g,''))));
+  const tmap=await fetchWikiTeams(eids);
+  return{lines:list.map((p,i)=>fmtLineWLS(i+1,p.members,p.pts,tmap)),dates};
+}
+
+// ============================================================
+//  DATE BLOCK
+// ============================================================
+function toYMD(raw){if(!raw)return null;const m=String(raw).match(/(\d{4}-\d{2}-\d{2})/);return m?m[1]:tsYMD(raw);}
+function makeDateRow(lbl,raw){const ymd=toYMD(raw)||'?';return'<div class="date-row">'+(lbl?'<span class="date-lbl">'+lbl+'</span>':'')+'<span class="date-val">'+ymd+'</span><button class="date-copy" onclick="cpDate(\''+ymd+'\',this)">'+s('dateCopy')+'</button></div>';}
+function cpDate(v,btn){navigator.clipboard.writeText(v);const o=btn.textContent;btn.textContent='âœ…';setTimeout(()=>btn.textContent=o,1500);}
+function showDate(info){
+  const el=document.getElementById('date-block');if(!info){el.classList.add('hidden');return;}
+  let h='<div style="font-size:.78rem;font-weight:700;color:#94a3b8;margin-bottom:2px">'+s('dateTitle')+'</div>';
+  if(Array.isArray(info)){h+=makeDateRow(s('dateDay1'),info[0]);h+=makeDateRow(s('dateDay2'),info[1]);}
+  else h+=makeDateRow('',info);
+  el.innerHTML=h;el.classList.remove('hidden');
+}
+
+// ============================================================
+//  GENERATE
+// ============================================================
+async function generate(){
+  const btn=document.getElementById('gen-btn'),ldr=document.getElementById('ld1');
+  btn.disabled=true;ldr.style.display='inline';
+  document.getElementById('o1').classList.add('hidden');
+  document.getElementById('date-block').classList.add('hidden');
+  _proxyIdx=0;
+  try{
+    let res;const st=document.getElementById('st1');const apiLabel=_api==='kass'?'Kass507.lat':'WLS.gg';
+    if(_mode==='file'){
+      if(_fileMode==='single'){if(!document.getElementById('fi1').files.length){alert(s('errNoFile'));return;}res=await runFileSimple();dateInfo=res.date||null;}
+      else{if(!document.getElementById('fi1b').files.length||!document.getElementById('fi2b').files.length){alert(s('errNoBothF'));return;}res=await runFileCumul();dateInfo=res.dates||null;}
+      if(!res.lines||!res.lines.length){st.className='alert err';st.textContent=s('errFileParse');}
+      else{const f=filterRank(res.lines);st.className='alert ok';st.innerHTML=s('genOkFile',f.length,Object.keys(dict).length);document.getElementById('r1').value=f.join('\n');markDone('b1','card1');showDate(dateInfo);}
+    }else if(_api==='wls'){
+      if(_mode==='simple'){const id=document.getElementById('wid1').value.trim();if(!id){alert(s('errNoId'));return;}res=await runSimpleWLS(id);dateInfo=res.date||null;}
+      else{const i1=document.getElementById('wd1').value.trim(),i2=document.getElementById('wd2').value.trim();if(!i1||!i2){alert(s('errNoBoth'));return;}res=await runCumulWLS([i1,i2]);dateInfo=res.dates||null;}
+      applyApiResult(res,st,apiLabel);
+    }else{
+      if(_mode==='simple'){const wid=getWid(document.getElementById('wid1').value);if(!wid){alert(s('errNoId'));return;}res=await runSimple(wid);dateInfo=res.date||null;}
+      else{const d1=getWid(document.getElementById('wd1').value),d2=getWid(document.getElementById('wd2').value);if(!d1||!d2){alert(s('errNoBoth'));return;}res=await runCumul([d1,d2]);dateInfo=res.dates||null;}
+      applyApiResult(res,st,apiLabel);
+    }
+    document.getElementById('o1').classList.remove('hidden');
+  }catch(e){
+    document.getElementById('st1').className='alert err';
+    document.getElementById('st1').innerHTML='âŒ '+e.message;
+    document.getElementById('o1').classList.remove('hidden');
+  }finally{btn.disabled=false;ldr.style.display='none';}
+}
+function applyApiResult(res,st,apiLabel){
+  if(!res.lines){st.className='alert err';st.textContent=s('noRes');}
+  else{const f=filterRank(res.lines);st.className='alert ok';st.innerHTML=s('genOk',f.length,Object.keys(dict).length,apiLabel);document.getElementById('r1').value=f.join('\n');markDone('b1','card1');showDate(dateInfo);}
+}
+
+// ============================================================
+//  ADD TEAMS â€” CORRIGÃ‰
+//
+//  Logique du |teams= :
+//  Pour chaque joueur dans |players=, on cherche son Ã©quipe
+//  (via PlayerPage d'abord, puis DataPlayer en fallback).
+//  On construit un slot par joueur, sÃ©parÃ© par des virgules.
+//  Si AUCUN joueur n'a d'Ã©quipe sur toute la ligne â†’ teams= reste vide.
+//
+//  Rapport :
+//  - totalCSV = nombre de lignes (joueurs) dans le CSV fourni
+//  - matched  = combien ont Ã©tÃ© trouvÃ©s ET associÃ©s dans le code
+//  - missing  = les lignes CSV complÃ¨tes non trouvÃ©es dans le code
+// ============================================================
 function addTeams(){
-  const input=document.getElementById('i2').value.trim();
-  const csv=document.getElementById('tt').value.trim();
-  if(!input){alert('Entre le classement !');return}
-  if(!csv){alert(s('errNoCsv'));return}
-  let built;
-  try{built=buildCsvTeamLookup(csv)}catch(e){alert(e.message);return}
-  const {lookup,csvEntries}=built;
-  const totalCSV=csvEntries.length;
-  const usedKeys=new Set();
-  const result=input.split('\n').map(line=>{
+  const input = document.getElementById('i2').value.trim();
+  const csv   = document.getElementById('tt').value.trim();
+  if(!input){ alert('Entre le classement !'); return; }
+  if(!csv){ alert(s('errNoCsv')); return; }
+
+  const csvLines = csv.split(/\r?\n/).filter(l => l.trim());
+  if(csvLines.length < 2){ alert(s('errCsvEmpty')); return; }
+
+  const dlm  = detectDlm(csvLines);
+  const hdrs = csvLines[0].split(dlm).map(h => h.trim().replace(/^\uFEFF/,''));
+
+  const iDataTeam   = hdrs.indexOf('DataTeam');
+  const iPlayerTeam = hdrs.indexOf('PlayerTeam');
+  const iDataPlayer = hdrs.indexOf('DataPlayer');
+  const iPlayerPage = hdrs.indexOf('PlayerPage');
+
+  if(iDataTeam < 0){
+    alert(s('errCols') + '\nColonne "DataTeam" introuvable.\n' + hdrs.join(' | '));
+    return;
+  }
+  if(iPlayerPage < 0 && iDataPlayer < 0 && iPlayerTeam < 0){
+    alert(s('errCols') + '\nAucune colonne joueur trouvÃ©e (PlayerPage / DataPlayer / PlayerTeam).\n' + hdrs.join(' | '));
+    return;
+  }
+
+  // Mapping pseudo â†’ dataTeam
+  // On cherche via PlayerPage, DataPlayer ET PlayerTeam (les 3 variantes possibles)
+  const playerToTeam = new Map();
+  const csvEntries   = [];
+
+  for(let i = 1; i < csvLines.length; i++){
+    const cols      = csvLines[i].split(dlm).map(c => c.trim());
+    const dataTeam  = iDataTeam   >= 0 && cols[iDataTeam]   ? cols[iDataTeam]   : '';
+    const playerTeam= iPlayerTeam >= 0 && cols[iPlayerTeam] ? cols[iPlayerTeam] : '';
+    const dataPlayer= iDataPlayer >= 0 && cols[iDataPlayer] ? cols[iDataPlayer] : '';
+    const playerPage= iPlayerPage >= 0 && cols[iPlayerPage] ? cols[iPlayerPage] : '';
+
+    if(!dataTeam) continue;
+
+    const entry = { dataTeam, playerTeam, dataPlayer, playerPage, rawLine: csvLines[i] };
+    csvEntries.push(entry);
+
+    // On ajoute les 3 variantes au mapping (sans doublons)
+    if(playerPage) playerToTeam.set(playerPage, dataTeam);
+    if(dataPlayer && dataPlayer !== playerPage) playerToTeam.set(dataPlayer, dataTeam);
+    if(playerTeam && playerTeam !== playerPage && playerTeam !== dataPlayer)
+      playerToTeam.set(playerTeam, dataTeam);
+  }
+
+  const totalCSV = csvEntries.length;
+
+  if(totalCSV === 0){
+    const st2 = document.getElementById('st2');
+    st2.className = 'alert err';
+    st2.textContent = 'âŒ Aucune entrÃ©e valide dans le CSV (colonne DataTeam vide ?)';
+    document.getElementById('st2m').classList.add('hidden');
+    document.getElementById('r2').value = input;
+    document.getElementById('o2').classList.remove('hidden');
+    return;
+  }
+
+  // Traitement du code wiki
+  const usedKeys = new Set();
+
+  const result = input.split('\n').map(line => {
+    // 1) FORMAT WIKI
     if(line.includes('TournamentResults/Line')){
-      const playersMatch=line.match(/\|players=\s*(.*?)\s*\|(?=points|hide|prpoints)/);
+      const playersMatch = line.match(/\|players=\s*(.*?)\s*\|(?=points|hide|prpoints)/);
       if(!playersMatch) return line;
-      const parsed=parseWikiPlayersField(playersMatch[1]);
-      const teamSlots=parsed.map(p=>{
-        const team=findTeamForPlayer(p.id,p.name,lookup);
-        if(team){ if(p.name) usedKeys.add(p.name); if(p.id) usedKeys.add(p.id); }
-        return team;
+
+      const playersField  = playersMatch[1];
+      const playerEntries = playersField.split(',').map(e => e.trim()).filter(Boolean);
+
+      const teamSlots = playerEntries.map(entry => {
+        const parts = entry.split('{{!}}');
+        if(parts.length < 2) return '';
+        const playerName = parts[1].trim();
+        if(playerToTeam.has(playerName)){
+          usedKeys.add(playerName);
+          return playerToTeam.get(playerName);
+        }
+        return '';
       });
-      const teamsVal=teamSlots.join(',');
-      if(/\|teams=[^|]*/.test(line)) return line.replace(/\|teams=[^|]*/, '|teams='+teamsVal);
-      return line.replace('|players='+playersMatch[1], '|teams='+teamsVal+'|players='+playersMatch[1]);
+
+      const hasAnyTeam = teamSlots.some(t => t !== '');
+      const teamsVal   = hasAnyTeam ? teamSlots.join(',') : '';
+
+      return line.replace(/\|teams=[^|]*/, '|teams=' + teamsVal);
     }
-    const parts=line.split('\t');
-    if(parts.length>=3){
-      let rank,playersStr,points;
-      if(parts.length===4){rank=parts[0];playersStr=parts[2];points=parts[3];}
-      else {rank=parts[0];playersStr=parts[1];points=parts[2];}
-      const parsed=parseWikiPlayersField(playersStr);
-      const teamsStr=parsed.map(p=>{
-        const team=findTeamForPlayer(p.id,p.name,lookup);
-        if(team){ if(p.name) usedKeys.add(p.name); if(p.id) usedKeys.add(p.id); }
-        return team;
-      }).join(',');
-      return [rank,teamsStr,playersStr,points].join('\t');
+
+    // 2) FORMAT CLASSEMENT RAW (rank \t teams \t players \t points)
+    const parts = line.split('\t');
+    if(parts.length >= 3){
+      let rank, teamsStr, playersStr, points;
+
+      if(parts.length === 4) {
+        rank = parts[0];
+        teamsStr = parts[1];
+        playersStr = parts[2];
+        points = parts[3];
+      } else {
+        rank = parts[0];
+        playersStr = parts[1];
+        points = parts[2];
+        teamsStr = '';
+      }
+
+      const playerEntries = playersStr.split(',').map(e => e.trim()).filter(Boolean);
+      const teamSlots = playerEntries.map(entry => {
+        const pParts = entry.split('{{!}}');
+        if(pParts.length < 2) return '';
+        const playerName = pParts[1].trim();
+        if(playerToTeam.has(playerName)){
+          usedKeys.add(playerName);
+          return playerToTeam.get(playerName);
+        }
+        return '';
+      });
+
+      teamsStr = teamSlots.join(',');
+      return [rank, teamsStr, playersStr, points].join('\t');
     }
+
     return line;
   }).join('\n');
-  const matchedEntries=[], unmatchedEntries=[];
+
+  // Rapport : une entrÃ©e CSV est "matched" si AU MOINS UNE de ses variantes a Ã©tÃ© trouvÃ©e
+  const matchedEntries   = [];
+  const unmatchedEntries = [];
+
   for(const entry of csvEntries){
-    const found=(entry.playerPage&&usedKeys.has(entry.playerPage))||(entry.dataPlayer&&usedKeys.has(entry.dataPlayer))||(entry.playerTeam&&usedKeys.has(entry.playerTeam));
-    if(found) matchedEntries.push(entry); else unmatchedEntries.push(entry);
+    const found =
+      (entry.playerPage && usedKeys.has(entry.playerPage)) ||
+      (entry.dataPlayer && usedKeys.has(entry.dataPlayer)) ||
+      (entry.playerTeam && usedKeys.has(entry.playerTeam));
+    if(found) matchedEntries.push(entry);
+    else       unmatchedEntries.push(entry);
   }
-  const st2=document.getElementById('st2'), st2m=document.getElementById('st2m');
-  if(matchedEntries.length===0){st2.className='alert err';st2.textContent='❌ 0 joueur trouvé dans le code — vérifie les colonnes PlayerPage / DataPlayer / PlayerTeam'}
-  else{st2.className='alert ok';st2.innerHTML=`✅ <b>${matchedEntries.length}/${totalCSV} joueurs avec équipe ajoutés</b> dans le code wiki`}
-  if(unmatchedEntries.length>0){let tbl=`<div style="margin-top:6px;font-size:.82rem;font-weight:700;margin-bottom:6px">⚠️ ${unmatchedEntries.length} joueur${unmatchedEntries.length>1?'s':''} du CSV non trouvé${unmatchedEntries.length>1?'s':''} dans le code :</div>`;tbl+=`<div style="background:#0f172a;border:1px solid #334155;border-radius:8px;max-height:220px;overflow-y:auto"><table class="miss-table"><thead><tr><th>DataTeam</th><th>PlayerTeam</th><th>DataPlayer</th><th>PlayerPage</th></tr></thead><tbody>`;for(const e of unmatchedEntries){tbl+=`<tr><td>${escHtml(e.dataTeam)}</td><td>${escHtml(e.playerTeam)}</td><td>${escHtml(e.dataPlayer)}</td><td>${escHtml(e.playerPage)}</td></tr>`}tbl+=`</tbody></table></div>`;st2m.className='alert warn';st2m.innerHTML=tbl;st2m.classList.remove('hidden')}else st2m.classList.add('hidden');
-  document.getElementById('r2').value=result;markDone('b2','card2');document.getElementById('o2').classList.remove('hidden')
+
+  const st2  = document.getElementById('st2');
+  const st2m = document.getElementById('st2m');
+
+  if(matchedEntries.length === 0){
+    st2.className = 'alert err';
+    st2.textContent = 'âŒ 0 joueur trouvÃ© dans le code â€” vÃ©rifie les colonnes PlayerPage / DataPlayer / PlayerTeam';
+  } else {
+    st2.className = 'alert ok';
+    st2.innerHTML = `âœ… <b>${matchedEntries.length}/${totalCSV} joueurs avec Ã©quipe ajoutÃ©s</b> dans le code wiki`;
+  }
+
+  if(unmatchedEntries.length > 0){
+    let tbl = `<div style="margin-top:6px;font-size:.82rem;font-weight:700;margin-bottom:6px">
+      âš ï¸ ${unmatchedEntries.length} joueur${unmatchedEntries.length>1?'s':''} du CSV non trouvÃ©${unmatchedEntries.length>1?'s':''} dans le code :
+    </div>`;
+    tbl += `<div style="background:#0f172a;border:1px solid #334155;border-radius:8px;max-height:220px;overflow-y:auto">
+      <table class="miss-table">
+        <thead><tr>
+          <th>DataTeam</th>
+          <th>PlayerTeam</th>
+          <th>DataPlayer</th>
+          <th>PlayerPage</th>
+        </tr></thead>
+        <tbody>`;
+    for(const e of unmatchedEntries){
+      tbl += `<tr>
+        <td>${escHtml(e.dataTeam)}</td>
+        <td>${escHtml(e.playerTeam)}</td>
+        <td>${escHtml(e.dataPlayer)}</td>
+        <td>${escHtml(e.playerPage)}</td>
+      </tr>`;
+    }
+    tbl += `</tbody></table></div>`;
+    st2m.className = 'alert warn';
+    st2m.innerHTML = tbl;
+    st2m.classList.remove('hidden');
+  } else {
+    st2m.classList.add('hidden');
+  }
+
+  document.getElementById('r2').value = result;
+  markDone('b2','card2');
+  document.getElementById('o2').classList.remove('hidden');
 }
-async function loadDict(){try{const r=await fetchTO(GITHUB_DICT+'?t='+Date.now(),{},8000);if(r.ok){const txt=await r.text();dict=parseDictTxt(txt)}}catch{};const el=document.getElementById('dict-status');el.className=Object.keys(dict).length?'alert ok':'alert warn';el.innerHTML=Object.keys(dict).length?`✅ <b>${Object.keys(dict).length} pseudos chargés</b>`:'⚠️ Aucun pseudo chargé — l\'outil fonctionne quand même'}
-function parseDictTxt(txt){const d={};for(const raw of txt.split('\n')){const l=raw.trim();if(!l||!l.includes('='))continue;const i=l.indexOf('=');const name=l.slice(0,i).trim(),eid=l.slice(i+1).trim().toLowerCase().replace(/-/g,'');if(name&&eid)d[eid]=name}return d}
-loadDict();applyLang();
+
+// ============================================================
+//  PSEUDO UPDATE
+// ============================================================
+function parseTSV3(txt){
+  const lines=txt.trim().split(/\r?\n/).filter(l=>l.trim());if(!lines.length)return null;
+  const dlm=detectDlm(lines);const entries=[];
+  for(const raw of lines){
+    const cols=raw.split(dlm).map(c=>c.trim());if(cols.length<3)continue;
+    const[wrongId,playerPage,fortniteId]=cols;
+    if(wrongId.toLowerCase()==='wrongid'||playerPage.toLowerCase()==='playerpage')continue;
+    if(!wrongId||!playerPage||!fortniteId)continue;
+    entries.push({wrongId,playerPage,fortniteId:fortniteId.toLowerCase().replace(/-/g,'')});
+  }
+  return entries.length?entries:null;
+}
+function applyPseudo(){
+  const code=document.getElementById('pu-code').value,txt=document.getElementById('pu-upd').value.trim();
+  if(!code.trim()){alert(s('puErrCode'));return;}if(!txt){alert(s('puErrUpd'));return;}
+  const entries=parseTSV3(txt);if(!entries){alert(s('puErrParse'));return;}
+  let result=code,n=0;const notFound=[];
+  for(const e of entries){
+    const search=e.fortniteId+'{{!}}'+e.wrongId,repl=e.fortniteId+'{{!}}'+e.playerPage;
+    if(result.includes(search)){result=result.split(search).join(repl);n++;}
+    else notFound.push(e.wrongId);
+  }
+  const st=document.getElementById('pu-st'),stm=document.getElementById('pu-miss');
+  st.className=n>0?'alert ok':'alert warn';st.innerHTML=s('puOk',n,entries.length);
+  if(notFound.length){stm.classList.remove('hidden');stm.innerHTML=s('puMiss',notFound);}
+  else stm.classList.add('hidden');
+  document.getElementById('pu-res').value=result;
+  document.getElementById('pu-out').classList.remove('hidden');
+  document.getElementById('pu-out').scrollIntoView({behavior:'smooth'});
+}
+
+// ============================================================
+//  CLOUD DICT
+// ============================================================
+async function fetchCloud(){try{const r=await fetchTO('https://api.jsonbin.io/v3/b/'+JSONBIN_ID+'/latest',{headers:{'X-Master-Key':JSONBIN_KEY}},8000);if(!r.ok)throw new Error('cloud err');const data=await r.json();const rec=data.record||{};delete rec['init'];return rec;}catch{return{};}}
+async function saveCloud(entries){try{const cur=await fetchCloud();Object.assign(cur,entries);const r=await fetchTO('https://api.jsonbin.io/v3/b/'+JSONBIN_ID,{method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':JSONBIN_KEY,'X-Bin-Versioning':'false'},body:JSON.stringify(cur)},8000);return r.ok;}catch{return false;}}
+function parseDictTxt(txt){const d={};for(const raw of txt.split('\n')){const l=raw.trim();if(!l||!l.includes('='))continue;const i=l.indexOf('=');const name=l.slice(0,i).trim(),eid=l.slice(i+1).trim().toLowerCase().replace(/-/g,'');if(name&&eid)d[eid]=name;}return d;}
+function localDict(){try{return JSON.parse(localStorage.getItem('custom_dict')||'{}');}catch{return{};}}
+function saveLocalDict(d){localStorage.setItem('custom_dict',JSON.stringify(d));}
+
+async function loadDict(){
+  const el=document.getElementById('dict-status');el.className='alert inf';el.innerHTML='â³ '+s('loading');
+  let fCount=0,cCount=0;
+  try{const bl=JSON.parse(localStorage.getItem('dict_blacklist')||'[]');_blacklist=new Set(bl);}catch{_blacklist=new Set();}
+  try{const r=await fetchTO(GITHUB_DICT+'?t='+Date.now(),{},8000);if(r.ok){_githubDict=parseDictTxt(await r.text());fCount=Object.keys(_githubDict).length;}}catch{}
+  try{_cloudDict=await fetchCloud();cCount=Object.keys(_cloudDict).length;}catch{}
+  _localDictCache=localDict();
+  rebuildDict();
+  const tot=Object.keys(dict).length;
+  el.className=tot>0?'alert ok':'alert warn';
+  el.innerHTML=tot>0?s('pseudosOk',tot,fCount,cCount):s('noDict');
+  renderDictList();
+}
+function rebuildDict(){
+  dict={};
+  // GitHub : on exclut les entrÃ©es blacklistÃ©es
+  for(const k of Object.keys(_githubDict)){
+    if(!_blacklist.has(k)&&!_blacklist.has(k.toLowerCase().replace(/-/g,'')))dict[k]=_githubDict[k];
+  }
+  // Cloud et Local : toujours prioritaires, jamais filtrÃ©s par la blacklist
+  Object.assign(dict,_cloudDict);
+  Object.assign(dict,_localDictCache);
+}
+function saveBlacklist(){localStorage.setItem('dict_blacklist',JSON.stringify([..._blacklist]));}
+loadDict();
+
+async function dictAdd(){
+  const raw=document.getElementById('dict-new').value.trim(),msg=document.getElementById('dict-msg');
+  if(!raw){msg.style.color='#fca5a5';msg.innerHTML=s('dictErrFmt');return;}
+  const entries={};let valid=0;
+  for(const line of raw.split('\n')){const l=line.trim();if(!l||!l.includes('='))continue;const i=l.indexOf('=');const name=l.slice(0,i).trim().replace(/ /g,'_'),eid=l.slice(i+1).trim().toLowerCase().replace(/-/g,'');if(name&&eid){entries[eid]=name;valid++;}}
+  if(!valid){msg.style.color='#fca5a5';msg.innerHTML=s('dictErrFmt');return;}
+  msg.style.color='#60a5fa';msg.textContent=s('dictSaving');
+  const ok=await saveCloud(entries);
+  Object.assign(dict,entries);const local=localDict();Object.assign(local,entries);saveLocalDict(local);
+  msg.style.color=ok?'#4ade80':'#fbbf24';msg.innerHTML=ok?s('dictOk',valid):s('dictWarn',valid);
+  document.getElementById('dict-new').value='';renderDictList();
+}
+function renderDictList(){
+  const local=localDict(),keys=Object.keys(local),el=document.getElementById('dict-list');
+  if(!keys.length){el.innerHTML='';return;}
+  let html='<p style="font-size:.8rem;color:#64748b;margin-bottom:8px">'+keys.length+' entrÃ©e'+(keys.length>1?'s':'')+' locales</p>';
+  html+='<div style="background:#0f172a;border:1px solid #334155;border-radius:8px;padding:10px 12px;max-height:160px;overflow-y:auto">';
+  html+=keys.map(k=>'<div style="font-size:.78rem;color:#94a3b8;padding:2px 0"><code style="color:#60a5fa">'+k.slice(0,8)+'â€¦</code> â†’ <b style="color:#e2e8f0">'+local[k].replace(/_/g,' ')+'</b></div>').join('');
+  html+='</div>';
+  html+='<button class="btn" style="background:#1f0a0a;color:#fca5a5;border:1px solid #ef4444;font-size:.78rem;padding:5px 14px;margin-top:8px" onclick="clearLocal()">ðŸ—‘ï¸ Vider le cache local</button>';
+  el.innerHTML=html;
+}
+function clearLocal(){if(!confirm('Vider le cache local ?'))return;localStorage.removeItem('custom_dict');renderDictList();}
+
+function escHtml(v){return(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function searchEpic(){
+  var raw=(document.getElementById('search-eid').value||'').trim();
+  var out=document.getElementById('search-out');
+  if(!raw){out.innerHTML='';return;}
+  var q=raw.toLowerCase().replace(/-/g,'');
+  var sources=[
+    {d:_githubDict,     lbl:'GitHub', icon:'ðŸ™', isGithub:true,  canDel:false, key:'github'},
+    {d:_cloudDict,      lbl:'Cloud',  icon:'â˜ï¸',  isGithub:false, canDel:true,  key:'cloud'},
+    {d:_localDictCache, lbl:'Local',  icon:'ðŸ’¾', isGithub:false, canDel:true,  key:'local'}
+  ];
+  var byId={};
+  for(var si=0;si<sources.length;si++){
+    var sc=sources[si];
+    var ks=Object.keys(sc.d);
+    for(var ki=0;ki<ks.length;ki++){
+      var eid=ks[ki];
+      var pseudo=(sc.d[eid]||'').replace(/_/g,' ');
+      var ec=eid.toLowerCase().replace(/-/g,'');
+      if(ec.indexOf(q)===-1&&pseudo.toLowerCase().indexOf(q)===-1)continue;
+      if(!byId[ec])byId[ec]={eid:eid,rows:[]};
+      // KEY FIX: excluded uniquement pour les entrÃ©es GitHub
+      var isExcluded=sc.isGithub&&(_blacklist.has(eid)||_blacklist.has(ec));
+      byId[ec].rows.push({lbl:sc.lbl,icon:sc.icon,pseudo:pseudo,canDel:sc.canDel,isGithub:sc.isGithub,key:sc.key,excluded:isExcluded});
+    }
+  }
+  var ids=Object.keys(byId);
+  if(!ids.length){out.innerHTML='<div class="alert err">âŒ Aucun rÃ©sultat pour <b>'+escHtml(raw)+'</b></div>';return;}
+  var html='<div style="font-size:.8rem;color:#64748b;margin-bottom:8px">'+ids.length+' rÃ©sultat'+(ids.length>1?'s':'')+' trouvÃ©'+(ids.length>1?'s':'')+'</div>';
+  html+='<div style="background:#0f172a;border:1px solid #334155;border-radius:8px;overflow:hidden">';
+  for(var ii=0;ii<ids.length;ii++){
+    var row=byId[ids[ii]];
+    // Conflit = plusieurs pseudos diffÃ©rents dans les sources NON-exclues
+    var activePseudos=row.rows.filter(function(r){return !r.excluded;}).map(function(r){return r.pseudo;});
+    var uniq=activePseudos.filter(function(v,i,a){return a.indexOf(v)===i;});
+    html+='<div style="padding:10px 14px;border-bottom:1px solid #1e293b">';
+    html+='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">';
+    html+='<code style="color:#60a5fa;font-size:.75rem;user-select:all">'+escHtml(row.eid)+'</code>';
+    if(uniq.length>1)html+='<span style="font-size:.7rem;background:#1c1200;border:1px solid #f59e0b;color:#fbbf24;padding:1px 7px;border-radius:10px">âš ï¸ Conflit</span>';
+    html+='</div>';
+    for(var ri=0;ri<row.rows.length;ri++){
+      var rr=row.rows[ri];
+      var excl=rr.excluded;
+      html+='<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-top:1px solid #1e293b">';
+      html+='<span style="font-size:.74rem;min-width:80px;color:#94a3b8;flex-shrink:0">'+rr.icon+' '+rr.lbl+'</span>';
+      if(excl){
+        html+='<span style="color:#475569;font-size:.87rem;flex:1;text-decoration:line-through">'+escHtml(rr.pseudo)+' <span style="font-size:.7rem;color:#f59e0b">[exclu]</span></span>';
+        html+='<button data-eid="'+escHtml(row.eid)+'" style="background:#052e16;border:1px solid #22c55e;color:#4ade80;border-radius:6px;padding:3px 10px;font-size:.72rem;cursor:pointer" onclick="unexcludeBtnClick(this)">âœ… RÃ©intÃ©grer</button>';
+      }else{
+        html+='<b style="color:#4ade80;font-size:.87rem;flex:1">'+escHtml(rr.pseudo)+'</b>';
+        if(rr.isGithub){
+          html+='<button data-eid="'+escHtml(row.eid)+'" style="background:#1c1200;border:1px solid #f59e0b;color:#fbbf24;border-radius:6px;padding:3px 10px;font-size:.72rem;cursor:pointer" onclick="excludeBtnClick(this)">ðŸš« Exclure</button>';
+        }
+        if(rr.canDel){
+          html+='<button class="del-btn" data-eid="'+escHtml(row.eid)+'" data-src="'+rr.key+'" style="background:#1f0a0a;border:1px solid #ef4444;color:#fca5a5;border-radius:6px;padding:3px 10px;font-size:.72rem;cursor:pointer;margin-left:4px" onclick="delBtnClick(this)">ðŸ—‘ï¸ Supprimer</button>';
+        }
+      }
+      html+='</div>';
+    }
+    html+='</div>';
+  }
+  html+='</div>';
+  out.innerHTML=html;
+}
+
+function excludeBtnClick(btn){
+  var eid=btn.getAttribute('data-eid');
+  var ec=eid.toLowerCase().replace(/-/g,'');
+  if(!confirm('Exclure "'+eid+'" du dictionnaire GitHub ?\n(Cloud/Local ne sont pas affectÃ©s)'))return;
+  _blacklist.add(eid);_blacklist.add(ec);
+  saveBlacklist();rebuildDict();searchEpic();
+}
+function unexcludeBtnClick(btn){
+  var eid=btn.getAttribute('data-eid');
+  var ec=eid.toLowerCase().replace(/-/g,'');
+  _blacklist.delete(eid);_blacklist.delete(ec);
+  saveBlacklist();rebuildDict();searchEpic();
+}
+
+async function delBtnClick(btn){
+  var eid=btn.getAttribute('data-eid');
+  var source=btn.getAttribute('data-src');
+  var ec=eid.toLowerCase().replace(/-/g,'');
+  if(!confirm('Supprimer "'+eid+'" de '+source+' ?'))return;
+  btn.disabled=true;btn.textContent='â³';
+  try{
+    if(source==='local'){
+      var loc=localDict();delete loc[ec];delete loc[eid];saveLocalDict(loc);_localDictCache=loc;
+    }else if(source==='cloud'){
+      var cur=await fetchCloud();delete cur[ec];delete cur[eid];
+      var resp=await fetchTO('https://api.jsonbin.io/v3/b/'+JSONBIN_ID,
+        {method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':JSONBIN_KEY,'X-Bin-Versioning':'false'},body:JSON.stringify(cur)},8000);
+      if(!resp.ok)throw new Error('Erreur cloud '+resp.status);
+      _cloudDict=cur;
+    }
+    rebuildDict();
+    var line=btn.parentElement;
+    if(line)line.innerHTML='<span style="color:#4ade80;font-size:.78rem">âœ… SupprimÃ© de '+source+'</span>';
+    renderDictList();
+  }catch(e){btn.disabled=false;btn.textContent='ðŸ—‘ï¸ Supprimer';alert('Erreur : '+e.message);}
+}
 </script>
 </body>
 </html>
