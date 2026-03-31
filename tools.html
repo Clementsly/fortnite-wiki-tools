@@ -497,79 +497,22 @@ function resolveName(eid,apiName){return getName(eid)||apiName||'not found';}
 function getMid(m){return typeof m==='string'?m.toLowerCase().replace(/-/g,''):((m.id||'').toLowerCase().replace(/-/g,''));}
 function getMname(m){return typeof m==='string'?null:(m.name||null);}
 
-function fmtLine(rank,members,pts,teamsMap={}){
+function fmtLine(rank,members,pts){
   const p=members.map(m=>{const eid=getMid(m);const name=resolveName(eid,getMname(m));return eid+'{{!}}'+name;}).join(',');
-  const tArr=members.map(m=>{const eid=getMid(m);const name=resolveName(eid,getMname(m));return (teamsMap[eid] || teamsMap[name] || '');});
-  const t = tArr.some(x=>x!=='') ? tArr.join(',') : '';
-  return rank+'	'+t+'	'+p+'	'+pts;
+  return rank+'\t'+p+'\t'+pts;
 }
-function fmtLineWLS(rank,mlist,pts,teamsMap={}){
+function fmtLineWLS(rank,mlist,pts){
   const p=mlist.map(m=>{const eid=(m.ingame_id||'').toLowerCase().replace(/-/g,'');const name=resolveName(eid,m.name);return eid+'{{!}}'+name;}).join(',');
-  const tArr=mlist.map(m=>{const eid=(m.ingame_id||'').toLowerCase().replace(/-/g,'');const name=resolveName(eid,m.name);return (teamsMap[eid] || teamsMap[name] || '');});
-  const t = tArr.some(x=>x!=='') ? tArr.join(',') : '';
-  return rank+'	'+t+'	'+p+'	'+pts;
+  return rank+'\t'+p+'\t'+pts;
 }
-function fmtFileLine(rank,ids,pts,teamsMap={}){
+function fmtFileLine(rank,ids,pts){
   const p=ids.map(eid=>{const name=resolveName(eid,null);return eid+'{{!}}'+name;}).join(',');
-  const tArr=ids.map(eid=>{const name=resolveName(eid,null);return (teamsMap[eid] || teamsMap[name] || '');});
-  const t = tArr.some(x=>x!=='') ? tArr.join(',') : '';
-  return rank+'	'+t+'	'+p+'	'+pts;
+  return rank+'\t'+p+'\t'+pts;
 }
 
 // ============================================================
 //  HTML FILE PARSER
 // ============================================================
-
-async function fetchWikiTeams(eids) {
-  const teamsMap = {};
-  if(!eids || !eids.length) return teamsMap;
-  const unique = [...new Set(eids.filter(Boolean))];
-  const chunkSize = 25; // On rÃ©duit la taille des paquets pour allÃ©ger la requÃªte
-
-  for(let i=0; i<unique.length; i+=chunkSize) {
-    const chunk = unique.slice(i, i+chunkSize);
-    const whereList = chunk.map(id => `'${id}'`).join(',');
-    const url = `https://fortnite-esports.fandom.com/api.php?action=cargoquery&tables=Players=P&fields=P.FortniteID,P.Team,P._pageName=PlayerPage&where=P.FortniteID IN (${whereList})&format=json&limit=500&origin=*`;
-
-    let success = false;
-    let retries = 0;
-
-    while(!success && retries < 5) { // Jusqu'Ã  5 tentatives par paquet
-      try {
-        const r = await fetch(url);
-        if(!r.ok) throw new Error("HTTP " + r.status);
-        const data = await r.json();
-
-        // DÃ©tection explicite du rate limit Fandom
-        if(data.error && data.error.code === 'ratelimited') {
-          console.warn(`Rate limit atteint, attente de ${1000 * (retries + 1)}ms...`);
-          await sleep(1000 * (retries + 1)); // Attente exponentielle (1s, 2s, 3s...)
-          retries++;
-          continue; 
-        }
-
-        // SuccÃ¨s
-        if(data.cargoquery) {
-          data.cargoquery.forEach(item => {
-             const d = item.title;
-             if(d && d.FortniteID) teamsMap[d.FortniteID.toLowerCase()] = d.Team || '';
-             if(d && d.PlayerPage) teamsMap[d.PlayerPage] = d.Team || '';
-          });
-        }
-        success = true;
-      } catch(e) {
-        console.warn("Erreur fetch wiki:", e);
-        await sleep(1000);
-        retries++;
-      }
-    }
-
-    // Petite pause de prÃ©vention anti-spam entre chaque paquet rÃ©ussi
-    await sleep(350);
-  }
-  return teamsMap;
-}
-
 function parseHTMLLeaderboard(content){
   const positions=[];let idx=0;
   while(true){const pos=content.indexOf('"teamAccountIds"',idx);if(pos===-1)break;positions.push(pos);idx=pos+1;}
@@ -609,9 +552,7 @@ async function runFileSimple(){
   const content=await readFile('fi1');if(!content)throw new Error(s('errNoFile'));
   const entries=parseHTMLLeaderboard(content);if(!entries)throw new Error(s('errFileParse'));
   const date=(entries.find(e=>e.date)||{}).date||null;
-  const eids=[]; entries.forEach(e=>e.ids.forEach(id=>eids.push(id)));
-  const tmap=await fetchWikiTeams(eids);
-  return{lines:entries.map(e=>fmtFileLine(e.rank,e.ids,e.pts,tmap)),date};
+  return{lines:entries.map(e=>fmtFileLine(e.rank,e.ids,e.pts)),date};
 }
 async function runFileCumul(){
   const c1=await readFile('fi1b'),c2=await readFile('fi2b');if(!c1||!c2)throw new Error(s('errNoBothF'));
@@ -620,9 +561,7 @@ async function runFileCumul(){
   const teams={};
   for(const e of[...e1,...e2]){const key=e.ids.slice().sort().join('|');if(!teams[key])teams[key]={ids:e.ids,pts:0};teams[key].pts+=e.pts;}
   const list=Object.values(teams).sort((a,b)=>b.pts-a.pts);
-  const eids=[]; list.forEach(p=>p.ids.forEach(id=>eids.push(id)));
-  const tmap=await fetchWikiTeams(eids);
-  return{lines:list.map((p,i)=>fmtFileLine(i+1,p.ids,p.pts,tmap)),dates:[date1,date2]};
+  return{lines:list.map((p,i)=>fmtFileLine(i+1,p.ids,p.pts)),dates:[date1,date2]};
 }
 
 // ============================================================
@@ -661,9 +600,7 @@ async function kassAll(wid){
 async function runSimple(wid){
   const d=await kassAll(wid);if(!d.results.length)return{lines:null,date:null};
   d.results.sort((a,b)=>(a.rank||999)-(b.rank||999));
-  const eids=[]; d.results.forEach(r=>(r.teamAccountNames||r.teamAccounts||r.teamAccountIds||[]).forEach(m=>eids.push(getMid(m))));
-  const tmap=await fetchWikiTeams(eids);
-  return{lines:d.results.map((r,i)=>fmtLine(r.rank||i+1,r.teamAccountNames||r.teamAccounts||r.teamAccountIds||[],r.pointsEarned||r.points||0,tmap)),date:d.begin||null};
+  return{lines:d.results.map((r,i)=>fmtLine(r.rank||i+1,r.teamAccountNames||r.teamAccounts||r.teamAccountIds||[],r.pointsEarned||r.points||0)),date:d.begin||null};
 }
 async function runCumul(wids){
   const pl={};let tbF=null;const dates=[];
@@ -680,9 +617,7 @@ async function runCumul(wids){
   if(!tbF)tbF={components:[{trackedStat:'VICTORY_ROYALE_STAT',aggregation:'sum',multiplier:1},{trackedStat:'TEAM_ELIMS_STAT_INDEX',aggregation:'sum',multiplier:1},{trackedStat:'PLACEMENT_STAT_INDEX',aggregation:'avg',multiplier:1}]};
   const list=Object.values(pl).map(p=>{const tb=tbF.components.map(c=>{const vals=p.stats[c.trackedStat]||[];if(!vals.length)return 0;const raw=c.aggregation==='avg'?vals.reduce((a,b)=>a+b,0)/vals.length:vals.reduce((a,b)=>a+b,0);return raw*(c.multiplier||1);});return{...p,tb};});
   list.sort((a,b)=>{if(b.pts!==a.pts)return b.pts-a.pts;for(let i=0;i<a.tb.length;i++)if(b.tb[i]!==a.tb[i])return b.tb[i]-a.tb[i];return 0;});
-  const eids=[]; list.forEach(p=>p.mb.forEach(m=>eids.push(getMid(m))));
-  const tmap=await fetchWikiTeams(eids);
-  return{lines:list.map((p,i)=>fmtLine(i+1,p.mb,p.pts,tmap)),dates};
+  return{lines:list.map((p,i)=>fmtLine(i+1,p.mb,p.pts)),dates};
 }
 
 // ============================================================
@@ -694,9 +629,7 @@ async function runSimpleWLS(id){
   const data=await fetchWLS(id);const teams=data.teams||[];if(!teams.length)return{lines:null,date:null};
   teams.sort((a,b)=>(a.place||999)-(b.place||999));
   let date=null;if(teams[0]&&teams[0].sessions){const s0=Object.values(teams[0].sessions)[0];if(s0&&s0.start_time)date=tsYMD(s0.start_time);}
-  const eids=[]; teams.forEach(t=>Object.values(t.members||{}).forEach(m=>eids.push((m.ingame_id||'').toLowerCase().replace(/-/g,''))));
-  const tmap=await fetchWikiTeams(eids);
-  return{lines:teams.map(t=>fmtLineWLS(t.place,Object.values(t.members||{}),t.points||0,tmap)),date};
+  return{lines:teams.map(t=>fmtLineWLS(t.place,Object.values(t.members||{}),t.points||0)),date};
 }
 async function runCumulWLS(ids){
   const players={};const dates=[];
@@ -707,9 +640,7 @@ async function runCumulWLS(ids){
     for(const team of teams){const ml=Object.values(team.members||{});const key=ml.map(m=>(m.ingame_id||'').toLowerCase()).sort().join('|');if(!players[key])players[key]={pts:0,members:ml};players[key].pts+=team.points||0;}
   }
   const list=Object.values(players).sort((a,b)=>b.pts-a.pts);
-  const eids=[]; list.forEach(p=>p.members.forEach(m=>eids.push((m.ingame_id||'').toLowerCase().replace(/-/g,''))));
-  const tmap=await fetchWikiTeams(eids);
-  return{lines:list.map((p,i)=>fmtLineWLS(i+1,p.members,p.pts,tmap)),dates};
+  return{lines:list.map((p,i)=>fmtLineWLS(i+1,p.members,p.pts)),dates};
 }
 
 // ============================================================
@@ -843,64 +774,29 @@ function addTeams(){
   const usedKeys = new Set();
 
   const result = input.split('\n').map(line => {
-    // 1) FORMAT WIKI
-    if(line.includes('TournamentResults/Line')){
-      const playersMatch = line.match(/\|players=\s*(.*?)\s*\|(?=points|hide|prpoints)/);
-      if(!playersMatch) return line;
+    if(!line.includes('TournamentResults/Line')) return line;
 
-      const playersField  = playersMatch[1];
-      const playerEntries = playersField.split(',').map(e => e.trim()).filter(Boolean);
+    const playersMatch = line.match(/\|players=\s*(.*?)\s*\|(?=points|hide|prpoints)/);
+    if(!playersMatch) return line;
 
-      const teamSlots = playerEntries.map(entry => {
-        const parts = entry.split('{{!}}');
-        if(parts.length < 2) return '';
-        const playerName = parts[1].trim();
-        if(playerToTeam.has(playerName)){
-          usedKeys.add(playerName);
-          return playerToTeam.get(playerName);
-        }
-        return '';
-      });
+    const playersField  = playersMatch[1];
+    const playerEntries = playersField.split(',').map(e => e.trim()).filter(Boolean);
 
-      const hasAnyTeam = teamSlots.some(t => t !== '');
-      const teamsVal   = hasAnyTeam ? teamSlots.join(',') : '';
-
-      return line.replace(/\|teams=[^|]*/, '|teams=' + teamsVal);
-    }
-
-    // 2) FORMAT CLASSEMENT RAW (rank \t teams \t players \t points)
-    const parts = line.split('\t');
-    if(parts.length >= 3){
-      let rank, teamsStr, playersStr, points;
-
-      if(parts.length === 4) {
-        rank = parts[0];
-        teamsStr = parts[1];
-        playersStr = parts[2];
-        points = parts[3];
-      } else {
-        rank = parts[0];
-        playersStr = parts[1];
-        points = parts[2];
-        teamsStr = '';
+    const teamSlots = playerEntries.map(entry => {
+      const parts = entry.split('{{!}}');
+      if(parts.length < 2) return '';
+      const playerName = parts[1].trim();
+      if(playerToTeam.has(playerName)){
+        usedKeys.add(playerName);
+        return playerToTeam.get(playerName);
       }
+      return '';
+    });
 
-      const playerEntries = playersStr.split(',').map(e => e.trim()).filter(Boolean);
-      const teamSlots = playerEntries.map(entry => {
-        const pParts = entry.split('{{!}}');
-        if(pParts.length < 2) return '';
-        const playerName = pParts[1].trim();
-        if(playerToTeam.has(playerName)){
-          usedKeys.add(playerName);
-          return playerToTeam.get(playerName);
-        }
-        return '';
-      });
+    const hasAnyTeam = teamSlots.some(t => t !== '');
+    const teamsVal   = hasAnyTeam ? teamSlots.join(',') : '';
 
-      teamsStr = teamSlots.join(',');
-      return [rank, teamsStr, playersStr, points].join('\t');
-    }
-
+    line = line.replace(/\|teams=[^|]*/, '|teams=' + teamsVal);
     return line;
   }).join('\n');
 
