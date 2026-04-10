@@ -119,7 +119,7 @@
       <button class="api-btn ak" id="btn-kass" onclick="selApi('kass')">
         <b>🟢 KassAPI.lat</b>
         <span class="tag-g" id="api-rec-tag">✅ RECOMMANDÉE</span>
-        <span class="api-desc" id="api-rec-desc">Fonctionne sur tous les events depuis Nov. 2025</span>
+        <span class="api-desc" id="api-rec-desc">Fonctionne sur tous les events · kassapi.lat</span>
       </button>
       <button class="api-btn" id="btn-wls" onclick="selApi('wls')">
         <b>🔴 WLS.gg</b>
@@ -350,7 +350,7 @@ let _githubDict = {}, _cloudDict = {}, _localDictCache = {}, _blacklist = new Se
 const STRINGS = {
   fr:{
     sub:'Classement API/Fichier → Équipes · Tout en 3 étapes',
-    apiLbl:'📌 Choix de l\'API',apiRecTag:'✅ RECOMMANDÉE',apiRecDesc:'Fonctionne sur tous les events depuis Nov. 2025',
+    apiLbl:'📌 Choix de l\'API',apiRecTag:'✅ RECOMMANDÉE',apiRecDesc:'Fonctionne sur tous les events · kassapi.lat',
     apiWlsTag:'🎯 TOURNOIS WLS',apiWlsDesc:'Pour les événements organisés via WLS',
     loading:'Chargement du dictionnaire...',s1Title:'Générer le classement',
     widLbl:'WindowID ou URL Fortnite Tracker',widHint:'💡 Colle l\'URL complète – le WindowID est extrait automatiquement',
@@ -391,7 +391,7 @@ const STRINGS = {
   },
   en:{
     sub:'API/File Leaderboard → Teams · All in 3 steps',
-    apiLbl:'📌 API Selection',apiRecTag:'✅ RECOMMENDED',apiRecDesc:'Works on all events since Nov. 2025',
+    apiLbl:'📌 API Selection',apiRecTag:'✅ RECOMMENDED',apiRecDesc:'Works on all events · kassapi.lat',
     apiWlsTag:'🎯 WLS TOURNAMENTS',apiWlsDesc:'For events organized through WLS',
     loading:'Loading dictionary...',s1Title:'Generate leaderboard',
     widLbl:'WindowID or Fortnite Tracker URL',widHint:'💡 Paste the full URL – WindowID is extracted automatically',
@@ -583,6 +583,11 @@ async function fetchRetry(url,opts,useProxy){
 // ============================================================
 async function kassPage(wid,pg){
   const url='https://kassapi.lat/v1/tournaments/window?windowId='+encodeURIComponent(wid)+'&page='+pg;
+  const r=await fetchRetry(url,{headers:{'x-api-key':'kass_A3u2Fle0YACnjklJwreWylDNRp-2beDZ','Accept':'application/json'}},true);
+  return r.json();
+}
+async function kassLeaderboard(windowId){
+  const url='https://kassapi.lat/v1/tournaments/leaderboard?leaderboardEventWindowId='+encodeURIComponent(windowId);
   const r=await fetchRetry(url,{headers:{'x-api-key':'kass_A3u2Fle0YACnjklJwreWylDNRp-2beDZ','Accept':'application/json'}},true);
   return r.json();
 }
