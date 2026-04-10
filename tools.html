@@ -117,7 +117,7 @@
     <div class="sec-lbl" id="api-lbl">📌 Choix de l'API</div>
     <div class="api-btns">
       <button class="api-btn ak" id="btn-kass" onclick="selApi('kass')">
-        <b>🟢 Kass507.lat</b>
+        <b>🟢 KassAPI.lat</b>
         <span class="tag-g" id="api-rec-tag">✅ RECOMMANDÉE</span>
         <span class="api-desc" id="api-rec-desc">Fonctionne sur tous les events depuis Nov. 2025</span>
       </button>
@@ -582,7 +582,7 @@ async function fetchRetry(url,opts,useProxy){
 //  KASS API
 // ============================================================
 async function kassPage(wid,pg){
-  const url='https://kass507.lat/api/events/window?windowId='+encodeURIComponent(wid)+'&page='+pg;
+  const url='https://kassapi.lat/v1/tournaments/window?windowId='+encodeURIComponent(wid)+'&page='+pg;
   const r=await fetchRetry(url,{headers:{'x-api-key':'kass_A3u2Fle0YACnjklJwreWylDNRp-2beDZ','Accept':'application/json'}},true);
   return r.json();
 }
@@ -667,7 +667,7 @@ async function generate(){
   document.getElementById('date-block').classList.add('hidden');
   _proxyIdx=0;
   try{
-    let res;const st=document.getElementById('st1');const apiLabel=_api==='kass'?'Kass507.lat':'WLS.gg';
+    let res;const st=document.getElementById('st1');const apiLabel=_api==='kass'?'KassAPI.lat':'WLS.gg';
     if(_mode==='file'){
       if(_fileMode==='single'){if(!document.getElementById('fi1').files.length){alert(s('errNoFile'));return;}res=await runFileSimple();dateInfo=res.date||null;}
       else{if(!document.getElementById('fi1b').files.length||!document.getElementById('fi2b').files.length){alert(s('errNoBothF'));return;}res=await runFileCumul();dateInfo=res.dates||null;}
