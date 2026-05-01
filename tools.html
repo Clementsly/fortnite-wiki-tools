@@ -318,7 +318,7 @@
   </div>
 
   <footer class="footer">
-    <img src="https://raw.githubusercontent.com/Clementsly/fortnite-wiki-tools/main/Design%20sans%20titre%20(6).png" alt="Clem">
+    <img src="https://raw.githubusercontent.com/Clementsly/fortnite-wiki-tools/main/pdp%20clem%20twitter.jpg" alt="Clem">
     <div>
       <div class="made" id="made-by">Créé par</div>
       <div class="author">Clem</div>
@@ -505,15 +505,41 @@ function fmtLineWLS(rank,mlist,pts){
   const p=mlist.map(m=>{const eid=(m.ingame_id||'').toLowerCase().replace(/-/g,'');const name=resolveName(eid,m.name);return eid+'{{!}}'+name;}).join(',');
   return rank+'\t'+p+'\t'+pts;
 }
-function fmtFileLine(rank,ids,pts){
-  const p=ids.map(eid=>{const name=resolveName(eid,null);return eid+'{{!}}'+name;}).join(',');
+function fmtFileLine(rank,ids,pts,nickMap){
+  nickMap=nickMap||{};
+  const p=ids.map(eid=>{
+    // 1. Try the dict (GitHub/Cloud/Local)
+    let name=getName(eid);
+    // 2. Fallback: use the nickname from internal_Accounts in the HTML file
+    if(!name&&nickMap[eid])name=nickMap[eid];
+    // 3. Last resort
+    if(!name)name='not found';
+    return eid+'{{!}}'+name;
+  }).join(',');
   return rank+'\t'+p+'\t'+pts;
 }
 
 // ============================================================
 //  HTML FILE PARSER
 // ============================================================
+function parseInternalAccounts(content){
+  var map={};
+  var iaPos=content.indexOf('"internal_Accounts"');
+  if(iaPos===-1)return map;
+  var braceOpen=content.indexOf('{',iaPos);
+  if(braceOpen===-1)return map;
+  var chunk=content.slice(braceOpen,braceOpen+500000);
+  var re=/"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})"\s*:\s*\{[^}]*?"nickname"\s*:\s*"([^"]+)"/gi;
+  var m;
+  while((m=re.exec(chunk))!==null){
+    var cleanId=m[1].replace(/-/g,'').toLowerCase();
+    map[cleanId]=m[2];
+  }
+  return map;
+}
+
 function parseHTMLLeaderboard(content){
+  const nickMap=parseInternalAccounts(content);
   const positions=[];let idx=0;
   while(true){const pos=content.indexOf('"teamAccountIds"',idx);if(pos===-1)break;positions.push(pos);idx=pos+1;}
   if(!positions.length)return null;
@@ -535,7 +561,7 @@ function parseHTMLLeaderboard(content){
     while((pm=peRe.exec(chunk))!==null)ptsVal=parseInt(pm[1]);
     if(ptsVal<0)continue;
     const dateM=chunk.match(/"endTime"\s*:\s*"(\d{4}-\d{2}-\d{2})/);
-    results.push({rank:rankVal,pts:ptsVal,ids,date:dateM?dateM[1]:null});
+    results.push({rank:rankVal,pts:ptsVal,ids,date:dateM?dateM[1]:null,nickMap});
   }
   const seen=new Set(),unique=[];
   for(const r of results){if(!seen.has(r.rank)){seen.add(r.rank);unique.push(r);}}
@@ -552,16 +578,20 @@ async function runFileSimple(){
   const content=await readFile('fi1');if(!content)throw new Error(s('errNoFile'));
   const entries=parseHTMLLeaderboard(content);if(!entries)throw new Error(s('errFileParse'));
   const date=(entries.find(e=>e.date)||{}).date||null;
-  return{lines:entries.map(e=>fmtFileLine(e.rank,e.ids,e.pts)),date};
+  // Pass nickMap from first entry (all entries share same nickMap from same file)
+  const nickMap=(entries[0]&&entries[0].nickMap)||{};
+  return{lines:entries.map(e=>fmtFileLine(e.rank,e.ids,e.pts,nickMap)),date};
 }
 async function runFileCumul(){
   const c1=await readFile('fi1b'),c2=await readFile('fi2b');if(!c1||!c2)throw new Error(s('errNoBothF'));
   const e1=parseHTMLLeaderboard(c1),e2=parseHTMLLeaderboard(c2);if(!e1||!e2)throw new Error(s('errFileParse'));
   const date1=(e1.find(e=>e.date)||{}).date||null,date2=(e2.find(e=>e.date)||{}).date||null;
+  // Merge nickMaps from both files
+  const nickMap=Object.assign({},(e1[0]&&e1[0].nickMap)||{},(e2[0]&&e2[0].nickMap)||{});
   const teams={};
   for(const e of[...e1,...e2]){const key=e.ids.slice().sort().join('|');if(!teams[key])teams[key]={ids:e.ids,pts:0};teams[key].pts+=e.pts;}
   const list=Object.values(teams).sort((a,b)=>b.pts-a.pts);
-  return{lines:list.map((p,i)=>fmtFileLine(i+1,p.ids,p.pts)),dates:[date1,date2]};
+  return{lines:list.map((p,i)=>fmtFileLine(i+1,p.ids,p.pts,nickMap)),dates:[date1,date2]};
 }
 
 // ============================================================
